@@ -8,6 +8,14 @@ import { OBSTACLES, type ColliderDef } from '../config/obstacles';
 import { Layer, makeCircle, makePoly, makeRect, type StaticShape } from '../physics/world';
 import type { LevelDef, ObstaclePlacement } from '../levels/types';
 
+/** cos/sin of k·2π/14, written as literals. */
+const UNIT_CIRCLE_14: ReadonlyArray<readonly [number, number]> = [
+  [1, 0], [0.9009688679, 0.4338837391], [0.6234898019, 0.7818314825], [0.2225209340, 0.9749279122],
+  [-0.2225209340, 0.9749279122], [-0.6234898019, 0.7818314825], [-0.9009688679, 0.4338837391], [-1, 0],
+  [-0.9009688679, -0.4338837391], [-0.6234898019, -0.7818314825], [-0.2225209340, -0.9749279122],
+  [0.2225209340, -0.9749279122], [0.6234898019, -0.7818314825], [0.9009688679, -0.4338837391],
+];
+
 /** Thickness of the invisible-backed snow-bank walls outside the arena (u). */
 export const WALL_THICKNESS = 240;
 
@@ -32,12 +40,8 @@ function colliderToStatic(c: ColliderDef, ox: number, oy: number, sx: number, sy
     case 'poly':
       return makePoly(c.points.map(([x, y]) => [ox + x * sx, oy + y * sy] as [number, number]), { ...opts, radius: (c.radius ?? 0) * s });
     case 'ellipse': {
-      const seg = c.segments ?? 14;
-      const pts: Array<[number, number]> = [];
-      for (let i = 0; i < seg; i++) {
-        const a = (i / seg) * Math.PI * 2;
-        pts.push([ox + (c.cx + Math.cos(a) * c.rx) * sx, oy + (c.cy + Math.sin(a) * c.ry) * sy]);
-      }
+      // Literal unit-circle table (no runtime trig) keeps colliders bit-identical across browsers.
+      const pts: Array<[number, number]> = UNIT_CIRCLE_14.map(([cx, cy]) => [ox + (c.cx + cx * c.rx) * sx, oy + (c.cy + cy * c.ry) * sy] as [number, number]);
       return makePoly(pts, opts);
     }
   }

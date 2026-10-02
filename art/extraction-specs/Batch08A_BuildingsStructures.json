@@ -765,6 +765,27 @@
    "role": "decoration",
    "collision": "background",
    "atlas": "town"
+  },
+  {
+   "id": "icon_fish_currency",
+   "label": "Fish Currency (blue fish emblem from the fish signpost)",
+   "box": [
+    1016,
+    402,
+    1080,
+    444
+   ],
+   "category": "CurrencyIcon",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui",
+   "localFlood": true,
+   "tolerance": 10,
+   "pad": 3,
+   "notes": "Fish Currency icon \u2014 deliberately distinct from gameplay DribbleFish (gray) and the Rare Fish (gold)."
   }
  ]
 }

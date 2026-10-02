@@ -17,6 +17,7 @@ export function makeTestLevel(overrides: Partial<LevelDef> = {}): LevelDef {
     enemies: [],
     obstacles: [],
     surfaces: [],
+    enemySpeed: 1,
     parSeconds: 6,
     difficulty: 0,
     hard: false,

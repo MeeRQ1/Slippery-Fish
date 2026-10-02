@@ -67,6 +67,8 @@ export interface LevelDef {
   enemies: EnemySpawn[];
   obstacles: ObstaclePlacement[];
   surfaces: SurfacePatch[];
+  /** Level-specific multiplier on enemy speed (difficulty knob; Hard Mode stacks on top). */
+  enemySpeed: number;
   /** Estimated expert completion time (s) used for Excellence Stars. */
   parSeconds: number;
   /** Abstract difficulty score (0 = first tutorial). */

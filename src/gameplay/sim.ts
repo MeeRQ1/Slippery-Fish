@@ -105,6 +105,9 @@ export interface SimStats {
   distanceWaddled: number;
   sprintSeconds: number;
   sprintHits: number;
+  fishTouches: number;
+  staminaEmpties: number;
+  rareStashed: number;
 }
 
 export interface SimOptions {
@@ -125,7 +128,7 @@ export class GameSim {
   readonly fish: FishEntity[] = [];
   readonly enemies: EnemyEntity[] = [];
   readonly events: SimEvent[] = [];
-  readonly stats: SimStats = { wallBounces: 0, fishStashed: 0, fishEaten: 0, distanceWaddled: 0, sprintSeconds: 0, sprintHits: 0 };
+  readonly stats: SimStats = { wallBounces: 0, fishStashed: 0, fishEaten: 0, distanceWaddled: 0, sprintSeconds: 0, sprintHits: 0, fishTouches: 0, staminaEmpties: 0, rareStashed: 0 };
   readonly mods: GameplayModifiers;
   readonly hard: boolean;
   status: SimStatus = 'playing';
@@ -157,7 +160,7 @@ export class GameSim {
     this.world.add(pb);
     const maxStamina = STAMINA.max * this.mods.maxStamina;
     this.player = {
-      body: pb, stamina: maxStamina * clamp01(this.mods.startStamina), maxStamina, sprinting: false, exhausted: false,
+      body: pb, stamina: maxStamina * Math.min(2, Math.max(0, this.mods.startStamina)), maxStamina, sprinting: false, exhausted: false,
       regenTimer: 0, lowWarned: false, roll: 0, squash: 0, stagger: 0,
     };
 
@@ -182,7 +185,7 @@ export class GameSim {
         angularDamping: 4,
       });
       this.world.add(body);
-      const speedMul = this.hard ? HARD_MODE.enemySpeed : 1;
+      const speedMul = (level.enemySpeed || 1) * (this.hard ? HARD_MODE.enemySpeed : 1);
       const accelMul = this.hard ? HARD_MODE.enemyAccel : 1;
       this.enemies.push({
         id: i, type: e.type, cfg, body, spawn: { x: e.x, y: e.y }, state: 'waiting',
@@ -284,17 +287,18 @@ export class GameSim {
     } else {
       pl.sprinting = false;
       if (pl.regenTimer > 0) pl.regenTimer -= dt;
-      else pl.stamina += STAMINA.regenPerSecond * this.mods.staminaRegen * dt;
+      else if (pl.stamina < pl.maxStamina) pl.stamina = Math.min(pl.maxStamina, pl.stamina + STAMINA.regenPerSecond * this.mods.staminaRegen * dt);
     }
     if (pl.stamina <= 0) {
       pl.stamina = 0;
       if (!pl.exhausted) {
         pl.exhausted = true;
         pl.sprinting = false;
+        this.stats.staminaEmpties++;
         this.events.push({ type: 'staminaEmpty' });
       }
     }
-    if (pl.stamina > pl.maxStamina) pl.stamina = pl.maxStamina;
+    // (Stamina may start above max with a Starting Stamina Hood; regen never overfills.)
     if (pl.exhausted && pl.stamina >= pl.maxStamina * STAMINA.exhaustedRecoverFraction) {
       pl.exhausted = false;
       this.events.push({ type: 'staminaRecovered' });
@@ -459,6 +463,7 @@ export class GameSim {
         if (set === (Layer.Player | Layer.Fish)) {
           kind = 'fishPenguin';
           fish = this.fishByBody(la === Layer.Fish ? c.a : c.b);
+          this.stats.fishTouches++;
           if (this.player.sprinting) this.stats.sprintHits++;
         } else if (set === Layer.Fish) {
           kind = 'fishFish';
@@ -519,6 +524,7 @@ export class GameSim {
         this.world.remove(f.body);
         this.stashedValue += f.cfg.scoreValue;
         this.stats.fishStashed++;
+        if (f.variant === 'rare') this.stats.rareStashed++;
         this.events.push({ type: 'fishScored', fish: f, stashed: this.stashedValue, required: this.required });
       }
     }
@@ -568,6 +574,3 @@ function brake(b: Body, rate: number, dt: number): void {
   b.vy -= b.vy * k;
 }
 
-function clamp01(v: number): number {
-  return v < 0 ? 0 : v > 1 ? 1 : v;
-}

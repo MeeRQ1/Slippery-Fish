@@ -447,6 +447,8 @@ def main() -> int:
                     "pivot": {"x": manifest_frames[nm]["pivot"][0], "y": manifest_frames[nm]["pivot"][1]},
                 }
                 manifest_frames[nm]["atlasPage"] = f"{g}-{pi}"
+                manifest_frames[nm]["frame"] = [x, y, int(im.shape[1]), int(im.shape[0])]
+                manifest_frames[nm]["pageSize"] = [pw, ph]
             key = f"{g}-{pi}"
             img_name = f"{key}.webp"
             Image.fromarray(page, "RGBA").save(ATLAS_DIR / img_name, "WEBP", quality=90, method=6, exact=True)
@@ -464,8 +466,22 @@ def main() -> int:
         "note": "GENERATED FILE — edit art/extraction-specs/*.json and re-run `npm run extract:assets`.",
         "atlases": atlases,
         "frames": manifest_frames,
-    }, indent=1))
-    print(f"[extract] wrote {len(manifest_frames)} frames → {MANIFEST.relative_to(ROOT)}")
+    }, indent=0, separators=(",", ":")))
+    # Slim runtime manifest bundled into the game (full metadata stays in the generated file).
+    pages = {}
+    for g, plist in atlases.items():
+        for pg in plist:
+            pages[pg["key"]] = {"group": g, "image": pg["image"], "json": pg["json"]}
+    runtime_frames = {}
+    for fid, e in manifest_frames.items():
+        loc = e.get("atlasPage") or ("file:" + e["file"])
+        fr = e.get("frame", [0, 0, e["width"], e["height"]])
+        runtime_frames[fid] = [loc, fr[0], fr[1], fr[2], fr[3], e["category"], e["collision"], e["role"], e["themes"]]
+    for pk, pv in pages.items():
+        sz = next((e["pageSize"] for e in manifest_frames.values() if e.get("atlasPage") == pk), [0, 0])
+        pv["size"] = sz
+    (MANIFEST.parent / "assets.runtime.json").write_text(json.dumps({"pages": pages, "frames": runtime_frames}, separators=(",", ":")))
+    print(f"[extract] wrote {len(manifest_frames)} frames → {MANIFEST.relative_to(ROOT)} (+ assets.runtime.json)")
     return 0
 
 

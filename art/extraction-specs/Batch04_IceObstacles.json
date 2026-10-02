@@ -459,6 +459,26 @@
    ],
    "role": "gameplay",
    "collision": "gameplay-collider"
+  },
+  {
+   "id": "ui_logo",
+   "label": "Slippery Fish logo (canonical)",
+   "box": [
+    58,
+    4,
+    434,
+    194
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "single": true,
+   "minArea": 8,
+   "edgeFraction": 0.0,
+   "notes": "The ONE canonical logo. Duplicate logos on other sheets are intentionally not imported."
   }
  ]
 }

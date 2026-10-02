@@ -56,7 +56,7 @@ export interface RegionDef {
 export const REGIONS: RegionDef[] = [
   { id: 'classic_winter', name: 'Classic Winter', tagline: 'Where every penguin learns to waddle.',
     floorTexture: 'tex_snow', outsideTexture: 'tex_snow',
-    palette: { floor: '#eef6fc', floorTextureAlpha: 0.55, outside: '#dceaf5', bank: '#ffffff', bankShade: '#cfe3f4', bankOutline: '#1f3a63', accent: '#4aa3df' },
+    palette: { floor: '#eef6fc', floorTextureAlpha: 0.32, outside: '#dceaf5', bank: '#ffffff', bankShade: '#cfe3f4', bankOutline: '#1f3a63', accent: '#4aa3df' },
     weather: { kind: 'snow', density: 0.35, wind: 0.2 }, nightTint: 0, surfaces: [],
     layout: { block: 3, pillar: 2, wall: 2, island: 1 }, aspect: [1.4, 1.75], musicSlot: 'region_classic_winter' },
   { id: 'snow_forest', name: 'Snow Forest', tagline: 'Pines, logs and very suspicious bushes.',
