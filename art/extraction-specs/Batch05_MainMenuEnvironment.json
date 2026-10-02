@@ -1,0 +1,475 @@
+{
+ "sheet": "Batch05_MainMenuEnvironment.png",
+ "batch": "Batch05_MainMenuEnvironment",
+ "floodTolerance": 4,
+ "items": [
+  {
+   "id": "menu_mountains_band",
+   "label": "Mountains (Background)",
+   "box": [
+    0,
+    226,
+    1536,
+    414
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "background",
+   "collision": "background",
+   "mode": "band",
+   "localFlood": true,
+   "seedEdges": [
+    "top"
+   ],
+   "tolerance": 3,
+   "single": true,
+   "inpaint": [
+    [
+     92,
+     348,
+     378,
+     388
+    ],
+    [
+     572,
+     286,
+     730,
+     326
+    ],
+    [
+     494,
+     190,
+     690,
+     276
+    ],
+    [
+     760,
+     258,
+     866,
+     302
+    ],
+    [
+     1136,
+     224,
+     1366,
+     264
+    ],
+    [
+     1430,
+     244,
+     1536,
+     284
+    ],
+    [
+     528,
+     376,
+     592,
+     414
+    ]
+   ],
+   "notes": "Background band only; sky removed, label pills and clouds inpainted."
+  },
+  {
+   "id": "menu_cloud_large",
+   "label": "Cloud (Large)",
+   "box": [
+    494,
+    190,
+    690,
+    276
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "background",
+   "collision": "background",
+   "atlas": "menu",
+   "mode": "colorKey"
+  },
+  {
+   "id": "menu_cloud_small_a",
+   "label": "Cloud (Small A)",
+   "box": [
+    296,
+    200,
+    390,
+    254
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "background",
+   "collision": "background",
+   "atlas": "menu",
+   "mode": "colorKey"
+  },
+  {
+   "id": "menu_cloud_small_b",
+   "label": "Cloud (Small B)",
+   "box": [
+    760,
+    258,
+    866,
+    302
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "background",
+   "collision": "background",
+   "atlas": "menu",
+   "mode": "colorKey"
+  },
+  {
+   "id": "menu_cloud_small_c",
+   "label": "Cloud (Small C)",
+   "box": [
+    12,
+    184,
+    114,
+    230
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "background",
+   "collision": "background",
+   "atlas": "menu",
+   "mode": "colorKey"
+  },
+  {
+   "id": "menu_igloo_main",
+   "label": "Main Igloo (Center)",
+   "box": [
+    20,
+    412,
+    440,
+    606
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "background",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 5,
+   "notes": "Main-menu hero igloo. Never used inside gameplay.",
+   "solidBelow": true,
+   "featherBottom": 10,
+   "exclude": [
+    [
+     20,
+     412,
+     92,
+     496
+    ],
+    [
+     378,
+     412,
+     440,
+     494
+    ]
+   ],
+   "excludePoly": [
+    [
+     [
+      328,
+      430
+     ],
+     [
+      440,
+      430
+     ],
+     [
+      440,
+      505
+     ],
+     [
+      364,
+      505
+     ],
+     [
+      352,
+      474
+     ],
+     [
+      341,
+      453
+     ]
+    ]
+   ]
+  },
+  {
+   "id": "menu_snow_mounds",
+   "label": "Snow Mounds",
+   "box": [
+    842,
+    526,
+    1110,
+    606
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "background",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 3,
+   "solidBelow": true,
+   "featherBottom": 8
+  },
+  {
+   "id": "menu_frozen_pond",
+   "label": "Frozen Pond",
+   "box": [
+    1122,
+    512,
+    1528,
+    618
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "background",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 3
+  },
+  {
+   "id": "menu_wooden_sign",
+   "label": "Wooden Sign",
+   "box": [
+    32,
+    664,
+    166,
+    798
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "background",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 4,
+   "featherBottom": 4
+  },
+  {
+   "id": "menu_rocks",
+   "label": "Rocks",
+   "box": [
+    430,
+    712,
+    602,
+    794
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "background",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 4,
+   "solidBelow": true,
+   "featherBottom": 6
+  },
+  {
+   "id": "menu_ice_chunks",
+   "label": "Ice Chunks",
+   "box": [
+    645,
+    710,
+    845,
+    796
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "background",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 4
+  },
+  {
+   "id": "menu_bushes",
+   "label": "Bushes",
+   "box": [
+    885,
+    700,
+    1043,
+    794
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "background",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 4,
+   "solidBelow": true,
+   "featherBottom": 6
+  },
+  {
+   "id": "menu_snow_rock",
+   "label": "Snow-Covered Rock",
+   "box": [
+    1075,
+    705,
+    1258,
+    796
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "background",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 3,
+   "solidBelow": true,
+   "featherBottom": 8
+  },
+  {
+   "id": "menu_snowman",
+   "label": "Snowman",
+   "box": [
+    1358,
+    676,
+    1500,
+    798
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "background",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 4,
+   "featherBottom": 4
+  },
+  {
+   "id": "menu_foreground_snowbank",
+   "label": "Foreground Snowbank",
+   "box": [
+    0,
+    858,
+    458,
+    978
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "foreground",
+   "collision": "foreground-frame",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 3,
+   "seedEdges": [
+    "top",
+    "right",
+    "bottom"
+   ],
+   "solidBelow": true
+  },
+  {
+   "id": "menu_snowflake_a",
+   "label": "Snowflake A",
+   "box": [
+    735,
+    876,
+    806,
+    950
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "effect",
+   "collision": "visual",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 3
+  },
+  {
+   "id": "menu_snowflake_b",
+   "label": "Snowflake B",
+   "box": [
+    818,
+    868,
+    876,
+    928
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "effect",
+   "collision": "visual",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 3
+  },
+  {
+   "id": "menu_snowflake_c",
+   "label": "Snowflake C",
+   "box": [
+    882,
+    898,
+    940,
+    958
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "effect",
+   "collision": "visual",
+   "atlas": "menu",
+   "localFlood": true,
+   "tolerance": 3
+  },
+  {
+   "id": "icon_icicle_shard",
+   "label": "Icicle Shard (Ice Crystals)",
+   "box": [
+    1322,
+    858,
+    1478,
+    962
+   ],
+   "category": "CurrencyIcon",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui",
+   "localFlood": true,
+   "tolerance": 4,
+   "notes": "Icicle Shards currency icon (Batch 5 ice crystals)."
+  }
+ ]
+}

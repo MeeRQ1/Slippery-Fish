@@ -1,0 +1,273 @@
+{
+ "sheet": "Batch03_FishStashEffects.png",
+ "batch": "Batch03_FishStashEffects",
+ "floodTolerance": 4,
+ "items": [
+  {
+   "id": "fish_standard",
+   "label": "Standard Fish",
+   "box": [
+    48,
+    236,
+    266,
+    340
+   ],
+   "category": "GameplayFish",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Default gameplay DribbleFish."
+  },
+  {
+   "id": "fish_small",
+   "label": "Small Fish",
+   "box": [
+    381,
+    256,
+    545,
+    336
+   ],
+   "category": "GameplayFish",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Only when level data requests the small variant."
+  },
+  {
+   "id": "fish_medium",
+   "label": "Medium Fish",
+   "box": [
+    653,
+    236,
+    864,
+    340
+   ],
+   "category": "GameplayFish",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Only when level data requests the medium variant."
+  },
+  {
+   "id": "fish_large",
+   "label": "Large Fish",
+   "box": [
+    943,
+    220,
+    1190,
+    342
+   ],
+   "category": "GameplayFish",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Only when level data requests the large variant."
+  },
+  {
+   "id": "fish_rare",
+   "label": "Rare Fish",
+   "box": [
+    1266,
+    236,
+    1486,
+    343
+   ],
+   "category": "GameplayFish",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Special gameplay fish only. NOT Fish Currency."
+  },
+  {
+   "id": "fish_neutral",
+   "label": "Neutral Fish",
+   "box": [
+    63,
+    448,
+    270,
+    547
+   ],
+   "category": "GameplayFish",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay"
+  },
+  {
+   "id": "fish_flopping",
+   "label": "Flopping Fish",
+   "box": [
+    374,
+    416,
+    557,
+    547
+   ],
+   "category": "GameplayFish",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Brief reactive state after hard impacts."
+  },
+  {
+   "id": "fish_squashed",
+   "label": "Squashed Fish",
+   "box": [
+    648,
+    481,
+    872,
+    550
+   ],
+   "category": "GameplayFish",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Brief reactive state on impact."
+  },
+  {
+   "id": "fish_speed_streak",
+   "label": "Speed Streak Fish",
+   "box": [
+    916,
+    443,
+    1200,
+    547
+   ],
+   "category": "GameplayFish",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Reference only; runtime uses fish + speed-lines effect at high velocity."
+  },
+  {
+   "id": "fish_eaten_icon",
+   "label": "Eaten Fish Icon",
+   "box": [
+    1281,
+    460,
+    1487,
+    542
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "all"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "gameplay",
+   "notes": "UI/failure/stat use only."
+  },
+  {
+   "id": "stash_empty",
+   "label": "Empty Stash",
+   "box": [
+    28,
+    812,
+    247,
+    967
+   ],
+   "category": "GameplayStash",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "limited-collider",
+   "atlas": "gameplay",
+   "notes": "Rim is a limited collider; fish score when their centre enters the inner hole."
+  },
+  {
+   "id": "stash_partial_one",
+   "label": "Partial Stash (1 Fish)",
+   "box": [
+    283,
+    812,
+    499,
+    967
+   ],
+   "category": "GameplayStash",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "limited-collider",
+   "atlas": "gameplay"
+  },
+  {
+   "id": "stash_partial_multi",
+   "label": "Partial Stash (Multiple)",
+   "box": [
+    533,
+    812,
+    747,
+    967
+   ],
+   "category": "GameplayStash",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "limited-collider",
+   "atlas": "gameplay"
+  },
+  {
+   "id": "stash_complete",
+   "label": "Completed Stash",
+   "box": [
+    788,
+    778,
+    1012,
+    967
+   ],
+   "category": "GameplayStash",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "limited-collider",
+   "atlas": "gameplay"
+  },
+  {
+   "id": "ui_stash_arrow",
+   "label": "Stash Arrow",
+   "box": [
+    1163,
+    818,
+    1257,
+    932
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "all"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "gameplay",
+   "notes": "Tutorial/guidance only."
+  }
+ ]
+}

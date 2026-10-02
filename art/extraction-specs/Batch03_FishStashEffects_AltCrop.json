@@ -1,0 +1,112 @@
+{
+ "sheet": "Batch03_FishStashEffects_AltCrop.webp",
+ "batch": "Batch03_FishStashEffects",
+ "floodTolerance": 5,
+ "items": [
+  {
+   "id": "fx_fish_impact_splash",
+   "label": "Fish Impact Splash",
+   "box": [
+    92,
+    478,
+    306,
+    556
+   ],
+   "category": "FishEffect",
+   "themes": [
+    "all"
+   ],
+   "role": "effect",
+   "collision": "visual",
+   "atlas": "gameplay"
+  },
+  {
+   "id": "fx_fish_sparkle",
+   "label": "Fish Sparkle",
+   "box": [
+    398,
+    460,
+    566,
+    556
+   ],
+   "category": "FishEffect",
+   "themes": [
+    "all"
+   ],
+   "role": "effect",
+   "collision": "visual",
+   "atlas": "gameplay"
+  },
+  {
+   "id": "fx_fish_speed_lines",
+   "label": "Fish Speed Lines",
+   "box": [
+    652,
+    482,
+    910,
+    546
+   ],
+   "category": "FishEffect",
+   "themes": [
+    "all"
+   ],
+   "role": "effect",
+   "collision": "visual",
+   "atlas": "gameplay",
+   "notes": "Only shown at high fish velocity."
+  },
+  {
+   "id": "fx_fish_stash_sparkle",
+   "label": "Fish Stash Sparkle",
+   "box": [
+    966,
+    464,
+    1216,
+    556
+   ],
+   "category": "FishEffect",
+   "themes": [
+    "all"
+   ],
+   "role": "effect",
+   "collision": "visual",
+   "atlas": "gameplay"
+  },
+  {
+   "id": "fx_fish_lost_puff",
+   "label": "Fish Lost Puff",
+   "box": [
+    1298,
+    452,
+    1514,
+    556
+   ],
+   "category": "FishEffect",
+   "themes": [
+    "all"
+   ],
+   "role": "effect",
+   "collision": "visual",
+   "atlas": "gameplay",
+   "notes": "Enemy eats/claims a fish."
+  },
+  {
+   "id": "fx_scoring_burst",
+   "label": "Scoring Burst",
+   "box": [
+    1344,
+    640,
+    1544,
+    756
+   ],
+   "category": "FishEffect",
+   "themes": [
+    "all"
+   ],
+   "role": "effect",
+   "collision": "visual",
+   "atlas": "gameplay",
+   "notes": "Successful score only."
+  }
+ ]
+}

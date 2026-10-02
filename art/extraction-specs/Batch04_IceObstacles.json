@@ -1,0 +1,464 @@
+{
+ "sheet": "Batch04_IceObstacles.png",
+ "batch": "Batch04_IceObstacles",
+ "floodTolerance": 4,
+ "defaultAtlas": "obstacles",
+ "notes": "Authoritative for physical ice gameplay obstacles. Collider shapes live in src/config/obstacles.ts (explicit per type). Ice Ramp does not create jumping; Ice Arch is a solid collider unless configured otherwise.",
+ "items": [
+  {
+   "id": "ice_small_cube",
+   "label": "Small Ice Cube",
+   "box": [
+    43,
+    245,
+    125,
+    330
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_medium_block",
+   "label": "Medium Ice Block",
+   "box": [
+    198,
+    244,
+    340,
+    337
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_large_block",
+   "label": "Large Ice Block",
+   "box": [
+    400,
+    210,
+    582,
+    338
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_rounded_glacier",
+   "label": "Rounded Glacier",
+   "box": [
+    637,
+    209,
+    811,
+    338
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_thin_vertical",
+   "label": "Thin Vertical Ice",
+   "box": [
+    907,
+    208,
+    969,
+    337
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_long_horizontal",
+   "label": "Long Horizontal Ice",
+   "box": [
+    1063,
+    252,
+    1289,
+    338
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_l_shaped",
+   "label": "L-Shaped Ice",
+   "box": [
+    1347,
+    182,
+    1499,
+    338
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_u_shaped",
+   "label": "U-Shaped Ice",
+   "box": [
+    27,
+    414,
+    231,
+    541
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_pillar",
+   "label": "Ice Pillar",
+   "box": [
+    291,
+    407,
+    382,
+    543
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_crystal",
+   "label": "Ice Crystal",
+   "box": [
+    448,
+    407,
+    562,
+    543
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_cracked_block",
+   "label": "Cracked Ice Block",
+   "box": [
+    629,
+    431,
+    766,
+    543
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_snow_covered",
+   "label": "Snow-Covered Ice",
+   "box": [
+    842,
+    419,
+    992,
+    546
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_small_island",
+   "label": "Small Ice Island",
+   "box": [
+    1051,
+    446,
+    1209,
+    544
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_large_island",
+   "label": "Large Ice Island",
+   "box": [
+    1260,
+    411,
+    1501,
+    546
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_narrow_passage",
+   "label": "Narrow Passage",
+   "box": [
+    37,
+    606,
+    215,
+    744
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "holes": [
+    [
+     127,
+     732
+    ]
+   ],
+   "holeTolerance": 10
+  },
+  {
+   "id": "ice_chokepoint_piece",
+   "label": "Chokepoint Piece",
+   "box": [
+    248,
+    642,
+    459,
+    731
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_zigzag",
+   "label": "Zigzag Ice",
+   "box": [
+    502,
+    606,
+    620,
+    744
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_chunk_cluster",
+   "label": "Ice Chunk Cluster",
+   "box": [
+    659,
+    619,
+    816,
+    744
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_ramp",
+   "label": "Ice Ramp",
+   "box": [
+    865,
+    635,
+    1045,
+    744
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_triangle",
+   "label": "Triangle Ice",
+   "box": [
+    1091,
+    623,
+    1245,
+    744
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_arch",
+   "label": "Ice Arch",
+   "box": [
+    1290,
+    613,
+    1499,
+    744
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_pad",
+   "label": "Ice Pad",
+   "box": [
+    37,
+    831,
+    197,
+    946
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_cross",
+   "label": "Cross Ice",
+   "box": [
+    242,
+    805,
+    387,
+    951
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_hex",
+   "label": "Hex Ice",
+   "box": [
+    433,
+    832,
+    561,
+    951
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_boulder",
+   "label": "Boulder Ice",
+   "box": [
+    613,
+    810,
+    788,
+    943
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_spike_cluster",
+   "label": "Ice Spike Cluster",
+   "box": [
+    846,
+    804,
+    1000,
+    951
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_jagged_wall",
+   "label": "Jagged Ice Wall",
+   "box": [
+    1051,
+    850,
+    1277,
+    943
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  },
+  {
+   "id": "ice_snow_corner",
+   "label": "Snow Corner",
+   "box": [
+    1322,
+    820,
+    1488,
+    951
+   ],
+   "category": "GameplayObstacle",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider"
+  }
+ ]
+}

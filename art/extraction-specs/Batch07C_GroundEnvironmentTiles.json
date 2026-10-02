@@ -1,0 +1,603 @@
+{
+ "sheet": "Batch07C_GroundEnvironmentTiles.png",
+ "batch": "Batch07C_GroundEnvironmentTiles",
+ "floodTolerance": 4,
+ "items": [
+  {
+   "id": "tex_snow",
+   "label": "Snow Ground (texture)",
+   "box": [
+    46,
+    209,
+    228,
+    365
+   ],
+   "category": "Floor",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "blizzard",
+    "festival",
+    "candy_snow",
+    "arctic_night",
+    "aurora"
+   ],
+   "role": "floor",
+   "collision": "background",
+   "mode": "texture",
+   "inset": 14
+  },
+  {
+   "id": "tex_ice",
+   "label": "Ice Ground (texture)",
+   "box": [
+    268,
+    209,
+    437,
+    365
+   ],
+   "category": "Floor",
+   "themes": [
+    "frozen_lake",
+    "crystal_ice",
+    "glacier_caves",
+    "mastery"
+   ],
+   "role": "floor",
+   "collision": "background",
+   "mode": "texture",
+   "inset": 14
+  },
+  {
+   "id": "tex_dirt_snow",
+   "label": "Dirt With Snow (texture)",
+   "box": [
+    476,
+    250,
+    642,
+    363
+   ],
+   "category": "Floor",
+   "themes": [
+    "spring_thaw",
+    "fall"
+   ],
+   "role": "floor",
+   "collision": "background",
+   "mode": "texture",
+   "inset": 14
+  },
+  {
+   "id": "tex_cracked_ice",
+   "label": "Cracked Ice (texture)",
+   "box": [
+    683,
+    206,
+    843,
+    365
+   ],
+   "category": "Floor",
+   "themes": [
+    "frozen_lake",
+    "crystal_ice"
+   ],
+   "role": "floor",
+   "collision": "background",
+   "mode": "texture",
+   "inset": 14,
+   "notes": "Cracked Ice surface patches."
+  },
+  {
+   "id": "tex_water",
+   "label": "Water (texture)",
+   "box": [
+    888,
+    208,
+    1050,
+    365
+   ],
+   "category": "Floor",
+   "themes": [
+    "beach",
+    "frozen_lake",
+    "fishing"
+   ],
+   "role": "floor",
+   "collision": "background",
+   "mode": "texture",
+   "inset": 14,
+   "notes": "Boundary/environment only. No swimming."
+  },
+  {
+   "id": "tex_deep_water",
+   "label": "Deep Water (texture)",
+   "box": [
+    1101,
+    206,
+    1278,
+    365
+   ],
+   "category": "Floor",
+   "themes": [
+    "beach",
+    "arctic_night"
+   ],
+   "role": "floor",
+   "collision": "background",
+   "mode": "texture",
+   "inset": 14
+  },
+  {
+   "id": "tex_sand",
+   "label": "Sand (texture)",
+   "box": [
+    1324,
+    218,
+    1500,
+    363
+   ],
+   "category": "Floor",
+   "themes": [
+    "beach",
+    "summer"
+   ],
+   "role": "floor",
+   "collision": "background",
+   "mode": "texture",
+   "inset": 14
+  },
+  {
+   "id": "wood_bridge_7c",
+   "label": "Wood Bridge",
+   "box": [
+    25,
+    457,
+    245,
+    572
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "frozen_lake",
+    "spring_thaw"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "dock_7c",
+   "label": "Dock",
+   "box": [
+    271,
+    437,
+    492,
+    577
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "fishing",
+    "frozen_lake"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "wood_fence_7c",
+   "label": "Wood Fence",
+   "box": [
+    519,
+    455,
+    766,
+    568
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "signpost_7c",
+   "label": "Signpost",
+   "box": [
+    789,
+    433,
+    925,
+    579
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "lamp_post_7c",
+   "label": "Lamp Post",
+   "box": [
+    955,
+    425,
+    1051,
+    578
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "arctic_night",
+    "festival",
+    "classic_winter"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "stone_path",
+   "label": "Stone Path",
+   "box": [
+    1089,
+    463,
+    1281,
+    572
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "stepping_stones",
+   "label": "Stepping Stones",
+   "box": [
+    1305,
+    487,
+    1510,
+    558
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "frozen_lake",
+    "snow_forest"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "rock_large_7c",
+   "label": "Large Rock",
+   "box": [
+    23,
+    663,
+    220,
+    790
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "blizzard",
+    "arctic_night",
+    "frozen_lake",
+    "aurora",
+    "glacier_caves"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "rock_small_7c",
+   "label": "Small Rock",
+   "box": [
+    253,
+    696,
+    382,
+    790
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "blizzard",
+    "arctic_night",
+    "frozen_lake",
+    "aurora"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "ice_boulder_7c",
+   "label": "Ice Boulder",
+   "box": [
+    419,
+    666,
+    568,
+    790
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "glacier_caves",
+    "crystal_ice",
+    "frozen_lake",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snow_mound_7c",
+   "label": "Snow Mound",
+   "box": [
+    597,
+    697,
+    796,
+    788
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "blizzard",
+    "arctic_night",
+    "aurora",
+    "frozen_lake",
+    "festival",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "bush_snow_7c",
+   "label": "Bush",
+   "box": [
+    825,
+    688,
+    969,
+    792
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "blizzard",
+    "arctic_night",
+    "aurora",
+    "frozen_lake",
+    "festival",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "pine_tree_7c",
+   "label": "Pine Tree",
+   "box": [
+    1009,
+    621,
+    1167,
+    795
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "blizzard",
+    "arctic_night",
+    "aurora",
+    "frozen_lake",
+    "festival",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "tree_stump_7c",
+   "label": "Tree Stump",
+   "box": [
+    1206,
+    695,
+    1350,
+    787
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "classic_winter"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "log_7c",
+   "label": "Log",
+   "box": [
+    1371,
+    715,
+    1514,
+    790
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "classic_winter"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "frost_grass",
+   "label": "Frost Grass",
+   "box": [
+    23,
+    861,
+    184,
+    965
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "blizzard",
+    "arctic_night",
+    "frozen_lake",
+    "aurora",
+    "crystal_ice"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "icy_plant",
+   "label": "Icy Plant",
+   "box": [
+    227,
+    851,
+    357,
+    965
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "crystal_ice",
+    "aurora",
+    "frozen_lake"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snowy_branch",
+   "label": "Snowy Branch",
+   "box": [
+    405,
+    859,
+    553,
+    967
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "blizzard"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "ice_plant",
+   "label": "Ice Plant",
+   "box": [
+    593,
+    849,
+    728,
+    967
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "crystal_ice",
+    "glacier_caves",
+    "aurora"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snow_flower_7c",
+   "label": "Snow Flower",
+   "box": [
+    785,
+    875,
+    903,
+    967
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "spring_thaw",
+    "candy_snow"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "icicle_plant",
+   "label": "Icicle Plant",
+   "box": [
+    970,
+    848,
+    1108,
+    966
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "crystal_ice",
+    "arctic_night",
+    "aurora"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "berry_bush_snow_7c",
+   "label": "Berry Bush",
+   "box": [
+    1152,
+    870,
+    1341,
+    971
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "candy_snow",
+    "ice_cream"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snow_mushroom_7c",
+   "label": "Snow Mushroom",
+   "box": [
+    1374,
+    870,
+    1487,
+    967
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "candy_snow"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  }
+ ]
+}

@@ -1,0 +1,682 @@
+{
+ "sheet": "Batch07B_DecorationsInteractiveProps.png",
+ "batch": "Batch07B_DecorationsInteractiveProps",
+ "floodTolerance": 4,
+ "items": [
+  {
+   "id": "dock_7b",
+   "label": "Dock",
+   "box": [
+    10,
+    178,
+    195,
+    288
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "fishing",
+    "beach",
+    "frozen_lake"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "boat_7b",
+   "label": "Boat",
+   "box": [
+    217,
+    198,
+    392,
+    288
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "fishing",
+    "beach"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "bridge_7b",
+   "label": "Bridge",
+   "box": [
+    425,
+    186,
+    656,
+    288
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "crate_7b",
+   "label": "Crate",
+   "box": [
+    696,
+    198,
+    838,
+    288
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "barrel_7b",
+   "label": "Barrel",
+   "box": [
+    891,
+    183,
+    988,
+    288
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "signpost_7b",
+   "label": "Signpost",
+   "box": [
+    1042,
+    166,
+    1163,
+    288
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "fence_7b",
+   "label": "Fence",
+   "box": [
+    1194,
+    193,
+    1366,
+    288
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "lamp_post_7b",
+   "label": "Lamp Post",
+   "box": [
+    1417,
+    136,
+    1502,
+    288
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "arctic_night"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "market_stall_7b",
+   "label": "Market Stall",
+   "box": [
+    15,
+    334,
+    192,
+    462
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "bench_7b",
+   "label": "Bench",
+   "box": [
+    217,
+    380,
+    372,
+    446
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "summer"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "table_7b",
+   "label": "Table",
+   "box": [
+    392,
+    370,
+    598,
+    458
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "chair_7b",
+   "label": "Chair",
+   "box": [
+    628,
+    357,
+    706,
+    462
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "umbrella_beach",
+   "label": "Umbrella",
+   "box": [
+    745,
+    330,
+    910,
+    462
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "beach",
+    "summer",
+    "ice_cream"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "campfire_7b",
+   "label": "Campfire",
+   "box": [
+    955,
+    351,
+    1086,
+    465
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "fall",
+    "arctic_night"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "well_7b",
+   "label": "Well",
+   "box": [
+    1360,
+    336,
+    1520,
+    467
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "archway_7b",
+   "label": "Archway",
+   "box": [
+    15,
+    516,
+    178,
+    625
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "direction_sign_7b",
+   "label": "Direction Sign",
+   "box": [
+    219,
+    513,
+    328,
+    630
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "fall",
+    "spring_thaw"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "mailbox_7b",
+   "label": "Mailbox",
+   "box": [
+    405,
+    518,
+    506,
+    630
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "classic_winter"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "birdhouse",
+   "label": "Birdhouse",
+   "box": [
+    567,
+    508,
+    659,
+    628
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "spring_thaw",
+    "classic_winter"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "tree_stump_7b",
+   "label": "Tree Stump",
+   "box": [
+    729,
+    541,
+    857,
+    623
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "log_7b",
+   "label": "Log",
+   "box": [
+    926,
+    555,
+    1108,
+    630
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "log_pile_7b",
+   "label": "Log Pile",
+   "box": [
+    1170,
+    532,
+    1318,
+    630
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "hay_bale",
+   "label": "Hay Bale",
+   "box": [
+    1355,
+    517,
+    1499,
+    630
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "flower_patch_7b",
+   "label": "Flower Patch",
+   "box": [
+    16,
+    683,
+    168,
+    785
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "sunflowers",
+   "label": "Sunflowers",
+   "box": [
+    200,
+    678,
+    353,
+    782
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "summer",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "tulips",
+   "label": "Tulips",
+   "box": [
+    390,
+    687,
+    538,
+    780
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "candy_snow"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "picket_fence",
+   "label": "Picket Fence",
+   "box": [
+    572,
+    690,
+    763,
+    780
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer",
+    "candy_snow"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "gate_7b",
+   "label": "Gate",
+   "box": [
+    788,
+    683,
+    955,
+    782
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "festival",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "stone_wall_7b",
+   "label": "Stone Wall",
+   "box": [
+    982,
+    683,
+    1193,
+    780
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "glacier_caves",
+    "classic_winter",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "pine_tree_7b",
+   "label": "Pine Tree",
+   "box": [
+    25,
+    826,
+    178,
+    975
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "blizzard",
+    "arctic_night",
+    "aurora",
+    "frozen_lake",
+    "festival",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "berry_bush_7b",
+   "label": "Berry Bush",
+   "box": [
+    208,
+    870,
+    357,
+    971
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "candy_snow",
+    "ice_cream"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "hanging_lantern_7b",
+   "label": "Hanging Lantern",
+   "box": [
+    424,
+    838,
+    528,
+    970
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "festival",
+    "arctic_night"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "banner_7b",
+   "label": "Banner",
+   "box": [
+    603,
+    835,
+    705,
+    970
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "festival_banner",
+   "label": "Festival Banner",
+   "box": [
+    751,
+    858,
+    936,
+    962
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "candy_snow"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "snowy_rock_7b",
+   "label": "Snowy Rock",
+   "box": [
+    968,
+    880,
+    1112,
+    966
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "blizzard",
+    "arctic_night",
+    "frozen_lake",
+    "aurora"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "bucket_7b",
+   "label": "Bucket",
+   "box": [
+    1155,
+    862,
+    1262,
+    966
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "fishing_rod_rack",
+   "label": "Fishing Rod Rack",
+   "box": [
+    1305,
+    831,
+    1503,
+    972
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  }
+ ]
+}

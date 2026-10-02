@@ -1,0 +1,807 @@
+{
+ "sheet": "Batch11_TownDecorations.png",
+ "batch": "Batch11_TownDecorations",
+ "floodTolerance": 4,
+ "items": [
+  {
+   "id": "lantern_string",
+   "label": "Lantern String",
+   "box": [
+    18,
+    206,
+    171,
+    309
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "arctic_night"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "bunting_flags",
+   "label": "Bunting Flags",
+   "box": [
+    185,
+    205,
+    346,
+    309
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "candy_snow"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "street_arch",
+   "label": "Street Arch",
+   "box": [
+    354,
+    177,
+    539,
+    309
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "gate_wood_11",
+   "label": "Gate (Wood)",
+   "box": [
+    556,
+    216,
+    715,
+    309
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "gate_stone_11",
+   "label": "Gate (Stone)",
+   "box": [
+    740,
+    195,
+    898,
+    310
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "glacier_caves"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "town_sign",
+   "label": "Town Sign",
+   "box": [
+    930,
+    187,
+    1047,
+    311
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "notice_board_11",
+   "label": "Notice Board",
+   "box": [
+    1083,
+    206,
+    1246,
+    311
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town",
+   "notes": "Visual support for Quests screen."
+  },
+  {
+   "id": "direction_post",
+   "label": "Direction Post",
+   "box": [
+    1273,
+    178,
+    1387,
+    312
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "clock_post",
+   "label": "Clock Post",
+   "box": [
+    1418,
+    144,
+    1509,
+    311
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "shop_stall_red",
+   "label": "Shop Stall (Red)",
+   "box": [
+    20,
+    359,
+    177,
+    474
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "shop_stall_blue",
+   "label": "Shop Stall (Blue)",
+   "box": [
+    198,
+    360,
+    346,
+    473
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "shop_stall_green",
+   "label": "Shop Stall (Green)",
+   "box": [
+    367,
+    360,
+    512,
+    473
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "food_cart",
+   "label": "Food Cart",
+   "box": [
+    536,
+    355,
+    708,
+    474
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "merchant_shelf",
+   "label": "Merchant Shelf",
+   "box": [
+    730,
+    360,
+    891,
+    475
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "fishing_supply",
+   "label": "Fishing Supply",
+   "box": [
+    915,
+    358,
+    1070,
+    475
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "fishing",
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "planter_stall",
+   "label": "Planter Stall",
+   "box": [
+    1092,
+    358,
+    1253,
+    474
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "spring_thaw"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "banner_fish_11",
+   "label": "Banner (Fish)",
+   "box": [
+    1288,
+    351,
+    1367,
+    474
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "banner_plain_11",
+   "label": "Banner (Plain)",
+   "box": [
+    1422,
+    351,
+    1501,
+    475
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "street_bench",
+   "label": "Street Bench",
+   "box": [
+    20,
+    532,
+    177,
+    618
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "trash_can",
+   "label": "Trash Can",
+   "box": [
+    210,
+    528,
+    302,
+    620
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "lantern_table",
+   "label": "Lantern (Table)",
+   "box": [
+    363,
+    509,
+    476,
+    618
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "arctic_night"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "flower_pot",
+   "label": "Flower Pot",
+   "box": [
+    512,
+    524,
+    624,
+    621
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "spring_thaw"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "planter_box",
+   "label": "Planter Box",
+   "box": [
+    651,
+    552,
+    792,
+    620
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "wooden_arch_11",
+   "label": "Wooden Arch",
+   "box": [
+    820,
+    513,
+    968,
+    620
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "spring_thaw"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "vine_fence",
+   "label": "Vine Fence",
+   "box": [
+    1011,
+    535,
+    1180,
+    621
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "gate_fence",
+   "label": "Gate Fence",
+   "box": [
+    1204,
+    543,
+    1339,
+    617
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "stone_fence",
+   "label": "Stone Fence",
+   "box": [
+    1369,
+    534,
+    1516,
+    617
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "festival",
+    "glacier_caves"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "small_house",
+   "label": "Small House",
+   "box": [
+    13,
+    661,
+    174,
+    820
+   ],
+   "category": "Building",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "large_house",
+   "label": "Large House",
+   "box": [
+    176,
+    661,
+    367,
+    820
+   ],
+   "category": "Building",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "shop_house",
+   "label": "Shop House",
+   "box": [
+    375,
+    667,
+    555,
+    820
+   ],
+   "category": "Building",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "tower",
+   "label": "Tower",
+   "box": [
+    577,
+    657,
+    682,
+    820
+   ],
+   "category": "Building",
+   "themes": [
+    "festival",
+    "arctic_night"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "lighthouse",
+   "label": "Lighthouse",
+   "box": [
+    708,
+    655,
+    820,
+    820
+   ],
+   "category": "Building",
+   "themes": [
+    "beach",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "town_well",
+   "label": "Town Well",
+   "box": [
+    845,
+    679,
+    983,
+    819
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "fish_statue",
+   "label": "Fish Statue",
+   "box": [
+    1004,
+    698,
+    1146,
+    820
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "ice_fountain",
+   "label": "Ice Fountain",
+   "box": [
+    1157,
+    691,
+    1319,
+    817
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "crystal_ice"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "town_tree",
+   "label": "Town Tree",
+   "box": [
+    1351,
+    658,
+    1522,
+    819
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "fish_wind_sock",
+   "label": "Fish Wind Sock",
+   "box": [
+    35,
+    857,
+    192,
+    981
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "fishing",
+    "beach",
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "drying_line",
+   "label": "Drying Line",
+   "box": [
+    211,
+    883,
+    367,
+    979
+   ],
+   "category": "TownProp",
+   "themes": [
+    "fishing",
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "crate_stack",
+   "label": "Crate Stack",
+   "box": [
+    392,
+    858,
+    545,
+    979
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "barrel_stack",
+   "label": "Barrel Stack",
+   "box": [
+    580,
+    868,
+    707,
+    979
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "sacks",
+   "label": "Sacks",
+   "box": [
+    734,
+    871,
+    877,
+    982
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "anchor_11",
+   "label": "Anchor",
+   "box": [
+    902,
+    857,
+    1009,
+    980
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "beach",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "fishing_net",
+   "label": "Fishing Net",
+   "box": [
+    1049,
+    872,
+    1198,
+    979
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "fishing",
+    "beach"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "buoy",
+   "label": "Buoy",
+   "box": [
+    1243,
+    856,
+    1333,
+    980
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "fishing",
+    "beach"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "lifering",
+   "label": "Lifering",
+   "box": [
+    1395,
+    872,
+    1495,
+    973
+   ],
+   "category": "FishingProp",
+   "themes": [
+    "fishing",
+    "beach"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town",
+   "holes": [
+    [
+     1445,
+     922
+    ]
+   ],
+   "holeTolerance": 6
+  }
+ ]
+}
