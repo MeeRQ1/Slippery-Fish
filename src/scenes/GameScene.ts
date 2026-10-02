@@ -51,6 +51,7 @@ export class GameScene extends Phaser.Scene {
   private particles: Particle[] = [];
   private flakes: Flake[] = [];
   private followMode = false;
+  private cssPerUnit = 1;
   private textureKeys: string[] = [];
   private squashT = 0;
   private time0 = 0;
@@ -220,7 +221,31 @@ export class GameScene extends Phaser.Scene {
     const cssPerUnit = Math.max(fitCss, CAMERA.minCssPxPerUnit);
     this.followMode = fitCss < CAMERA.minCssPxPerUnit;
     cam.setZoom(cssPerUnit * dpr);
+    this.cssPerUnit = cssPerUnit;
     if (!this.followMode) cam.centerOn(level.arena.width / 2, level.arena.height / 2 - (top / 2) / cssPerUnit);
+    else {
+      const t = this.followTarget(level.player.x, level.player.y);
+      cam.centerOn(t.x, t.y);
+    }
+  }
+
+  /**
+   * Follow-camera target: keeps the penguin centred in the area BELOW the HUD
+   * and clamps to the arena (plus its snowbank) so the playfield never hides
+   * under the HUD or scrolls into empty space.
+   */
+  private followTarget(px: number, py: number): { x: number; y: number } {
+    const { width: W, height: H } = this.session.config.level.arena;
+    const dpr = this.data_.dpr();
+    const cpu = this.cssPerUnit;
+    const viewW = this.scale.width / dpr / cpu, viewH = this.scale.height / dpr / cpu;
+    const hud = CAMERA.hudReserveTop / cpu;
+    const pad = 36;
+    const clamp = (v: number, lo: number, hi: number) => (lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, v)));
+    return {
+      x: clamp(px, -pad + viewW / 2, W + pad - viewW / 2),
+      y: clamp(py - hud / 2, -pad - hud + viewH / 2, H + pad - viewH / 2),
+    };
   }
 
   // ------------------------------------------------------------------ decor
@@ -341,8 +366,9 @@ export class GameScene extends Phaser.Scene {
     this.updateWeather(dt, t);
     if (this.followMode) {
       const cam = this.cameras.main;
-      const cx = cam.midPoint.x + (px - cam.midPoint.x) * Math.min(1, CAMERA.followRate * dt);
-      const cy = cam.midPoint.y + (py - cam.midPoint.y) * Math.min(1, CAMERA.followRate * dt);
+      const t = this.followTarget(px, py);
+      const cx = cam.midPoint.x + (t.x - cam.midPoint.x) * Math.min(1, CAMERA.followRate * dt);
+      const cy = cam.midPoint.y + (t.y - cam.midPoint.y) * Math.min(1, CAMERA.followRate * dt);
       cam.centerOn(cx, cy);
     }
   }

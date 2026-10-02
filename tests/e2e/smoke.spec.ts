@@ -29,11 +29,21 @@ test.describe('with reduced motion', () => {
     const problems = watch(page);
     await boot(page);
     for (const label of ['Adventure Map', 'Daily Challenge', 'Infinite', 'Ranked', 'Choose Your Waddle', 'Hoods', 'Quests', 'Treasure Chests', 'Purchases', 'Watch Ads (Fishing)', 'Settings', 'Profile']) {
-      await expect(page.getByRole('button', { name: label, exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: label, exact: true })).toBeInViewport();
     }
     await expect(page.getByRole('button', { name: 'Open profile' })).toContainText('Waddler');
     expect(problems.failed, 'failed requests').toEqual([]);
     expect(problems.errors, 'console errors').toEqual([]);
+  });
+
+  test('all 12 menu buttons fit on a short landscape phone screen', async ({ page }) => {
+    for (const [w, h] of [[667, 375], [844, 390]] as const) {
+      await page.setViewportSize({ width: w, height: h });
+      await boot(page);
+      for (const label of ['Adventure Map', 'Daily Challenge', 'Infinite', 'Ranked', 'Choose Your Waddle', 'Hoods', 'Quests', 'Treasure Chests', 'Purchases', 'Watch Ads (Fishing)', 'Settings', 'Profile']) {
+        await expect(page.getByRole('button', { name: label, exact: true }), `${label} @ ${w}x${h}`).toBeInViewport({ ratio: 0.9 });
+      }
+    }
   });
 
   test('plays Adventure level 1 with the full HUD, pauses and leaves', async ({ page }) => {
@@ -52,6 +62,15 @@ test.describe('with reduced motion', () => {
     await page.keyboard.up('ShiftLeft');
     await page.keyboard.up('KeyD');
     await expect(page.locator('.hud-timer .hud-num').nth(1)).not.toHaveText('00:00.000');
+    // Switching tabs auto-pauses.
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+    });
+    await expect(page.getByRole('dialog', { name: 'Paused' })).toBeVisible();
+    await page.getByRole('button', { name: 'RESUME' }).click();
+    await expect(page.getByRole('dialog', { name: 'Paused' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Pause' }).click();
     await expect(page.getByRole('dialog', { name: 'Paused' })).toBeVisible();
     await page.getByRole('button', { name: 'LEAVE' }).click();
@@ -139,4 +158,39 @@ test('full-motion sign drop settles and closes', async ({ page }) => {
   await page.getByRole('button', { name: 'Close' }).click({ force: true });
   await expect(dialog).toHaveCount(0, { timeout: 20_000 });
   expect(problems.errors).toEqual([]);
+});
+
+test.describe('touch', () => {
+  test.use({ contextOptions: { reducedMotion: 'reduce' } });
+
+  test('virtual joystick and held sprint work simultaneously (two thumbs)', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'touch-only');
+    await boot(page);
+    await page.getByRole('button', { name: 'Adventure Map', exact: true }).click();
+    await page.getByRole('listitem', { name: /^Level 1,/ }).click();
+    await expect(page.locator('.touch-controls')).toBeVisible({ timeout: 30_000 });
+    const joy = (await page.locator('.joy-zone').boundingBox())!;
+    const sprint = (await page.locator('.sprint-btn').boundingBox())!;
+    const jx = joy.x + joy.width * 0.4, jy = joy.y + joy.height * 0.6;
+    const sx = sprint.x + sprint.width / 2, sy = sprint.y + sprint.height / 2;
+    const cdp = await page.context().newCDPSession(page);
+    const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', points: Array<{ x: number; y: number; id: number }>) =>
+      cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points.map((p) => ({ x: p.x, y: p.y, id: p.id, radiusX: 4, radiusY: 4, force: 1 })) });
+    const stamina = page.getByRole('meter', { name: 'Stamina' });
+    const before = Number(await stamina.getAttribute('aria-valuenow') ?? '100');
+    // Thumb 1 on the joystick, drag right; thumb 2 holds SPRINT at the same time.
+    await touch('touchStart', [{ x: jx, y: jy, id: 1 }]);
+    await touch('touchMove', [{ x: jx + 50, y: jy, id: 1 }]);
+    await touch('touchStart', [{ x: jx + 50, y: jy, id: 1 }, { x: sx, y: sy, id: 2 }]);
+    await expect(page.locator('.stamina')).toHaveClass(/is-sprinting/, { timeout: 10_000 });
+    for (let i = 0; i < 10; i++) {
+      await touch('touchMove', [{ x: jx + 50, y: jy + (i % 2), id: 1 }, { x: sx, y: sy, id: 2 }]);
+      await page.waitForTimeout(150);
+    }
+    const during = Number(await stamina.getAttribute('aria-valuenow') ?? '100');
+    expect(during).toBeLessThan(before);
+    await touch('touchEnd', []);
+    await expect(page.locator('.stamina')).not.toHaveClass(/is-sprinting/, { timeout: 10_000 });
+    await expect(page.locator('.hud-timer .hud-num').nth(1)).not.toHaveText('00:00.000');
+  });
 });

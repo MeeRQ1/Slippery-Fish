@@ -6,7 +6,7 @@ import { HOODS, RARITIES, gameplayModifiers } from '../../src/progression/hoods'
 import { periodKeys, QuestService, TUTORIAL_QUESTS } from '../../src/quests/quests';
 import { defaultSave, sanitizeSave } from '../../src/save/schema';
 import { SaveManager } from '../../src/save/saveManager';
-import { MemoryBackend } from '../../src/save/storage';
+import { MemoryBackend, openBestBackend } from '../../src/save/storage';
 import { validateUsername } from '../../src/profile/username';
 import { bestOfThree, percentageDifference } from '../../src/services/ranked';
 import { NORMALIZED_MODIFIERS } from '../../src/gameplay/modifiers';
@@ -137,6 +137,14 @@ describe('Save data', () => {
     expect(b.data.profile.username).toBe('Pebble');
     expect(b.data.wallet.shards).toBe(77);
     await expect(b.importJson('{"hello":1}')).rejects.toThrow('not a Slippery Fish save');
+  });
+
+  it('falls back to in-memory storage when the browser offers none', async () => {
+    const backend = await openBestBackend();
+    expect(backend.kind).toBe('memory'); // Node has neither IndexedDB nor localStorage
+    const s = new SaveManager();
+    await s.load(backend);
+    expect(s.storageKind).toBe('memory');
   });
 
   it('erasing the local save restores defaults', async () => {

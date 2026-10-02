@@ -40,11 +40,17 @@
   .menu-btn.small { width: calc(50% - 8px); max-width: 210px; }
 }
 @media (max-height: 520px) and (orientation: landscape) {
-  .menu-screen { grid-template-columns: 1fr 1fr 1fr 1fr; grid-template-areas: "top top top top" "logo logo logo logo" "modes modes custom custom" "extras extras extras extras" "foot foot foot foot"; }
-  .menu-col { flex-direction: row; flex-wrap: wrap; }
-  .menu-col .menu-btn.big { width: calc(50% - 4px); }
-  .menu-logo .sprite { max-width: 30vw; }
-  .menu-btn.small { width: calc(25% - 10px); }
+  /* Short landscape phones: logo shares the top row, 4 columns × 3 rows of buttons, footer floats. */
+  .menu-screen { grid-template-columns: 1fr 1fr 1fr 1fr; grid-template-rows: auto auto auto; grid-template-areas: "top top top top" "modes modes custom custom" "extras extras extras extras"; align-content: start; gap: 2px 10px; overflow-y: auto; }
+  .menu-logo { grid-area: top; justify-self: center; align-self: start; margin-top: -6px; pointer-events: none; }
+  .menu-logo .sprite { width: auto !important; height: clamp(54px, 21vh, 96px) !important; max-width: 24vw; }
+  .menu-top .currency-bar { gap: 6px; flex-wrap: nowrap; }
+  .menu-top .cur-pill { font-size: 0.82em; min-width: 0; padding-right: 0.7em; }
+  .menu-top .identity-plaque { font-size: 0.95em; }
+  .menu-col { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  .menu-col .menu-btn.big { width: min(calc(50% - 4px), 46vh); }
+  .menu-btn.small { width: min(calc(25% - 10px), 46vh); }
+  .menu-foot { position: absolute; left: calc(8px + var(--safe-left)); right: calc(8px + var(--safe-right)); bottom: calc(4px + var(--safe-bottom)); font-size: 0.72em; pointer-events: none; }
 }
 
 /* ------------------------------------------------------------------ identity + currency */
