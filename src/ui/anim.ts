@@ -66,7 +66,7 @@ class Ticker {
   }
   private loop = (now: number): void => {
     // Sub-step for stability with stiff springs at low frame rates.
-    let dt = Math.min(0.05, (now - this.last) / 1000);
+    let dt = Math.min(0.1, (now - this.last) / 1000);
     this.last = now;
     const sub = Math.max(1, Math.ceil(dt / (1 / 120)));
     dt /= sub;

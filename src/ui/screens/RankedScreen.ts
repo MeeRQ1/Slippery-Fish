@@ -6,7 +6,6 @@
  */
 import { randomSeed } from '../../levels/infinite';
 import { practiceDriver } from '../../progression/drivers';
-import { RankedAdapter } from '../../services/ranked';
 import { CurrencyBar } from '../components/currency';
 import { woodButton } from '../components/buttons';
 import { h, sprite } from '../dom';
@@ -22,7 +21,7 @@ export class RankedScreen extends Screen {
     this.el.className = 'screen mode-screen ranked-screen';
     const bar = new CurrencyBar(this.app.wallet);
     this.d.add(() => bar.destroy());
-    const status = new RankedAdapter().status();
+    const status = this.app.ranked.status();
     const live = status.state === 'ready';
     const findBtn = woodButton('FIND MATCH', {
       variant: 'red', size: 'big', disabled: !live,

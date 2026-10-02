@@ -28,10 +28,16 @@ export interface QuestDef {
   reward: Reward;
   /** Teaching quests point at what they teach. */
   teaches?: string;
+  /** Progress display conversion (e.g. world units → metres). */
+  display?: { div: number; suffix: string };
 }
 
+/** World units per displayed metre (one penguin is ~48 units across). */
+export const UNITS_PER_METRE = 48;
+const METRES = { div: UNITS_PER_METRE, suffix: ' m' };
+
 export const TUTORIAL_QUESTS: QuestDef[] = [
-  { id: 't_move', category: 'tutorial', title: 'Waddle 400 units', metric: 'distanceWaddled', target: 400, reward: { icicles: 50 }, teaches: 'movement' },
+  { id: 't_move', category: 'tutorial', title: 'Waddle 50 m', metric: 'distanceWaddled', target: 50 * UNITS_PER_METRE, reward: { icicles: 50 }, teaches: 'movement', display: METRES },
   { id: 't_sprint', category: 'tutorial', title: 'Sprint for 3 seconds', metric: 'sprintSeconds', target: 3, reward: { icicles: 50 }, teaches: 'sprint' },
   { id: 't_stamina', category: 'tutorial', title: 'Run out of stamina once', metric: 'staminaEmpty', target: 1, reward: { icicles: 50 }, teaches: 'stamina' },
   { id: 't_dribble', category: 'tutorial', title: 'Bump fish 15 times', metric: 'fishTouches', target: 15, reward: { icicles: 60 }, teaches: 'dribbling' },
@@ -49,7 +55,7 @@ const DAILY_POOL: QuestDef[] = [
   { id: 'd_stars8', category: 'daily', title: 'Earn 8 Excellence Stars', metric: 'starsEarned', target: 8, reward: { icicles: 130, shards: 8 } },
   { id: 'd_daily2', category: 'daily', title: 'Clear 2 Daily Challenge levels', metric: 'dailyLevels', target: 2, reward: { icicles: 120, shards: 8 } },
   { id: 'd_inf3', category: 'daily', title: 'Clear 3 Infinite levels', metric: 'infiniteLevels', target: 3, reward: { icicles: 120, shards: 8 } },
-  { id: 'd_waddle3k', category: 'daily', title: 'Waddle 3,000 units', metric: 'distanceWaddled', target: 3000, reward: { icicles: 90, shards: 5 } },
+  { id: 'd_waddle1k', category: 'daily', title: 'Waddle 1,000 m', metric: 'distanceWaddled', target: 1000 * UNITS_PER_METRE, reward: { icicles: 90, shards: 5 }, display: METRES },
   { id: 'd_noloss2', category: 'daily', title: 'Clear 2 levels without losing a fish', metric: 'noLossLevels', target: 2, reward: { icicles: 130, shards: 8 } },
 ];
 

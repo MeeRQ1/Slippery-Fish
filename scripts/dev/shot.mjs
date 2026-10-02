@@ -13,6 +13,7 @@ await page.waitForTimeout(3500);
 for (const a of actions.split(';').filter(Boolean)) {
   const [kind, arg, arg2] = a.split('|');
   if (kind === 'click') await page.click(arg, { timeout: 5000 }).catch((e) => logs.push('click fail ' + arg + ' ' + e.message));
+  if (kind === 'fclick') await page.click(arg, { timeout: 5000, force: true }).catch((e) => logs.push('click fail ' + arg + ' ' + e.message));
   if (kind === 'wait') await page.waitForTimeout(Number(arg));
   if (kind === 'key') await page.keyboard.down(arg), await page.waitForTimeout(Number(arg2 ?? 500)), await page.keyboard.up(arg);
   if (kind === 'shot') await page.screenshot({ path: arg });

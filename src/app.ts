@@ -16,6 +16,11 @@ import { ticker } from './ui/anim';
 import { Wallet } from './economy/wallet';
 import { QuestService } from './quests/quests';
 import { createAdService, type AdService } from './services/ads';
+import { GuestAuthService, LocalOnlyCloudSave, type AuthService, type CloudSaveService } from './services/account';
+import { DisabledPaymentService, type PaymentService } from './services/payments';
+import { PrivacyManager } from './services/privacy';
+import { RankedAdapter, type RankedService } from './services/ranked';
+import { RemoteConfig } from './services/remoteConfig';
 import type { DriverServices } from './progression/drivers';
 import { Router } from './ui/router';
 
@@ -27,6 +32,12 @@ export class App {
   readonly wallet: Wallet;
   readonly quests: QuestService;
   readonly ads: AdService = createAdService();
+  readonly auth: AuthService = new GuestAuthService();
+  readonly cloudSave: CloudSaveService = new LocalOnlyCloudSave();
+  readonly payments: PaymentService = new DisabledPaymentService();
+  readonly ranked: RankedService = new RankedAdapter();
+  readonly remoteConfig = new RemoteConfig();
+  readonly privacy: PrivacyManager;
   readonly router: Router;
   game!: Phaser.Game;
   readonly uiRoot: HTMLElement;
@@ -38,6 +49,7 @@ export class App {
     this.audio = new AudioManager(this.settings.get());
     this.wallet = new Wallet(this.save);
     this.quests = new QuestService(this.save, this.wallet);
+    this.privacy = new PrivacyManager(this.save);
     this.router = new Router(this);
     const ui = document.getElementById('ui');
     if (!ui) throw new Error('#ui root missing');

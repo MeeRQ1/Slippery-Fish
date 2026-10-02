@@ -1,0 +1,12 @@
+import { chromium } from '@playwright/test';
+const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const page = await browser.newPage({ viewport: { width: Number(process.argv[3] ?? 1280), height: Number(process.argv[4] ?? 800) } });
+await page.goto(process.argv[2] ?? 'http://localhost:5173/');
+await page.waitForTimeout(4000);
+const measure = () => page.evaluate(() => new Promise((r) => { let n = 0; const t0 = performance.now(); const f = () => { n++; if (performance.now() - t0 < 2000) requestAnimationFrame(f); else r(n / 2); }; requestAnimationFrame(f); }));
+console.log('fps full', await measure());
+await page.evaluate(() => { document.getElementById('ui').style.display = 'none'; });
+console.log('fps canvas only', await measure());
+await page.evaluate(() => { document.getElementById('ui').style.display = ''; document.getElementById('game').style.display = 'none'; window.__sf?.game?.loop?.sleep?.(); });
+console.log('fps dom only', await measure());
+await browser.close();
