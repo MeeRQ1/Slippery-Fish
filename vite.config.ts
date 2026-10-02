@@ -10,7 +10,15 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
  *  - GitHub Actions sets it from actions/configure-pages (e.g. '/Slippery-Fish/').
  * All runtime asset URLs go through import.meta.env.BASE_URL, so either works.
  */
-const base = process.env.BASE_PATH && process.env.BASE_PATH.length > 0 ? process.env.BASE_PATH : './';
+function resolveBase(raw: string | undefined): string {
+  if (raw === undefined) return './';
+  const trimmed = raw.trim();
+  // configure-pages reports "" for a root site (user site or custom domain).
+  if (trimmed === '' || trimmed === '/') return '/';
+  if (trimmed === './') return './';
+  return `/${trimmed.replace(/^\/+|\/+$/g, '')}/`;
+}
+const base = resolveBase(process.env.BASE_PATH);
 
 export default defineConfig({
   base,

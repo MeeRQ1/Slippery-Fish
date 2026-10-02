@@ -44,6 +44,16 @@ async function start(): Promise<void> {
   loader?.classList.add('gone');
   setTimeout(() => loader?.remove(), 600);
 
+  // Hash edits / same-page links (#/daily …) switch screens too — never out
+  // of gameplay (leaving a level always goes through its own pause/leave UI).
+  window.addEventListener('hashchange', () => {
+    const target = location.hash.replace(/^#\/?/, '');
+    const current = app.router.currentId;
+    if (current === 'play' || app.router.busy) return;
+    const next = SAFE_DEEP_LINKS.includes(target) ? target : target === '' ? 'menu' : null;
+    if (next && next !== current) void app.router.go(next);
+  });
+
   // Persist important state before the page goes away.
   window.addEventListener('pagehide', () => void app.save.flush());
   document.addEventListener('visibilitychange', () => {
