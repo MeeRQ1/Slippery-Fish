@@ -1,0 +1,242 @@
+{
+ "sheet": "Reference_PenguinCosmeticOutfits.webp",
+ "batch": "Reference_PenguinOutfits",
+ "floodTolerance": 6,
+ "items": [
+  {
+   "id": "waddle_aviator",
+   "label": "Aviator Penguin",
+   "box": [
+    55,
+    0,
+    358,
+    300
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "waddles",
+   "scale": 0.5,
+   "notes": "Signature Waddle (outfit penguin) for Choose Your Waddle.",
+   "localFlood": true,
+   "tolerance": 6,
+   "seedEdges": [
+    "bottom",
+    "left",
+    "right"
+   ]
+  },
+  {
+   "id": "waddle_tycoon",
+   "label": "Tycoon Penguin",
+   "box": [
+    358,
+    0,
+    650,
+    300
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "waddles",
+   "scale": 0.5,
+   "notes": "Signature Waddle (outfit penguin) for Choose Your Waddle.",
+   "localFlood": true,
+   "tolerance": 6,
+   "seedEdges": [
+    "bottom",
+    "left",
+    "right"
+   ]
+  },
+  {
+   "id": "waddle_lovebug",
+   "label": "Lovebug Penguin",
+   "box": [
+    650,
+    0,
+    964,
+    300
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "waddles",
+   "scale": 0.5,
+   "notes": "Signature Waddle (outfit penguin) for Choose Your Waddle.",
+   "localFlood": true,
+   "tolerance": 6,
+   "seedEdges": [
+    "bottom",
+    "left",
+    "right"
+   ]
+  },
+  {
+   "id": "waddle_scrunchie",
+   "label": "Scrunchie Penguin",
+   "box": [
+    966,
+    0,
+    1270,
+    300
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "waddles",
+   "scale": 0.5,
+   "notes": "Signature Waddle (outfit penguin) for Choose Your Waddle.",
+   "localFlood": true,
+   "tolerance": 6,
+   "seedEdges": [
+    "bottom",
+    "left",
+    "right"
+   ]
+  },
+  {
+   "id": "waddle_zappy",
+   "label": "Zappy Penguin",
+   "box": [
+    1270,
+    0,
+    1572,
+    300
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "waddles",
+   "scale": 0.5,
+   "notes": "Signature Waddle (outfit penguin) for Choose Your Waddle.",
+   "localFlood": true,
+   "tolerance": 6,
+   "seedEdges": [
+    "bottom",
+    "left",
+    "right"
+   ]
+  },
+  {
+   "id": "waddle_cozy",
+   "label": "Cozy Penguin",
+   "box": [
+    60,
+    343,
+    342,
+    652
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "waddles",
+   "scale": 0.5,
+   "notes": "Signature Waddle (outfit penguin) for Choose Your Waddle.",
+   "localFlood": true,
+   "tolerance": 6
+  },
+  {
+   "id": "waddle_angler",
+   "label": "Angler Penguin",
+   "box": [
+    348,
+    352,
+    657,
+    652
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "waddles",
+   "scale": 0.5,
+   "notes": "Signature Waddle (outfit penguin) for Choose Your Waddle.",
+   "localFlood": true,
+   "tolerance": 6
+  },
+  {
+   "id": "waddle_gamer",
+   "label": "Gamer Penguin",
+   "box": [
+    662,
+    362,
+    958,
+    652
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "waddles",
+   "scale": 0.5,
+   "notes": "Signature Waddle (outfit penguin) for Choose Your Waddle.",
+   "localFlood": true,
+   "tolerance": 6
+  },
+  {
+   "id": "waddle_scrappy",
+   "label": "Scrappy Penguin",
+   "box": [
+    960,
+    362,
+    1262,
+    652
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "waddles",
+   "scale": 0.5,
+   "notes": "Signature Waddle (outfit penguin) for Choose Your Waddle.",
+   "localFlood": true,
+   "tolerance": 6
+  },
+  {
+   "id": "waddle_sleepy",
+   "label": "Sleepy Penguin",
+   "box": [
+    1272,
+    348,
+    1572,
+    662
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "waddles",
+   "scale": 0.5,
+   "notes": "Signature Waddle (outfit penguin) for Choose Your Waddle.",
+   "localFlood": true,
+   "tolerance": 6
+  }
+ ]
+}

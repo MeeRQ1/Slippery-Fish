@@ -1,0 +1,562 @@
+{
+ "sheet": "Batch07A_EnvironmentTilesProps.png",
+ "batch": "Batch07A_EnvironmentTilesProps",
+ "floodTolerance": 4,
+ "items": [
+  {
+   "id": "tex_dirt",
+   "label": "Dirt Tile (texture)",
+   "box": [
+    372,
+    200,
+    516,
+    268
+   ],
+   "category": "Floor",
+   "themes": [
+    "fall"
+   ],
+   "role": "floor",
+   "collision": "background",
+   "mode": "texture",
+   "inset": 8
+  },
+  {
+   "id": "tex_stone",
+   "label": "Stone Tile (texture)",
+   "box": [
+    705,
+    190,
+    840,
+    268
+   ],
+   "category": "Floor",
+   "themes": [
+    "glacier_caves",
+    "mastery"
+   ],
+   "role": "floor",
+   "collision": "background",
+   "mode": "texture",
+   "inset": 8
+  },
+  {
+   "id": "tree_green",
+   "label": "Tree (Green)",
+   "box": [
+    25,
+    488,
+    178,
+    644
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "tree_autumn",
+   "label": "Tree (Autumn)",
+   "box": [
+    196,
+    487,
+    350,
+    644
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "pine_snow_7a",
+   "label": "Pine Tree (Snow)",
+   "box": [
+    372,
+    494,
+    514,
+    644
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "blizzard",
+    "arctic_night",
+    "aurora",
+    "frozen_lake",
+    "festival",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "tree_cherry",
+   "label": "Cherry Tree",
+   "box": [
+    532,
+    487,
+    698,
+    644
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "candy_snow",
+    "ice_cream"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "bush_flowers",
+   "label": "Bush (Flowers)",
+   "box": [
+    710,
+    560,
+    840,
+    644
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "plant_sprout",
+   "label": "Plant",
+   "box": [
+    862,
+    566,
+    940,
+    644
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "rock_formation",
+   "label": "Rock Formation",
+   "box": [
+    962,
+    538,
+    1153,
+    644
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "glacier_caves",
+    "mastery",
+    "fall",
+    "summer"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "rock_snowy_7a",
+   "label": "Snowy Rock",
+   "box": [
+    1172,
+    547,
+    1371,
+    644
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "blizzard",
+    "arctic_night",
+    "frozen_lake",
+    "aurora"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "ice_rock_7a",
+   "label": "Ice Rock",
+   "box": [
+    1376,
+    555,
+    1517,
+    644
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "glacier_caves",
+    "crystal_ice",
+    "frozen_lake",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "lily_pad",
+   "label": "Lily Pad",
+   "box": [
+    18,
+    722,
+    160,
+    796
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "lily_pad_flower",
+   "label": "Lily Pad (Flower)",
+   "box": [
+    174,
+    718,
+    300,
+    800
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "reeds",
+   "label": "Reeds",
+   "box": [
+    320,
+    693,
+    417,
+    806
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer",
+    "beach"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "cattails",
+   "label": "Cattails",
+   "box": [
+    443,
+    688,
+    547,
+    806
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "seaweed_short",
+   "label": "Seaweed (Short)",
+   "box": [
+    588,
+    692,
+    712,
+    806
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "beach"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "seaweed_tall",
+   "label": "Seaweed (Tall)",
+   "box": [
+    748,
+    680,
+    853,
+    806
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "beach"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "coral_pink",
+   "label": "Coral (Pink)",
+   "box": [
+    894,
+    710,
+    1010,
+    806
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "beach",
+    "candy_snow"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "coral_red",
+   "label": "Coral (Red)",
+   "box": [
+    1043,
+    706,
+    1165,
+    806
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "beach"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "coral_purple",
+   "label": "Coral (Purple)",
+   "box": [
+    1201,
+    703,
+    1340,
+    806
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "beach",
+    "ice_cream"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "coral_yellow",
+   "label": "Coral (Yellow)",
+   "box": [
+    1376,
+    703,
+    1500,
+    806
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "beach",
+    "summer"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "signpost_fish_7a",
+   "label": "Signpost (Fish)",
+   "box": [
+    30,
+    859,
+    124,
+    962
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "spring_thaw"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "fence_wood_7a",
+   "label": "Wooden Fence",
+   "box": [
+    136,
+    881,
+    330,
+    958
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "spring_thaw",
+    "summer",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "lantern_post_7a",
+   "label": "Lantern Post",
+   "box": [
+    344,
+    854,
+    435,
+    962
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "arctic_night",
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "barrel_7a",
+   "label": "Barrel",
+   "box": [
+    470,
+    871,
+    556,
+    966
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "crate_7a",
+   "label": "Crate",
+   "box": [
+    596,
+    880,
+    698,
+    966
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "chest_tuna_trunk",
+   "label": "Treasure Chest (Tuna Trunk art)",
+   "box": [
+    721,
+    874,
+    832,
+    966
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui",
+   "notes": "Treasure-chest screen art for the Tuna Trunk tier."
+  },
+  {
+   "id": "anchor_7a",
+   "label": "Anchor",
+   "box": [
+    871,
+    870,
+    968,
+    966
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "beach",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "shipwreck",
+   "label": "Shipwreck",
+   "box": [
+    995,
+    842,
+    1322,
+    975
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "beach"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  },
+  {
+   "id": "ruins_arch",
+   "label": "Ruins",
+   "box": [
+    1347,
+    855,
+    1517,
+    970
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "glacier_caves",
+    "mastery",
+    "spring_thaw"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-nature"
+  }
+ ]
+}

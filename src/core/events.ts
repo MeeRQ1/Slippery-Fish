@@ -1,0 +1,42 @@
+/**
+ * Tiny strongly-typed event emitter. Every `on` returns an unsubscribe
+ * function so owners can register it with a Disposer and never leak listeners
+ * across screen/scene changes.
+ */
+export type Listener<T> = (payload: T) => void;
+
+export class Emitter<Events extends object> {
+  private listeners = new Map<keyof Events, Set<Listener<never>>>();
+
+  on<K extends keyof Events>(event: K, fn: Listener<Events[K]>): () => void {
+    let set = this.listeners.get(event);
+    if (!set) {
+      set = new Set();
+      this.listeners.set(event, set);
+    }
+    set.add(fn as Listener<never>);
+    return () => this.off(event, fn);
+  }
+
+  once<K extends keyof Events>(event: K, fn: Listener<Events[K]>): () => void {
+    const off = this.on(event, (p) => {
+      off();
+      fn(p);
+    });
+    return off;
+  }
+
+  off<K extends keyof Events>(event: K, fn: Listener<Events[K]>): void {
+    this.listeners.get(event)?.delete(fn as Listener<never>);
+  }
+
+  emit<K extends keyof Events>(event: K, payload: Events[K]): void {
+    const set = this.listeners.get(event);
+    if (!set) return;
+    for (const fn of [...set]) (fn as Listener<Events[K]>)(payload);
+  }
+
+  clear(): void {
+    this.listeners.clear();
+  }
+}

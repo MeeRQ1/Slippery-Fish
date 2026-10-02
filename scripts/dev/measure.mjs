@@ -1,0 +1,27 @@
+// Measures first-load transfer and representative frame pacing on the production build.
+import { chromium } from '@playwright/test';
+const base = process.argv[2] ?? 'http://localhost:4174/Slippery-Fish/';
+const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+let bytes = 0; const byType = {};
+page.on('response', async (r) => { try { const b = (await r.body()).length; bytes += b; const t = (r.headers()['content-type'] ?? '?').split(';')[0]; byType[t] = (byType[t] ?? 0) + b; } catch {} });
+const t0 = Date.now();
+await page.goto(base);
+await page.locator('#boot-loader').waitFor({ state: 'detached', timeout: 60000 });
+const bootMs = Date.now() - t0;
+await page.waitForTimeout(1500);
+console.log('boot→menu ms', bootMs, 'first-load bytes', (bytes / 1024).toFixed(0), 'KB');
+console.log(Object.fromEntries(Object.entries(byType).map(([k, v]) => [k, `${(v / 1024).toFixed(0)} KB`])));
+const pace = () => page.evaluate(() => new Promise((res) => { const d = []; let last = performance.now(); const t0 = last; const f = (now) => { d.push(now - last); last = now; if (now - t0 < 3000) requestAnimationFrame(f); else { d.sort((a, b) => a - b); res({ fps: (d.length / 3).toFixed(1), p50: d[Math.floor(d.length / 2)].toFixed(1), p95: d[Math.floor(d.length * 0.95)].toFixed(1) }); } }; requestAnimationFrame(f); }));
+console.log('menu pacing', JSON.stringify(await pace()));
+await page.getByRole('button', { name: 'Adventure Map', exact: true }).click();
+await page.waitForTimeout(2500);
+await page.getByRole('listitem', { name: /^Level 120,|^Level 1,/ }).first().click();
+await page.locator('.hud').waitFor({ timeout: 30000 });
+await page.waitForTimeout(1500);
+await page.keyboard.down('KeyD');
+console.log('gameplay pacing', JSON.stringify(await pace()));
+await page.keyboard.up('KeyD');
+const heap = await page.evaluate(() => (performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null));
+console.log('JS heap MB', heap);
+await browser.close();

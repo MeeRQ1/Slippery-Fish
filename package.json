@@ -1,0 +1,35 @@
+{
+  "name": "slippery-fish",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Slippery Fish — a cute, comedic, top-down 2D physics browser game about dribbling fish into a stash.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "npm run validate:content && vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "preview:subpath": "node scripts/serve-subpath.mjs",
+    "test:e2e": "playwright test",
+    "validate:content": "node scripts/validate-content.mjs",
+    "extract:assets": "python3 scripts/extract_assets.py",
+    "check": "npm run typecheck && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@fontsource/fredoka": "5.3.0",
+    "@fontsource/luckiest-guy": "5.3.0",
+    "phaser": "4.2.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/node": "24.19.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.2",
+    "vitest": "5.0.3"
+  }
+}

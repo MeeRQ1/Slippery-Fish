@@ -1,0 +1,1039 @@
+{
+ "sheet": "Batch06_MainMenuButtons.png",
+ "batch": "Batch06_MainMenuButtons",
+ "floodTolerance": 4,
+ "items": [
+  {
+   "id": "btn_main_adventure",
+   "label": "Adventure Map Button",
+   "box": [
+    15,
+    220,
+    360,
+    372
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_daily",
+   "label": "Daily Challenge Button",
+   "box": [
+    404,
+    213,
+    735,
+    369
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_infinite",
+   "label": "Infinite Button",
+   "box": [
+    788,
+    220,
+    1134,
+    366
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_ranked",
+   "label": "Ranked Button",
+   "box": [
+    1173,
+    213,
+    1514,
+    370
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_waddle",
+   "label": "Choose Your Waddle Button",
+   "box": [
+    15,
+    455,
+    357,
+    613
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_hoods",
+   "label": "Hoods Button",
+   "box": [
+    401,
+    467,
+    736,
+    613
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_quests",
+   "label": "Quests Button",
+   "box": [
+    788,
+    463,
+    1129,
+    618
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_treasure",
+   "label": "Treasure Chest Button",
+   "box": [
+    1172,
+    467,
+    1517,
+    618
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_purchases",
+   "label": "Purchases Button",
+   "box": [
+    20,
+    723,
+    373,
+    875
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_watch_ads",
+   "label": "Watch Ads Button",
+   "box": [
+    402,
+    712,
+    744,
+    874
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_settings",
+   "label": "Settings Button",
+   "box": [
+    786,
+    715,
+    1129,
+    869
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btn_main_profile",
+   "label": "Profile Button",
+   "box": [
+    1165,
+    724,
+    1513,
+    871
+   ],
+   "category": "MainMenuOnly",
+   "themes": [
+    "menu"
+   ],
+   "role": "menu",
+   "collision": "ui",
+   "atlas": "menu",
+   "notes": "Batch 6 main navigation button (baked label)."
+  },
+  {
+   "id": "btnicon_adventure_normal",
+   "label": "adventure icon (normal)",
+   "box": [
+    24,
+    383,
+    100,
+    441
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_adventure_hover",
+   "label": "adventure icon (hover)",
+   "box": [
+    114,
+    383,
+    188,
+    440
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_adventure_pressed",
+   "label": "adventure icon (pressed)",
+   "box": [
+    202,
+    383,
+    278,
+    441
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_adventure_disabled",
+   "label": "adventure icon (disabled)",
+   "box": [
+    291,
+    385,
+    362,
+    440
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_daily_normal",
+   "label": "daily icon (normal)",
+   "box": [
+    421,
+    374,
+    471,
+    451
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_daily_hover",
+   "label": "daily icon (hover)",
+   "box": [
+    506,
+    374,
+    559,
+    451
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_daily_pressed",
+   "label": "daily icon (pressed)",
+   "box": [
+    592,
+    371,
+    648,
+    452
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_daily_disabled",
+   "label": "daily icon (disabled)",
+   "box": [
+    681,
+    371,
+    733,
+    451
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_infinite_normal",
+   "label": "infinite icon (normal)",
+   "box": [
+    789,
+    383,
+    865,
+    433
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_infinite_hover",
+   "label": "infinite icon (hover)",
+   "box": [
+    872,
+    377,
+    961,
+    442
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_infinite_pressed",
+   "label": "infinite icon (pressed)",
+   "box": [
+    967,
+    382,
+    1045,
+    433
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_infinite_disabled",
+   "label": "infinite icon (disabled)",
+   "box": [
+    1058,
+    384,
+    1134,
+    433
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_ranked_normal",
+   "label": "ranked icon (normal)",
+   "box": [
+    1167,
+    386,
+    1252,
+    435
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_ranked_hover",
+   "label": "ranked icon (hover)",
+   "box": [
+    1259,
+    387,
+    1342,
+    435
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_ranked_pressed",
+   "label": "ranked icon (pressed)",
+   "box": [
+    1347,
+    386,
+    1431,
+    435
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_ranked_disabled",
+   "label": "ranked icon (disabled)",
+   "box": [
+    1438,
+    387,
+    1520,
+    434
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_waddle_normal",
+   "label": "waddle icon (normal)",
+   "box": [
+    22,
+    623,
+    101,
+    699
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_waddle_hover",
+   "label": "waddle icon (hover)",
+   "box": [
+    112,
+    626,
+    190,
+    701
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_waddle_pressed",
+   "label": "waddle icon (pressed)",
+   "box": [
+    201,
+    625,
+    278,
+    699
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_waddle_disabled",
+   "label": "waddle icon (disabled)",
+   "box": [
+    289,
+    626,
+    363,
+    698
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_hoods_normal",
+   "label": "hoods icon (normal)",
+   "box": [
+    409,
+    625,
+    477,
+    698
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_hoods_hover",
+   "label": "hoods icon (hover)",
+   "box": [
+    499,
+    626,
+    565,
+    697
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_hoods_pressed",
+   "label": "hoods icon (pressed)",
+   "box": [
+    588,
+    626,
+    654,
+    698
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_hoods_disabled",
+   "label": "hoods icon (disabled)",
+   "box": [
+    678,
+    626,
+    743,
+    697
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_quests_normal",
+   "label": "quests icon (normal)",
+   "box": [
+    805,
+    628,
+    864,
+    699
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_quests_hover",
+   "label": "quests icon (hover)",
+   "box": [
+    893,
+    629,
+    953,
+    699
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_quests_pressed",
+   "label": "quests icon (pressed)",
+   "box": [
+    981,
+    628,
+    1040,
+    698
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_quests_disabled",
+   "label": "quests icon (disabled)",
+   "box": [
+    1069,
+    629,
+    1128,
+    698
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_treasure_normal",
+   "label": "treasure icon (normal)",
+   "box": [
+    1171,
+    628,
+    1249,
+    701
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_treasure_hover",
+   "label": "treasure icon (hover)",
+   "box": [
+    1263,
+    629,
+    1340,
+    700
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_treasure_pressed",
+   "label": "treasure icon (pressed)",
+   "box": [
+    1353,
+    627,
+    1433,
+    701
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_treasure_disabled",
+   "label": "treasure icon (disabled)",
+   "box": [
+    1446,
+    629,
+    1522,
+    700
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_purchases_normal",
+   "label": "purchases icon (normal)",
+   "box": [
+    29,
+    889,
+    109,
+    959
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_purchases_hover",
+   "label": "purchases icon (hover)",
+   "box": [
+    119,
+    889,
+    197,
+    957
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_purchases_pressed",
+   "label": "purchases icon (pressed)",
+   "box": [
+    207,
+    889,
+    285,
+    957
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_purchases_disabled",
+   "label": "purchases icon (disabled)",
+   "box": [
+    296,
+    890,
+    373,
+    957
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_watch_ads_normal",
+   "label": "watch_ads icon (normal)",
+   "box": [
+    412,
+    884,
+    488,
+    962
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_watch_ads_hover",
+   "label": "watch_ads icon (hover)",
+   "box": [
+    501,
+    885,
+    575,
+    962
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_watch_ads_pressed",
+   "label": "watch_ads icon (pressed)",
+   "box": [
+    587,
+    885,
+    661,
+    962
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_watch_ads_disabled",
+   "label": "watch_ads icon (disabled)",
+   "box": [
+    674,
+    886,
+    746,
+    962
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_settings_normal",
+   "label": "settings icon (normal)",
+   "box": [
+    792,
+    885,
+    863,
+    959
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_settings_hover",
+   "label": "settings icon (hover)",
+   "box": [
+    882,
+    885,
+    955,
+    960
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_settings_pressed",
+   "label": "settings icon (pressed)",
+   "box": [
+    973,
+    885,
+    1044,
+    960
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_settings_disabled",
+   "label": "settings icon (disabled)",
+   "box": [
+    1062,
+    886,
+    1131,
+    959
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_profile_normal",
+   "label": "profile icon (normal)",
+   "box": [
+    1175,
+    889,
+    1241,
+    957
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_profile_hover",
+   "label": "profile icon (hover)",
+   "box": [
+    1264,
+    889,
+    1332,
+    957
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_profile_pressed",
+   "label": "profile icon (pressed)",
+   "box": [
+    1353,
+    889,
+    1422,
+    957
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "btnicon_profile_disabled",
+   "label": "profile icon (disabled)",
+   "box": [
+    1444,
+    889,
+    1510,
+    957
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  }
+ ]
+}

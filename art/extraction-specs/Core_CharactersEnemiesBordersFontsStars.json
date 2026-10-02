@@ -1,0 +1,260 @@
+{
+ "sheet": "Core_CharactersEnemiesBordersFontsStars.png",
+ "batch": "Core_CharactersSheet",
+ "floodTolerance": 4,
+ "items": [
+  {
+   "id": "penguin_classic",
+   "label": "Classic Penguin",
+   "box": [
+    18,
+    70,
+    162,
+    234
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Round, single-sided, purely 2D player sprite. Rotates in gameplay."
+  },
+  {
+   "id": "penguin_slate",
+   "label": "Slate Penguin",
+   "box": [
+    163,
+    70,
+    307,
+    234
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Round, single-sided, purely 2D player sprite. Rotates in gameplay."
+  },
+  {
+   "id": "penguin_bluebell",
+   "label": "Bluebell Penguin",
+   "box": [
+    308,
+    70,
+    452,
+    234
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Round, single-sided, purely 2D player sprite. Rotates in gameplay."
+  },
+  {
+   "id": "penguin_bubblegum",
+   "label": "Bubblegum Penguin",
+   "box": [
+    453,
+    64,
+    597,
+    234
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Round, single-sided, purely 2D player sprite. Rotates in gameplay."
+  },
+  {
+   "id": "penguin_goldbelly",
+   "label": "Goldbelly Penguin",
+   "box": [
+    596,
+    70,
+    750,
+    234
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Round, single-sided, purely 2D player sprite. Rotates in gameplay."
+  },
+  {
+   "id": "penguin_crested",
+   "label": "Crested Penguin",
+   "box": [
+    18,
+    246,
+    162,
+    402
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Round, single-sided, purely 2D player sprite. Rotates in gameplay."
+  },
+  {
+   "id": "penguin_skyfin",
+   "label": "Skyfin Penguin",
+   "box": [
+    163,
+    246,
+    307,
+    402
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Round, single-sided, purely 2D player sprite. Rotates in gameplay."
+  },
+  {
+   "id": "penguin_macaroni",
+   "label": "Macaroni Penguin",
+   "box": [
+    303,
+    250,
+    452,
+    402
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Round, single-sided, purely 2D player sprite. Rotates in gameplay."
+  },
+  {
+   "id": "penguin_lilac",
+   "label": "Lilac Penguin",
+   "box": [
+    453,
+    246,
+    597,
+    402
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Round, single-sided, purely 2D player sprite. Rotates in gameplay."
+  },
+  {
+   "id": "penguin_ember",
+   "label": "Ember Penguin",
+   "box": [
+    596,
+    246,
+    748,
+    402
+   ],
+   "category": "GameplayCharacter",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Round, single-sided, purely 2D player sprite. Rotates in gameplay."
+  },
+  {
+   "id": "enemy_arctic_wolf",
+   "label": "Arctic Wolf",
+   "box": [
+    768,
+    38,
+    1012,
+    252
+   ],
+   "category": "GameplayEnemy",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Fast, aggressive pursuer."
+  },
+  {
+   "id": "enemy_seal",
+   "label": "Seal",
+   "box": [
+    1038,
+    66,
+    1268,
+    257
+   ],
+   "category": "GameplayEnemy",
+   "themes": [
+    "all"
+   ],
+   "role": "gameplay",
+   "collision": "gameplay-collider",
+   "atlas": "gameplay",
+   "notes": "Slippery momentum slider."
+  },
+  {
+   "id": "border_snow_horizontal",
+   "label": "Snow Map Border (Horizontal)",
+   "box": [
+    993,
+    538,
+    1298,
+    598
+   ],
+   "category": "Boundary",
+   "themes": [
+    "all"
+   ],
+   "role": "floor",
+   "collision": "gameplay-collider",
+   "atlas": "obstacles",
+   "notes": "Reference for procedural snow banks."
+  },
+  {
+   "id": "border_snow_corner",
+   "label": "Snow Map Border (Corner)",
+   "box": [
+    1172,
+    612,
+    1298,
+    738
+   ],
+   "category": "Boundary",
+   "themes": [
+    "all"
+   ],
+   "role": "floor",
+   "collision": "gameplay-collider",
+   "atlas": "obstacles"
+  }
+ ],
+ "useSheetAlpha": true,
+ "alphaThreshold": 24
+}

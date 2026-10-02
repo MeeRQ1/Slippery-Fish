@@ -1,0 +1,750 @@
+{
+ "sheet": "Batch08B_ExtraEnvironmentProps.png",
+ "batch": "Batch08B_ExtraEnvironmentProps",
+ "floodTolerance": 4,
+ "items": [
+  {
+   "id": "snow_pile_8b",
+   "label": "Snow Pile",
+   "box": [
+    25,
+    232,
+    173,
+    298
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "blizzard",
+    "arctic_night",
+    "aurora",
+    "frozen_lake",
+    "festival",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snowy_log_8b",
+   "label": "Snowy Log",
+   "box": [
+    200,
+    228,
+    383,
+    299
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "classic_winter"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "tree_stump_8b",
+   "label": "Tree Stump",
+   "box": [
+    407,
+    225,
+    543,
+    300
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "stones_small_8b",
+   "label": "Stones (Small)",
+   "box": [
+    588,
+    233,
+    731,
+    298
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "blizzard",
+    "arctic_night",
+    "frozen_lake",
+    "aurora"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "stones_large_8b",
+   "label": "Stones (Large)",
+   "box": [
+    767,
+    207,
+    948,
+    299
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "blizzard",
+    "arctic_night",
+    "frozen_lake",
+    "aurora",
+    "glacier_caves"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snowy_fence_8b",
+   "label": "Snowy Fence",
+   "box": [
+    978,
+    215,
+    1150,
+    300
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "snowy_bridge_8b",
+   "label": "Snowy Bridge",
+   "box": [
+    1167,
+    201,
+    1380,
+    299
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "frozen_lake",
+    "snow_forest"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "snow_lamp",
+   "label": "Snow Lamp",
+   "box": [
+    1385,
+    160,
+    1515,
+    300
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "arctic_night",
+    "classic_winter",
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "wooden_crate_8b",
+   "label": "Wooden Crate",
+   "box": [
+    22,
+    366,
+    186,
+    466
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "chest_mackerel",
+   "label": "Wooden Box (Mackerel Chest art)",
+   "box": [
+    236,
+    386,
+    354,
+    463
+   ],
+   "category": "UIOnly",
+   "themes": [
+    "ui"
+   ],
+   "role": "ui",
+   "collision": "ui",
+   "atlas": "ui"
+  },
+  {
+   "id": "barrel_8b",
+   "label": "Barrel",
+   "box": [
+    393,
+    358,
+    525,
+    466
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "fishing"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "sleigh",
+   "label": "Sleigh",
+   "box": [
+    565,
+    378,
+    737,
+    466
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "festival",
+    "candy_snow",
+    "classic_winter"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "snow_bench",
+   "label": "Snow Bench",
+   "box": [
+    785,
+    375,
+    950,
+    466
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "classic_winter"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "signpost_8b",
+   "label": "Signpost",
+   "box": [
+    985,
+    356,
+    1120,
+    466
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "blizzard"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "arrow_sign_left_8b",
+   "label": "Arrow Sign (Left)",
+   "box": [
+    1148,
+    370,
+    1328,
+    466
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "arrow_sign_right_8b",
+   "label": "Arrow Sign (Right)",
+   "box": [
+    1350,
+    363,
+    1515,
+    466
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "snow_lantern",
+   "label": "Snow Lantern",
+   "box": [
+    22,
+    520,
+    175,
+    642
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "arctic_night",
+    "festival",
+    "aurora"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "campfire_lit_8b",
+   "label": "Campfire (Lit)",
+   "box": [
+    205,
+    537,
+    352,
+    642
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "arctic_night"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "campfire_off_8b",
+   "label": "Campfire (Off)",
+   "box": [
+    378,
+    570,
+    528,
+    642
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "blizzard"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "tent_8b",
+   "label": "Tent",
+   "box": [
+    553,
+    526,
+    762,
+    642
+   ],
+   "category": "Building",
+   "themes": [
+    "snow_forest",
+    "blizzard"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "ice_block_8b",
+   "label": "Ice Block",
+   "box": [
+    789,
+    547,
+    920,
+    642
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "glacier_caves",
+    "crystal_ice",
+    "frozen_lake",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "wood_pile",
+   "label": "Wood Pile",
+   "box": [
+    1148,
+    551,
+    1326,
+    642
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snowy_well",
+   "label": "Snowy Well",
+   "box": [
+    1352,
+    512,
+    1505,
+    642
+   ],
+   "category": "TownProp",
+   "themes": [
+    "festival",
+    "classic_winter"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "snow_shrub",
+   "label": "Snow Shrub",
+   "box": [
+    40,
+    703,
+    185,
+    798
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "blizzard",
+    "arctic_night",
+    "aurora",
+    "frozen_lake",
+    "festival",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "red_berries_bush",
+   "label": "Red Berries Bush",
+   "box": [
+    215,
+    705,
+    380,
+    798
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "candy_snow",
+    "ice_cream"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "dry_bush",
+   "label": "Dry Bush",
+   "box": [
+    410,
+    701,
+    548,
+    798
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "blizzard",
+    "fall",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "pinecone_8b",
+   "label": "Pinecone",
+   "box": [
+    610,
+    710,
+    700,
+    798
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "fall"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snow_flower_8b",
+   "label": "Snow Flower",
+   "box": [
+    787,
+    703,
+    895,
+    798
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "spring_thaw",
+    "candy_snow"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "mushroom_snow_8b",
+   "label": "Mushroom (Snow)",
+   "box": [
+    980,
+    703,
+    1090,
+    798
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "snow_forest",
+    "candy_snow"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snow_grass_8b",
+   "label": "Snow Grass",
+   "box": [
+    1158,
+    707,
+    1312,
+    798
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "spring_thaw"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "dead_tree",
+   "label": "Dead Tree",
+   "box": [
+    1350,
+    687,
+    1506,
+    798
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "blizzard",
+    "arctic_night",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "ice_spike_8b",
+   "label": "Ice Spike",
+   "box": [
+    33,
+    860,
+    157,
+    967
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "glacier_caves",
+    "crystal_ice",
+    "frozen_lake",
+    "mastery",
+    "aurora"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "ice_pillar_8b",
+   "label": "Ice Pillar",
+   "box": [
+    210,
+    840,
+    300,
+    967
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "glacier_caves",
+    "crystal_ice",
+    "frozen_lake",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snow_arch_8b",
+   "label": "Snow Arch",
+   "box": [
+    345,
+    862,
+    527,
+    967
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "blizzard"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snow_stone_arch",
+   "label": "Snow Stone Arch",
+   "box": [
+    540,
+    853,
+    728,
+    967
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "glacier_caves",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snow_gate",
+   "label": "Snow Gate",
+   "box": [
+    757,
+    866,
+    925,
+    967
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "festival",
+    "classic_winter"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town"
+  },
+  {
+   "id": "decal_ice_crack",
+   "label": "Ice Crack (floor decal)",
+   "box": [
+    950,
+    895,
+    1108,
+    965
+   ],
+   "category": "Floor",
+   "themes": [
+    "frozen_lake",
+    "crystal_ice",
+    "mastery"
+   ],
+   "role": "floor",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "snow_drift",
+   "label": "Snow Drift",
+   "box": [
+    1128,
+    885,
+    1328,
+    965
+   ],
+   "category": "BackgroundDecoration",
+   "themes": [
+    "classic_winter",
+    "snow_forest",
+    "blizzard",
+    "arctic_night",
+    "aurora",
+    "frozen_lake",
+    "festival",
+    "mastery"
+   ],
+   "role": "decoration",
+   "collision": "visual",
+   "atlas": "decor-winter"
+  },
+  {
+   "id": "igloo_small_8b",
+   "label": "Igloo (Small)",
+   "box": [
+    1348,
+    860,
+    1506,
+    967
+   ],
+   "category": "Building",
+   "themes": [
+    "classic_winter",
+    "arctic_night",
+    "festival"
+   ],
+   "role": "decoration",
+   "collision": "background",
+   "atlas": "town",
+   "notes": "Scenery igloo (NOT the main-menu hero igloo)."
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#7cc4f0" />
+    <meta name="description" content="Slippery Fish — a cute, comedic top-down physics game: dribble fish into your stash before the polar bears, wolves and seals eat them." />
+    <meta name="color-scheme" content="light" />
+    <title>Slippery Fish</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <style>
+      /* Inline so the loader paints before any JS/CSS bundle arrives. */
+      html, body { margin: 0; height: 100%; background: linear-gradient(180deg, #bfe3fb, #eaf6ff); overflow: hidden; }
+      #boot-loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; z-index: 100; font-family: 'Trebuchet MS', system-ui, sans-serif; color: #1b2a44; transition: opacity 420ms ease; }
+      #boot-loader.gone { opacity: 0; pointer-events: none; }
+      .bl-track { position: relative; width: 260px; height: 70px; }
+      .bl-ground { position: absolute; left: 0; right: 0; bottom: 6px; height: 10px; border-radius: 6px; background: #fff; border: 3px solid #1b2a44; }
+      .bl-penguin, .bl-fish { position: absolute; bottom: 16px; }
+      .bl-penguin { width: 44px; height: 44px; border-radius: 50%; background: #1f2a44; border: 3px solid #0f1626; animation: bl-roll 1.6s linear infinite; }
+      .bl-penguin::before { content: ''; position: absolute; left: 8px; right: 8px; top: 12px; bottom: 4px; border-radius: 50% 50% 45% 45%; background: #fff6ea; }
+      .bl-penguin::after { content: ''; position: absolute; left: 17px; top: 18px; width: 8px; height: 5px; border-radius: 0 0 6px 6px; background: #f39a2c; }
+      .bl-fish { width: 34px; height: 16px; border-radius: 50%; background: #aab3c2; border: 3px solid #1b2a44; animation: bl-fish 1.6s linear infinite; }
+      @keyframes bl-roll { 0% { left: -10px; transform: rotate(0deg); } 100% { left: 196px; transform: rotate(720deg); } }
+      @keyframes bl-fish { 0% { left: 40px; } 100% { left: 240px; } }
+      .bl-title { font-size: 28px; font-weight: 800; letter-spacing: 1px; color: #fff; text-shadow: 0 3px 0 #1b2a44, 2px 2px 0 #1b2a44, -2px 2px 0 #1b2a44, 2px -2px 0 #1b2a44, -2px -2px 0 #1b2a44; }
+      .bl-sub { font-size: 15px; font-weight: 600; opacity: 0.8; }
+      @media (prefers-reduced-motion: reduce) { .bl-penguin, .bl-fish { animation: none; } .bl-penguin { left: 60px; } .bl-fish { left: 130px; } }
+    </style>
+  </head>
+  <body>
+    <div id="boot-loader" role="status" aria-live="polite">
+      <div class="bl-title">SLIPPERY FISH</div>
+      <div class="bl-track" aria-hidden="true"><div class="bl-fish"></div><div class="bl-penguin"></div><div class="bl-ground"></div></div>
+      <div class="bl-sub" id="boot-status">Chasing a fish…</div>
+    </div>
+    <div id="game" aria-hidden="true"></div>
+    <div id="ui"></div>
+    <noscript><p style="font-family:sans-serif;text-align:center;margin-top:40vh">Slippery Fish needs JavaScript enabled to play.</p></noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
