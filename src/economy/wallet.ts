@@ -46,6 +46,28 @@ export class Wallet {
     return applied;
   }
 
+  /**
+   * Spend `cost` and grant `reward` in ONE transaction (chests, purchases):
+   * either both happen or neither does, exactly once per txId.
+   */
+  exchange(txId: string, cost: Amounts, reward: Reward, extra?: (s: SaveData) => void, source?: { x: number; y: number }): boolean {
+    if (this.save.hasTx(txId) || !this.canAfford(cost)) return false;
+    const applied = this.save.transact(txId, (s) => {
+      for (const c of CURRENCIES) s.wallet[c] = Math.max(0, s.wallet[c] - Math.max(0, Math.floor(cost[c] ?? 0)));
+      for (const c of CURRENCIES) s.wallet[c] = Math.min(1_000_000_000, s.wallet[c] + Math.max(0, Math.floor(reward[c] ?? 0)));
+      for (const hd of reward.hoods ?? []) if (!s.hoods.owned.includes(hd)) s.hoods.owned.push(hd);
+      for (const w of reward.waddles ?? []) if (!s.waddles.owned.includes(w)) s.waddles.owned.push(w);
+      extra?.(s);
+    });
+    if (applied) {
+      for (const c of CURRENCIES) {
+        const delta = (reward[c] ?? 0) - (cost[c] ?? 0);
+        if (delta !== 0) this.events.emit('changed', { currency: c, delta, balance: this.balance(c), ...(delta > 0 && source ? { source } : {}) });
+      }
+    }
+    return applied;
+  }
+
   /** Grants a reward exactly once per txId. */
   grant(txId: string, reward: Reward, extra?: (s: SaveData) => void, source?: { x: number; y: number }): boolean {
     const applied = this.save.transact(txId, (s) => {

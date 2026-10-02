@@ -79,7 +79,7 @@ export class PlayScreen extends Screen {
     else this.d.listen(window, 'pointerdown', (e) => { if (e.pointerType === 'touch') this.enableTouch(); });
 
     const hoodId = s.hoods.equipped;
-    const normalized = this.driver.mode === 'ranked';
+    const normalized = this.driver.normalized;
     this.session = this.app.startGame({
       level: this.driver.level,
       mode: this.driver.mode,

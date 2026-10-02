@@ -35,6 +35,8 @@ export interface PlayDriver {
   bestKey: string;
   seedCode: string | null;
   allowContinue: boolean;
+  /** Ranked rules: Hood stat bonuses disabled (cosmetic only). */
+  normalized: boolean;
   musicSlot: MusicSlot;
   complete(o: RunOutcome): ResultSummary;
   failed(o: RunOutcome): void;
@@ -67,7 +69,7 @@ export function adventureDriver(svc: DriverServices, n: number, hard: boolean): 
   const region = REGION_BY_ID[level.region];
   const bestKey = bestTimeKey({ mode: 'adventure', levelKey: String(n), contentVersion: level.contentVersion, generatorVersion: level.generatorVersion, hard });
   return {
-    mode: 'adventure', level, hard, bestKey, seedCode: null, allowContinue: true,
+    mode: 'adventure', level, hard, bestKey, seedCode: null, allowContinue: true, normalized: false,
     label: `LEVEL ${n}`,
     sublabel: `${region.name}${hard ? ' · HARD' : ''}`,
     musicSlot: region.musicSlot as MusicSlot,
@@ -174,7 +176,7 @@ export function dailyDriver(svc: DriverServices, index: number, hard: boolean): 
   const region = REGION_BY_ID[level.region];
   const bestKey = bestTimeKey({ mode: 'daily', levelKey: `${dateKey}:${index}`, contentVersion: level.contentVersion, generatorVersion: level.generatorVersion, hard });
   return {
-    mode: 'daily', level, hard, bestKey, seedCode: null, allowContinue: true,
+    mode: 'daily', level, hard, bestKey, seedCode: null, allowContinue: true, normalized: false,
     label: `DAILY ${index} / ${DAILY_LEVELS}`,
     sublabel: `Popsicle ${milestoneOf(index)} · ${region.name}${hard ? ' · HARD' : ''}`,
     musicSlot: 'daily',
@@ -251,7 +253,7 @@ export function infiniteDriver(svc: DriverServices, seed: InfiniteSeed, hard: bo
     s.infinite.history = list.slice(-60);
   });
   return {
-    mode: 'infinite', level, hard, bestKey, seedCode: code, allowContinue: true,
+    mode: 'infinite', level, hard, bestKey, seedCode: code, allowContinue: true, normalized: false,
     label: `INFINITE ${seed.level}`,
     sublabel: `${REGION_BY_ID[level.region].name}${hard ? ' · HARD' : ''}`,
     musicSlot: 'infinite',
@@ -286,6 +288,40 @@ export function infiniteDriver(svc: DriverServices, seed: InfiniteSeed, hard: bo
       remember(o.timeMs);
       trackQuests(svc.quests, o, true, stars, { mode: 'infinite', hard });
       return { stars, timeMs: o.timeMs, previousBestMs, newBest, parSeconds: level.parSeconds, rewards: reward, firstClear: previousBestMs === null, notes };
+    },
+  };
+}
+
+// ------------------------------------------------------------------ ranked practice (offline)
+
+/**
+ * Offline PRACTICE under Ranked rules (same-seed layout, normalized stats).
+ * Clearly labelled practice: no opponent, no rankings, no ranked rewards.
+ */
+export function practiceDriver(svc: DriverServices, seed: InfiniteSeed): PlayDriver {
+  const level = { ...infiniteLevel(seed, false), mode: 'practice' as const };
+  const code = encodeSeed(seed);
+  const bestKey = bestTimeKey({ mode: 'practice', levelKey: code, contentVersion: level.contentVersion, generatorVersion: level.generatorVersion, hard: false, normalized: true });
+  return {
+    mode: 'practice', level, hard: false, bestKey, seedCode: code, allowContinue: true, normalized: true,
+    label: 'PRACTICE',
+    sublabel: 'Ranked rules · offline · not ranked',
+    musicSlot: 'ranked',
+    exit: { screen: 'ranked' },
+    retry: () => practiceDriver(svc, seed),
+    next: () => practiceDriver(svc, nextSeed(seed)),
+    failed: (o) => { svc.save.mutate((s) => addStats(s, o, false, 0)); },
+    complete: (o) => {
+      const stars = computeStars(o.timeMs, level.parSeconds, o.stats.fishEaten, o.continued);
+      let previousBestMs: number | null = null;
+      let newBest = false;
+      svc.save.mutate((st) => {
+        const b = recordBest(st, bestKey, o.timeMs);
+        previousBestMs = b.previous;
+        newBest = b.improved;
+        addStats(st, o, true, stars);
+      });
+      return { stars, timeMs: o.timeMs, previousBestMs, newBest, parSeconds: level.parSeconds, rewards: {}, firstClear: false, notes: ['Practice runs never award ranked rewards.'] };
     },
   };
 }
