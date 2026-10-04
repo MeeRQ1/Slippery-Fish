@@ -4,7 +4,7 @@
  * sprites, particles and camera feedback. All gameplay rules live in GameSim.
  */
 import Phaser from 'phaser';
-import { BANK_MARGIN, drawSnowbanks, drawSurfacePatch, hexToInt } from '../art/procedural';
+import { BANK_MARGIN, drawGlaze, drawSnowbanks, drawSurfacePatch, hexToInt } from '../art/procedural';
 import { CAMERA, ENEMIES, FISH, GOAL, PLAYER } from '../config/gameplay';
 import { OBSTACLES } from '../config/obstacles';
 import { REGION_BY_ID, type RegionDef } from '../config/regions';
@@ -113,6 +113,12 @@ export class GameScene extends Phaser.Scene {
     const floor = this.add.tileSprite(W / 2, H / 2, W, H, tex(this, this.region.floorTexture).key).setDepth(DEPTH.floor);
     floor.setTileScale(0.9, 0.9);
     floor.setAlpha(pal.floorTextureAlpha);
+    if (level.modifiers.includes('glazedIce')) {
+      const glazeKey = `glaze_${level.id}_${Date.now()}`;
+      this.textures.addCanvas(glazeKey, drawGlaze(W, H, hash32(level.seed) ^ 0x5f3759df));
+      this.textureKeys.push(glazeKey);
+      this.add.image(0, 0, glazeKey).setOrigin(0, 0).setScale(2).setDepth(DEPTH.floor + 1).setAlpha(0.7);
+    }
     this.placeFloorDecals(level.seed);
     level.surfaces.forEach((s, i) => {
       const key = `surf_${level.id}_${i}`;

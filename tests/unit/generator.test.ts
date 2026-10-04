@@ -112,3 +112,46 @@ describe('Daily challenge', () => {
     expect(JSON.stringify(dailyLevel('2026-10-02', 3))).not.toBe(JSON.stringify(dailyLevel('2026-10-03', 3)));
   }, 60_000);
 });
+
+describe('Arena shapes and level modifiers (generator v2)', () => {
+  it('uses several arena shapes across the campaign, plain rinks early', async () => {
+    const shapes = new Map<string, number>();
+    for (let n = 1; n <= 800; n += 3) {
+      const s = adventureLevel(n).arena.shape ?? 'rect';
+      shapes.set(s, (shapes.get(s) ?? 0) + 1);
+    }
+    expect(shapes.size).toBeGreaterThanOrEqual(6);
+    for (const n of [1, 2, 3]) expect(['rect', 'cove']).toContain(adventureLevel(n).arena.shape ?? 'rect');
+  }, 60_000);
+
+  it('modifiers: none on teaching levels or region openers; some later; deterministic', async () => {
+    const { LEVEL_MODIFIER_IDS, compatible } = await import('../../src/gameplay/levelModifiers');
+    for (let n = 1; n <= 30; n++) expect(adventureLevel(n).modifiers).toEqual([]);
+    for (const n of [51, 52, 53, 101, 151]) expect(adventureLevel(n).modifiers).toEqual([]);
+    let withMods = 0;
+    for (let n = 31; n <= 800; n += 2) {
+      const m = adventureLevel(n).modifiers;
+      if (m.length) withMods++;
+      for (const id of m) expect(LEVEL_MODIFIER_IDS).toContain(id);
+      if (m.length === 2) expect(compatible(m[0]!, m[1]!)).toBe(true);
+    }
+    expect(withMods).toBeGreaterThan(40);
+    expect(withMods).toBeLessThan(200);
+    expect(adventureLevel(222).modifiers).toEqual(adventureLevel(222).modifiers);
+  }, 60_000);
+
+  it('normalized (Ranked/Practice) levels never carry modifiers', () => {
+    for (let lv = 1; lv <= 60; lv++) {
+      const l = infiniteLevel({ layout: 48211 + lv * 7, level: lv }, false, true);
+      expect(l.modifiers).toEqual([]);
+      expect(l.id.startsWith('rk-')).toBe(true);
+    }
+  });
+
+  it('reward bonus is capped however modifiers combine', async () => {
+    const { rewardBonus, MAX_REWARD_BONUS, LEVEL_MODIFIER_IDS } = await import('../../src/gameplay/levelModifiers');
+    expect(rewardBonus(LEVEL_MODIFIER_IDS)).toBe(MAX_REWARD_BONUS);
+    expect(rewardBonus([])).toBe(0);
+    expect(rewardBonus(['luckyCatch'])).toBeLessThanOrEqual(MAX_REWARD_BONUS);
+  });
+});

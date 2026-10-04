@@ -10,6 +10,7 @@ import type { HudSnapshot } from '../../gameplay/session';
 import type { GameSession } from '../../gameplay/session';
 import type { PlayDriver } from '../../progression/drivers';
 import { economyBonus, gameplayModifiers } from '../../progression/hoods';
+import { LEVEL_MODIFIERS, rewardBonus } from '../../gameplay/levelModifiers';
 import { newRunId, type ResultSummary, type RunOutcome } from '../../progression/results';
 import { waddleFrame } from '../../profile/waddles';
 import { drawPaperStar, drawTrophy } from '../../art/procedural';
@@ -68,6 +69,21 @@ export class PlayScreen extends Screen {
     );
     this.banner = h('div', { class: 'ready-banner', attrs: { 'aria-live': 'assertive' } });
     this.el.append(this.vignette.el, this.hud, this.banner);
+    const mods = this.driver.level.modifiers;
+    if (mods.length > 0) {
+      // Persistent compact chips (hover/tap for the rule) + a briefing card that steps aside once play starts.
+      const chips = h('div', { class: 'hud-mods', attrs: { 'aria-label': 'Level modifiers' } },
+        ...mods.map((m) => h('span', { class: 'mod-chip', attrs: { title: LEVEL_MODIFIERS[m].description, tabindex: '0' } }, h('b', { text: LEVEL_MODIFIERS[m].icon, attrs: { 'aria-hidden': 'true' } }), LEVEL_MODIFIERS[m].name)));
+      this.hud.querySelector('.hud-right')!.append(chips);
+      const bonus = rewardBonus(mods);
+      const card = h('div', { class: 'mod-card paper-panel', attrs: { role: 'note' } },
+        h('div', { class: 'mod-card-title', text: mods.length > 1 ? 'LEVEL TWISTS' : 'LEVEL TWIST' }),
+        ...mods.map((m) => h('div', { class: 'mod-card-row' }, h('b', { class: 'mod-ico', text: LEVEL_MODIFIERS[m].icon, attrs: { 'aria-hidden': 'true' } }), h('div', {}, h('strong', { text: LEVEL_MODIFIERS[m].name }), h('span', { text: LEVEL_MODIFIERS[m].description })))),
+        bonus > 0 ? h('div', { class: 'mod-card-bonus', text: `Clear it for +${Math.round(bonus * 100)}% Icicles` }) : null,
+      );
+      this.el.append(card);
+      this.d.timeout(() => card.classList.add('faded'), 6500);
+    }
     const hint = this.driver.level.tutorial?.hint;
     if (hint) {
       const hintEl = h('div', { class: 'tutorial-hint paper-panel', attrs: { role: 'note' } }, h('span', { class: 'hint-pin', attrs: { 'aria-hidden': 'true' } }), hint);
@@ -182,6 +198,7 @@ export class PlayScreen extends Screen {
     const panel = h('div', { class: 'pause-panel ice-panel', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Paused' } },
       h('h2', { class: 'title-ice', text: 'PAUSED' }),
       h('p', { class: 'pause-sub', text: `${this.driver.label} · ${formatTime(this.session.sim.timeMs)}` }),
+      this.driver.level.modifiers.length > 0 ? h('ul', { class: 'pause-mods' }, ...this.driver.level.modifiers.map((m) => h('li', {}, h('b', { text: `${LEVEL_MODIFIERS[m].icon} ${LEVEL_MODIFIERS[m].name}: ` }), LEVEL_MODIFIERS[m].description))) : null,
       h('div', { class: 'pause-actions' },
         woodButton('RESUME', { variant: 'green', size: 'big', onActivate: () => this.session.setPaused(false) }),
         woodButton('RESTART', { onActivate: () => this.restart() }),

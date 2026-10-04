@@ -111,19 +111,64 @@ export function drawSnowbanks(level: LevelDef, pal: RegionPalette, seed: number)
         ctx.stroke();
       }
     };
+    // Drop shadow cast onto the ice (3/4 view: banks stand up, light from above).
+    // Drawn opaque off-screen then composited once, so overlapping pieces never darken seams.
+    const solid = (target: CanvasRenderingContext2D, fill: string, lineWidth: number, dy = 0) => {
+      target.fillStyle = fill;
+      target.strokeStyle = fill;
+      target.lineWidth = lineWidth;
+      target.lineJoin = 'round';
+      for (const pts of polys) {
+        roundedPolyPath(target, pts.map(([x, y]) => [x, y + dy] as [number, number]), 6);
+        target.fill();
+        target.stroke();
+      }
+    };
+    const shadow = makeCanvas(canvas.width, canvas.height);
+    solid(shadow.ctx, '#000', 30, 12);
+    ctx.globalAlpha = 0.14;
+    ctx.drawImage(shadow.canvas, 0, 0);
+    ctx.globalAlpha = 1;
     pass(pal.bankOutline, 30);
     pass(pal.bankShade, 20);
-    pass(pal.bank, 8);
-    // Soft drifts on the carved snow (cosmetic texture, inside the footprint only).
+    // Snow body with volume: the footprint in a cooler flank tone, then the lit
+    // top surface (footprint shifted up 14u) laid over it — the band left along
+    // the lower edge reads as the bank's front face. Speckles and drift ridges on top.
+    const body = makeCanvas(canvas.width, canvas.height);
+    const b = body.ctx;
+    solid(b, shade(pal.bank, -0.08), 8);
+    const top = makeCanvas(canvas.width, canvas.height);
+    solid(top.ctx, pal.bank, 8, -14);
+    top.ctx.globalCompositeOperation = 'source-atop';
+    const tg = top.ctx.createLinearGradient(0, m, 0, m + h);
+    tg.addColorStop(0, 'rgba(255,255,255,0.55)');
+    tg.addColorStop(1, 'rgba(255,255,255,0)');
+    top.ctx.fillStyle = tg;
+    top.ctx.fillRect(0, 0, canvas.width, canvas.height);
+    b.globalCompositeOperation = 'source-atop';
+    b.drawImage(top.canvas, 0, 0);
     for (const pts of polys) {
-      let cx = 0, cy = 0;
-      for (const [px, py] of pts) { cx += px; cy += py; }
-      cx /= pts.length; cy /= pts.length;
-      ctx.fillStyle = 'rgba(255,255,255,0.75)';
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, 10 + rnd() * 10, 5 + rnd() * 4, 0, 0, Math.PI * 2);
-      ctx.fill();
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const [px, py] of pts) { minX = Math.min(minX, px); minY = Math.min(minY, py); maxX = Math.max(maxX, px); maxY = Math.max(maxY, py); }
+      const area = (maxX - minX) * (maxY - minY);
+      for (let i = 0; i < Math.min(40, area / 1800); i++) {
+        b.fillStyle = rnd() < 0.6 ? 'rgba(255,255,255,0.95)' : 'rgba(150,190,230,0.45)';
+        b.beginPath();
+        b.arc(minX + rnd() * (maxX - minX), minY + rnd() * (maxY - minY), 1.2 + rnd() * 2.2, 0, Math.PI * 2);
+        b.fill();
+      }
+      b.strokeStyle = 'rgba(255,255,255,0.85)';
+      b.lineWidth = 3;
+      b.lineCap = 'round';
+      for (let i = 0; i < Math.min(3, area / 9000); i++) {
+        const x = minX + rnd() * (maxX - minX), y = minY + rnd() * (maxY - minY), l = 14 + rnd() * 18;
+        b.beginPath();
+        b.moveTo(x - l, y);
+        b.quadraticCurveTo(x, y - 6, x + l, y);
+        b.stroke();
+      }
     }
+    ctx.drawImage(body.canvas, 0, 0);
     ctx.restore();
   }
 
@@ -641,4 +686,41 @@ export function drawTrophy(size = 220): HTMLCanvasElement {
 export function hexToInt(hex: string): number {
   const [r, g, b] = hexToRgb(hex);
   return (r << 16) | (g << 8) | b;
+}
+
+/**
+ * Glossy diagonal sheen laid over the floor on "Glazed Ice" levels, so the
+ * rule change is visible on the ice itself. Half resolution (display at 2×).
+ */
+export function drawGlaze(w: number, h: number, seed: number): HTMLCanvasElement {
+  const cw = Math.ceil(w / 2), ch = Math.ceil(h / 2);
+  const { canvas, ctx } = makeCanvas(cw, ch);
+  const rnd = artRng(seed);
+  ctx.lineCap = 'round';
+  const n = Math.round((cw + ch) / 70);
+  for (let i = 0; i < n; i++) {
+    const x = rnd() * (cw + ch) - ch, y = 0;
+    const width = 6 + rnd() * 18;
+    const g = ctx.createLinearGradient(x, y, x + ch * 0.55, y + ch);
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(0.5, `rgba(255,255,255,${0.35 + rnd() * 0.3})`);
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.strokeStyle = g;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + ch * 0.55, y + ch);
+    ctx.stroke();
+  }
+  // tiny glints
+  for (let i = 0; i < (cw * ch) / 2600; i++) {
+    const x = rnd() * cw, y = rnd() * ch, l = 2 + rnd() * 4;
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x - l, y); ctx.lineTo(x + l, y);
+    ctx.moveTo(x, y - l); ctx.lineTo(x, y + l);
+    ctx.stroke();
+  }
+  return canvas;
 }

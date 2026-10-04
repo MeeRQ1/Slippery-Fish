@@ -17,6 +17,7 @@ import type { SaveManager } from '../save/saveManager';
 import { economyBonus, HOOD_BY_ID, HOODS } from './hoods';
 import { addStats, computeStars, recordBest, trackQuests, type ResultSummary, type RunOutcome } from './results';
 import { Rng } from '../core/rng';
+import { LEVEL_MODIFIERS, rewardBonus } from '../gameplay/levelModifiers';
 
 export interface DriverServices {
   save: SaveManager;
@@ -58,6 +59,13 @@ function econ(s: SaveData) {
   };
 }
 
+/** Level-modifier Icicle bonus (capped) plus a result note naming it. */
+function levelBonus(level: LevelDef, notes: string[]): number {
+  const b = rewardBonus(level.modifiers);
+  if (b > 0) notes.push(`${level.modifiers.map((m) => LEVEL_MODIFIERS[m].name).join(' + ')}: +${Math.round(b * 100)}% Icicles`);
+  return 1 + b;
+}
+
 function hardify(icicles: number, hard: boolean, hardBonus: number): number {
   return hard ? icicles + icicles * (LEVEL_REWARDS.hardMultiplier - 1) * hardBonus : icicles;
 }
@@ -93,9 +101,9 @@ export function adventureDriver(svc: DriverServices, n: number, hard: boolean): 
       ic += Math.max(0, stars - (firstClear ? 0 : prevStars)) * r.perStar * e.star;
       if (firstClear) ic += r.firstClearBonus;
       ic += o.stats.rareStashed * LEVEL_REWARDS.rareFishBonusIcicles;
-      ic = hardify(ic, hard, e.hard) * e.icicles * e.adventure;
-      const reward: Reward = { icicles: Math.round(ic) };
       const notes: string[] = [];
+      ic = hardify(ic, hard, e.hard) * e.icicles * e.adventure * levelBonus(level, notes);
+      const reward: Reward = { icicles: Math.round(ic) };
       if (firstClear && n % 10 === 0) { reward.shards = Math.round(10 * e.shards); notes.push('Milestone level! +Icicle Shards'); }
       if (firstClear && n % LEVELS_PER_REGION === 0) {
         reward.shards = (reward.shards ?? 0) + Math.round(50 * e.shards);
@@ -194,11 +202,11 @@ export function dailyDriver(svc: DriverServices, index: number, hard: boolean): 
       const e = econ(s);
       const r = LEVEL_REWARDS.daily;
       let ic = (r.base + level.difficulty * r.perDifficulty + stars * r.perStar * e.star) * e.daily;
-      ic = hardify(ic, hard, e.hard) * e.icicles;
+      const notes: string[] = [];
+      ic = hardify(ic, hard, e.hard) * e.icicles * levelBonus(level, notes);
       const reward: Reward = { icicles: Math.round(ic) };
       let previousBestMs: number | null = null;
       let newBest = false;
-      const notes: string[] = [];
       const already = (hard ? s.daily.completedHard : s.daily.completed).includes(index);
       svc.wallet.grant(`daily:${cycleId}:${index}:${hard ? 'H' : 'N'}:${o.runId}`, already ? { icicles: Math.round((reward.icicles ?? 0) * 0.3) } : reward, (st) => {
         const b = recordBest(st, bestKey, o.timeMs);
@@ -271,11 +279,11 @@ export function infiniteDriver(svc: DriverServices, seed: InfiniteSeed, hard: bo
       const e = econ(s);
       const r = LEVEL_REWARDS.infinite;
       let ic = Math.min(r.maxBase, r.base + seed.level * r.perLevel) + stars * r.perStar * e.star;
-      ic = hardify(ic, hard, e.hard) * e.icicles * e.infinite;
+      const notes: string[] = [];
+      ic = hardify(ic, hard, e.hard) * e.icicles * e.infinite * levelBonus(level, notes);
       const reward: Reward = { icicles: Math.round(ic) };
       let previousBestMs: number | null = null;
       let newBest = false;
-      const notes: string[] = [];
       svc.wallet.grant(`inf:${code}:${hard ? 'H' : 'N'}:${o.runId}`, reward, (st) => {
         const b = recordBest(st, bestKey, o.timeMs);
         previousBestMs = b.previous;

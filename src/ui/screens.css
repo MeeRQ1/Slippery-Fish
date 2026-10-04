@@ -295,3 +295,19 @@
 /* ------------------------------------------------------------------ dev mock ad */
 .dev-mock-ad { position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; }
 .dev-mock-card { background: #fff; border: 4px dashed #e84a4a; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; font-family: monospace; }
+
+/* ---------- level modifiers (chips, briefing card, pause list) ---------- */
+.hud-mods { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 320px; pointer-events: auto; }
+.mod-chip { display: inline-flex; align-items: center; gap: 0.35em; padding: 0.2em 0.65em; border-radius: 1em; border: 2px solid var(--navy); background: linear-gradient(#fff8d6, #ffe9a3); font-weight: 800; font-size: 0.78em; color: var(--navy); box-shadow: 0 2px 0 rgba(27,42,68,0.35); cursor: help; }
+.mod-chip b { font-size: 1.05em; }
+.mod-chip:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.mod-card { position: absolute; left: 50%; top: calc(78px + var(--safe-top)); transform: translateX(-50%) rotate(0.6deg); width: min(440px, 88vw); padding: 0.75em 1.1em; pointer-events: none; transition: opacity 600ms ease, transform 600ms ease; }
+.mod-card.faded { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+.mod-card-title { font-family: var(--font-wood); letter-spacing: 0.06em; color: #c2561c; font-size: 1.05em; margin-bottom: 0.25em; }
+.mod-card-row { display: flex; gap: 0.6em; align-items: flex-start; margin: 0.3em 0; line-height: 1.35; }
+.mod-card-row .mod-ico { font-size: 1.4em; line-height: 1; }
+.mod-card-row strong { display: block; color: var(--navy); }
+.mod-card-row span { font-weight: 600; font-size: 0.92em; color: var(--ink-soft); }
+.mod-card-bonus { margin-top: 0.35em; font-weight: 800; color: #1f7a3a; }
+.pause-mods { margin: 0; padding: 0.4em 0.8em; list-style: none; text-align: left; font-size: 0.9em; line-height: 1.4; background: rgba(255,255,255,0.55); border-radius: 12px; }
+@media (max-height: 520px) { .mod-card { top: calc(64px + var(--safe-top)); font-size: 0.85em; } .hud-mods { max-width: 220px; } }
