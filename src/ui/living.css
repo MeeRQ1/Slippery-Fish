@@ -169,7 +169,7 @@ html[data-season="autumn"] .play-cta .cta-snow { background: #f2a14a; }
 .rm-gate-board b { display: block; font-family: var(--font-wood); letter-spacing: 0.04em; font-size: 1.3em; }
 .rm-gate-num { font-weight: 800; font-size: 0.72em; opacity: 0.9; }
 .rm-gate-post { width: 12px; height: 70px; background: var(--wood-2); border: 3px solid var(--wood-ol); border-top: none; }
-.rm-node { position: absolute; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; border: 4px solid var(--navy); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; font: inherit; box-shadow: 0 5px 0 var(--navy); background: radial-gradient(circle at 35% 30%, #fff, var(--ice-2) 72%); z-index: 2; }
+.rm-node { position: absolute; translate: -50% -50%; width: 58px; height: 58px; border-radius: 50%; border: 4px solid var(--navy); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; font: inherit; box-shadow: 0 5px 0 var(--navy); background: radial-gradient(circle at 35% 30%, #fff, var(--ice-2) 72%); z-index: 2; }
 .rm-node .rm-num { font-family: var(--font-wood); font-size: 1.25em; color: var(--ink); line-height: 1; }
 .rm-node .rm-stars { position: absolute; bottom: -16px; display: flex; padding: 1px 3px; border-radius: 8px; background: rgba(255,255,255,0.92); border: 2px solid var(--navy); }
 .rm-node .rm-stars img { width: 11px; height: 11px; }
@@ -187,7 +187,7 @@ html[data-season="autumn"] .play-cta .cta-snow { background: #f2a14a; }
 .rm-flag { margin-top: -4px; padding: 1px 8px; border-radius: 8px; background: var(--berry); color: #fff; border: 2px solid var(--navy); font-weight: 800; font-size: 0.68em; white-space: nowrap; }
 @keyframes marker-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
 .reduced-motion .rm-marker, .reduced-motion .rm-node.current { animation: none; }
-.rm-chest { position: absolute; transform: translate(-50%, -50%); background: none; border: none; padding: 0; cursor: pointer; z-index: 2; filter: drop-shadow(0 4px 0 rgba(27,42,68,0.25)); }
+.rm-chest { position: absolute; translate: -50% -50%; background: none; border: none; padding: 0; cursor: pointer; z-index: 2; filter: drop-shadow(0 4px 0 rgba(27,42,68,0.25)); }
 .rm-chest.locked { filter: grayscale(0.85) brightness(0.95); opacity: 0.85; }
 .rm-chest.claimed { opacity: 0.7; }
 .rm-chest-glow { position: absolute; inset: -14px; border-radius: 50%; background: radial-gradient(circle, rgba(255,230,120,0.75), rgba(255,230,120,0)); z-index: -1; animation: chest-glow 1.2s ease-in-out infinite; }
@@ -268,3 +268,9 @@ html[data-season="autumn"] .play-cta .cta-snow { background: #f2a14a; }
 .sprint-btn.theme-night { background: radial-gradient(circle at 35% 30%, #e8ecff, #9aa8ff 60%, #4a4fb8); color: #fff; }
 .sprint-btn.theme-night::after { right: 6px; top: 2px; width: 16px; height: 16px; border-radius: 50%; box-shadow: -5px 3px 0 0 #fff3a0; }
 .sprint-btn.low { background: radial-gradient(circle at 35% 30%, #ffe6cc, #ff9a4a 75%) !important; }
+@media (max-height: 520px) and (orientation: landscape) {
+  .living .lm-left { top: calc(50% + 18px); gap: 3px; width: min(21vw, 190px); }
+  .living .lm-right { top: calc(50% + 18px); gap: 2px; width: min(13vw, 124px); }
+  .living .lm-right .mode-info { display: none; }
+  .living .mode-card .mode-info { font-size: 0.66em; bottom: -6px; }
+}

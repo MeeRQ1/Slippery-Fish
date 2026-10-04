@@ -113,9 +113,14 @@ export class GameScene extends Phaser.Scene {
 
     // --- arena floor
     this.add.rectangle(W / 2, H / 2, W, H, hexToInt(pal.floor)).setDepth(DEPTH.floor - 1);
-    const floor = this.add.tileSprite(W / 2, H / 2, W, H, tex(this, this.region.floorTexture).key).setDepth(DEPTH.floor);
+    const floorKey = tex(this, this.region.floorTexture).key;
+    const floor = this.add.tileSprite(W / 2, H / 2, W, H, floorKey).setDepth(DEPTH.floor);
     floor.setTileScale(0.9, 0.9);
-    floor.setAlpha(pal.floorTextureAlpha);
+    floor.setAlpha(pal.floorTextureAlpha * 0.72);
+    // A second, offset layer at a non-multiple scale breaks up the visible tile grid.
+    const floor2 = this.add.tileSprite(W / 2, H / 2, W, H, floorKey).setDepth(DEPTH.floor);
+    floor2.setTileScale(1.37, 1.37).setTilePosition(173, 91).setFlipX(true);
+    floor2.setAlpha(pal.floorTextureAlpha * 0.45);
     if (level.modifiers.includes('glazedIce')) {
       const glazeKey = `glaze_${level.id}_${Date.now()}`;
       this.textures.addCanvas(glazeKey, drawGlaze(W, H, hash32(level.seed) ^ 0x5f3759df));

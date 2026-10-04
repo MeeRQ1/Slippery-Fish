@@ -98,6 +98,8 @@ export class AdventureScreen extends Screen {
   private scrollRaf = 0;
   private popover: HTMLElement | null = null;
   private drag: { x: number; left: number; moved: boolean } | null = null;
+  /** The default selection (your current level) never launches on the first tap. */
+  private userSelected = false;
 
   constructor(app: App, router: Router, params: ScreenParams) {
     super(app, router, params);
@@ -128,6 +130,7 @@ export class AdventureScreen extends Screen {
     } });
     this.backBtn = iceButton('↩ Back to my level', { class: 'rm-return small', sound: 'clickSoft', onActivate: () => this.scrollToLevel(this.current, true, true) });
     this.el.append(
+      h('h1', { class: 'sr-only', text: 'ADVENTURE' }),
       this.viewport,
       this.weather,
       h('div', { class: 'rm-top' },
@@ -357,7 +360,8 @@ export class AdventureScreen extends Screen {
       this.router.toast(`Clear level ${n - 1} to reach level ${n}.`);
       return;
     }
-    if (n === this.selected) { this.play(n); return; }
+    if (n === this.selected && this.userSelected) { this.play(n); return; }
+    this.userSelected = true;
     this.select(n, true);
   }
 
@@ -433,7 +437,7 @@ export class AdventureScreen extends Screen {
         if (res.ok) {
           this.app.quests.track('roadmapChests', 1);
           this.router.toast(`${def.name} opened!${res.bonusChest ? ` ${res.bonusChest} added to your Treasure.` : ''}`);
-          void el.animate?.([{ transform: 'translate(-50%, -50%) scale(1)' }, { transform: 'translate(-50%, -50%) scale(1.35) rotate(-8deg)' }, { transform: 'translate(-50%, -50%) scale(1)' }], { duration: 420 });
+          void el.animate?.([{ scale: '1' }, { scale: '1.35' }, { scale: '1' }], { duration: 420 });
         }
         close();
         this.remountAll();

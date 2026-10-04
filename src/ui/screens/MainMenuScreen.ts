@@ -72,7 +72,7 @@ export class MainMenuScreen extends Screen {
       const b = objectButton(e.art, 'fluid', { personality: e.key, label: e.label, badge: e.badge?.() ?? null, class: cls, onActivate: e.go });
       const info = e.info?.();
       const wrap = h('div', { class: 'mode-card', attrs: { 'data-pop': '' } }, b, info ? h('span', { class: `mode-info ${info.hot ? 'hot' : ''}`, text: info.text }) : null);
-      if (info) b.setAttribute('aria-label', `${e.label} — ${info.text}`);
+      if (info) b.setAttribute('aria-description', info.text);
       return wrap;
     };
     const logo = h('div', { class: 'menu-logo', attrs: { 'data-pop': '' } }, sprite('ui_logo', { width: 330, alt: 'Slippery Fish' }));
