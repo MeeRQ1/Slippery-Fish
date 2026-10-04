@@ -124,7 +124,9 @@ async function start(): Promise<void> {
     window.clearTimeout(summaryTimer);
     summaryTimer = window.setTimeout(() => {
       writeSummary(app.save.data);
-      for (const t of evaluateProgressTitles(app.save, Date.now())) app.router.toast(`Title earned: “${t.name}”`);
+      const fresh = evaluateProgressTitles(app.save, Date.now());
+      if (fresh.length === 1) app.router.toast(`Title earned: “${fresh[0]!.name}” — equip it in Profile`);
+      else if (fresh.length > 1) app.router.toast(`${fresh.length} titles earned! See them in Profile.`);
     }, 600);
   });
 
