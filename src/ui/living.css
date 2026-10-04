@@ -284,3 +284,6 @@ html[data-season="summer"] .screen:not(.play-screen) .snow-plaque { background: 
 html[data-season="autumn"] .screen:not(.play-screen) .snow-plaque { background: linear-gradient(180deg, #fff 0%, #fdf2e6 55%, #f2dcc4 100%); }
 .screen:not(.play-screen) .mode-info { border-color: var(--navy); box-shadow: 0 2px 0 rgba(27,42,68,0.5), inset 0 -2px 0 var(--season-accent-2); }
 html[data-daynight="night"] .screen:not(.play-screen) .next-note { background: #fff7e6; box-shadow: 0 3px 0 rgba(27,42,68,0.8), 0 0 12px rgba(255,214,140,0.45); }
+
+/* Each full screen is its own stacking context, so z-indexed menu pieces never paint over an opened sign. */
+.menu-screen.living, .roadmap-screen { isolation: isolate; }

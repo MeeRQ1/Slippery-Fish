@@ -95,6 +95,13 @@ test.describe('with reduced motion', () => {
       await page.getByRole('button', { name: button, exact: true }).click();
       const dialog = page.getByRole('dialog', { name: title });
       await expect(dialog).toBeVisible();
+      // Nothing from the living menu may paint (or take clicks) above an open sign.
+      const covered = await page.evaluate(() => {
+        const cta = document.querySelector('.play-cta')!.getBoundingClientRect();
+        const hit = document.elementFromPoint(cta.left + cta.width / 2, cta.top + cta.height / 2);
+        return !!hit?.closest('.sign-layer');
+      });
+      expect(covered, `${title} sign must cover the menu`).toBe(true);
       await page.keyboard.press('Escape');
       await expect(dialog).toHaveCount(0);
     }
@@ -161,7 +168,7 @@ test.describe('progression update', () => {
     await page.goto('./', { waitUntil: 'commit' });
     await expect(page.getByRole('img', { name: 'Inverse Smiles' })).toBeAttached({ timeout: 10_000 });
     // The cached display card is shown before the save loads (then reconciled from the real save).
-    await expect(page.locator('#ld-name')).toHaveText(/Pebble|Waddler/);
+    await expect(page.locator('#ld-name')).toHaveText(/Pebble|waddler/i);
     await expect(page.locator('#boot-loader')).toHaveCount(0, { timeout: 45_000 });
     await expect(page.locator('#brand')).toHaveCount(0);
   });

@@ -13,7 +13,7 @@
  */
 import { REGIONS, regionForAdventureLevel } from '../config/regions';
 import { equippedTitleName } from '../progression/titles';
-import type { SaveData } from '../save/schema';
+import { DEFAULT_USERNAME, type SaveData } from '../save/schema';
 import { PROFILE_ICONS } from './icons';
 import { WADDLE_BY_ID } from './waddles';
 
@@ -61,6 +61,11 @@ let last = '';
 
 /** Writes the summary when the displayed fields changed. Storage failures are ignored (display cache only). */
 export function writeSummary(s: Readonly<SaveData>): void {
+  // A brand-new (or just-erased) profile keeps the guest card: nothing personal to cache.
+  if (s.profile.username === DEFAULT_USERNAME && Object.keys(s.adventure.stars).length === 0 && !s.titles.equipped) {
+    clearSummary();
+    return;
+  }
   const sum = buildSummary(s);
   const key = JSON.stringify({ ...sum, updatedAt: 0 });
   if (key === last) return;

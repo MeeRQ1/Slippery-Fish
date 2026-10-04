@@ -109,8 +109,8 @@ export class ProfileSign extends SignScreen {
     this.head.replaceChildren(
       h('div', { class: 'ph-avatar' }, profileIconEl(s.profile.iconId, 96)),
       h('div', { class: 'ph-name' },
-        h('label', { class: 'small muted', text: 'Username', attrs: { for: 'sf-username' } }),
         h('div', { class: 'ph-title', text: equippedTitleName(s) ?? 'No title equipped' }),
+        h('label', { class: 'small muted', text: 'Username', attrs: { for: 'sf-username' } }),
         h('div', { class: 'name-row' }, input, save),
         msg,
         h('p', { class: 'small muted', text: 'Your name is stored on this device only — it isn’t an account and isn’t reserved online.' }),

@@ -25,6 +25,7 @@ import { App } from './app';
 import { TabGuard } from './core/tabGuard';
 import { evaluateProgressTitles } from './progression/titles';
 import { buildSummary, writeSummary } from './profile/summaryCache';
+import { DEFAULT_USERNAME } from './save/schema';
 import { showTabBlocker } from './ui/tabBlocker';
 import { uiHooks } from './ui/uiHooks';
 import { registerScreens, SAFE_DEEP_LINKS } from './ui/screens/registry';
@@ -89,7 +90,8 @@ async function start(): Promise<void> {
   // ---- real loading
   boot.setProgress('Opening your save…', 0.04);
   await app.save.load();
-  boot.setCard(buildSummary(app.save.data));
+  const fresh = Object.keys(app.save.data.adventure.stars).length === 0 && app.save.data.profile.username === DEFAULT_USERNAME;
+  boot.setCard({ ...buildSummary(app.save.data), ...(fresh ? { name: 'Welcome, new waddler!' } : {}) });
   boot.setProgress('Fetching the art…', 0.1);
   // Fonts first so canvas text and measurements are right (fallbacks are safe if they fail).
   const fonts = Promise.race([
