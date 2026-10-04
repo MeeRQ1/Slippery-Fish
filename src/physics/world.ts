@@ -28,7 +28,7 @@ export const Layer = {
   All: 7,
 } as const;
 
-export type StaticTag = 'wall' | 'obstacle' | 'stashRim' | 'backup';
+export type StaticTag = 'wall' | 'obstacle' | 'fence' | 'stashRim' | 'backup';
 
 export interface Body {
   id: number;

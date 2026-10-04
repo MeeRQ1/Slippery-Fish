@@ -88,26 +88,43 @@ export function drawSnowbanks(level: LevelDef, pal: RegionPalette, seed: number)
   ctx.lineWidth = 5;
   ctx.strokeRect(m, m, w, h);
 
-  // Interior wall blocks (non-rectangular arenas): drawn as their collider footprint.
-  for (const block of level.arena.walls) {
-    const pts = block.points.map(([px, py]) => [px + m, py + m] as [number, number]);
+  // Interior wall blocks (carved arena shapes): drawn as their exact collider
+  // footprint (polygon + the collider's 10u rounding). Shapes are unions of
+  // convex pieces, so draw in passes — outline, shade, body — for every piece
+  // before the next pass: internal seams between pieces vanish and only the
+  // union's true boundary keeps its outline and shaded lip. Clipped to the
+  // playable rectangle so pieces tucked under the outer bank leave no marks.
+  if (level.arena.walls.length) {
+    const polys = level.arena.walls.map((block) => block.points.map(([px, py]) => [px + m, py + m] as [number, number]));
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(m - 2, m - 2, w + 4, h + 4);
+    ctx.clip();
     ctx.lineJoin = 'round';
-    ctx.fillStyle = pal.bankOutline;
-    ctx.strokeStyle = pal.bankOutline;
-    ctx.lineWidth = 20 + 10;
-    roundedPolyPath(ctx, pts, 6);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = pal.bank;
-    ctx.strokeStyle = pal.bank;
-    ctx.lineWidth = 20;
-    roundedPolyPath(ctx, pts, 6);
-    ctx.fill();
-    ctx.stroke();
-    ctx.strokeStyle = pal.bankShade;
-    ctx.lineWidth = 6;
-    roundedPolyPath(ctx, pts, 6);
-    ctx.stroke();
+    const pass = (fill: string, lineWidth: number) => {
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = fill;
+      ctx.lineWidth = lineWidth;
+      for (const pts of polys) {
+        roundedPolyPath(ctx, pts, 6);
+        ctx.fill();
+        ctx.stroke();
+      }
+    };
+    pass(pal.bankOutline, 30);
+    pass(pal.bankShade, 20);
+    pass(pal.bank, 8);
+    // Soft drifts on the carved snow (cosmetic texture, inside the footprint only).
+    for (const pts of polys) {
+      let cx = 0, cy = 0;
+      for (const [px, py] of pts) { cx += px; cy += py; }
+      cx /= pts.length; cy /= pts.length;
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, 10 + rnd() * 10, 5 + rnd() * 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
   }
 
   // Sparkles on the snow.

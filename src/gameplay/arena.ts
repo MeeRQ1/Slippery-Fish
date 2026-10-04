@@ -3,10 +3,11 @@
  * procedural validator and the renderer (so visuals and colliders can never
  * disagree).
  */
-import { FISH, STASH } from '../config/gameplay';
+import { FISH, GOAL } from '../config/gameplay';
 import { OBSTACLES, type ColliderDef } from '../config/obstacles';
 import { Layer, makeCircle, makePoly, makeRect, type StaticShape } from '../physics/world';
 import type { LevelDef, ObstaclePlacement } from '../levels/types';
+import { RING_SEGMENTS, isSolidSegment, ringPoint } from './goal';
 
 /** cos/sin of k·2π/14, written as literals. */
 const UNIT_CIRCLE_14: ReadonlyArray<readonly [number, number]> = [
@@ -47,7 +48,7 @@ function colliderToStatic(c: ColliderDef, ox: number, oy: number, sx: number, sy
   }
 }
 
-export function buildStatics(level: LevelDef): StaticShape[] {
+export function buildStatics(level: LevelDef, opts: { goal?: boolean } = {}): StaticShape[] {
   const { width: w, height: h } = level.arena;
   const t = WALL_THICKNESS;
   const wall = { blocks: Layer.All, restitution: FISH.wallRestitution, tag: 'wall' as const };
@@ -59,7 +60,32 @@ export function buildStatics(level: LevelDef): StaticShape[] {
   ];
   for (const block of level.arena.walls) statics.push(makePoly(block.points, { ...wall, radius: 10 }));
   for (const o of level.obstacles) statics.push(...obstacleColliders(o));
-  // Limited collider: the stash rim stops enemies only (fish and penguins pass over it).
-  statics.push(makeCircle(level.stash.x, level.stash.y, STASH.radius + STASH.enemyRimExtra, { blocks: Layer.Enemy, restitution: 0.2, tag: 'stashRim' }));
+  if (opts.goal !== false) statics.push(...goalColliders(level));
   return statics;
+}
+
+/**
+ * Goal colliders: a capsule along every solid ring segment (fences + the
+ * igloo's front wall), the igloo body, and an enemy-only disk over the whole
+ * courtyard (a limited collider: enemies never wander into the chicks' yard).
+ */
+export function goalColliders(level: LevelDef): StaticShape[] {
+  const { x: cx, y: cy } = level.stash;
+  const out: StaticShape[] = [];
+  const half = GOAL.wallThickness / 2;
+  const fence = { blocks: Layer.All, restitution: FISH.obstacleRestitution, tag: 'fence' as const, radius: half - 1 };
+  for (let i = 0; i < RING_SEGMENTS; i++) {
+    if (!isSolidSegment(level.goal, i)) continue;
+    const [ax, ay] = ringPoint(cx, cy, i);
+    const [bx, by] = ringPoint(cx, cy, i + 1);
+    // Thin rectangle along the segment; the rounding radius turns it into a capsule.
+    const dx = bx - ax, dy = by - ay;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const nx = (-dy / len) * 1, ny = (dx / len) * 1;
+    out.push(makePoly([[ax + nx, ay + ny], [bx + nx, by + ny], [bx - nx, by - ny], [ax - nx, ay - ny]], fence));
+  }
+  const ib = GOAL.iglooBody;
+  out.push(makeRect(cx + ib.cx, cy + ib.cy, ib.w, ib.h, { blocks: Layer.All, restitution: FISH.wallRestitution, tag: 'obstacle', radius: ib.radius }));
+  out.push(makeCircle(cx, cy, GOAL.wallRadius + half + GOAL.enemyBlockExtra, { blocks: Layer.Enemy, restitution: 0.2, tag: 'stashRim' }));
+  return out;
 }

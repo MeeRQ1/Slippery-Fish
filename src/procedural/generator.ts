@@ -1,22 +1,27 @@
 /**
  * Versioned, seeded level generator (GENERATOR_VERSION in config/versions).
  *
- * Layout = arena shape + stash anchor + player spawn + one or more layout
- * MOTIFS (divider, funnel, pillars, islands, ring, maze, channel, mirrored
- * scatter) built from the region's preferred Batch 4 obstacle roles — never
- * random clutter. Then fish, enemies and surfaces are placed with spacing
- * rules, the result is validated at real collider sizes, and invalid layouts
- * are regenerated deterministically (bounded retries) with a verified
- * fallback. Only integer/IEEE-basic math + sqrt is used so the same seed gives
- * the same layout in every browser.
+ * v2 layout = arena SHAPE template (coves, bays, offset rooms, hourglass,
+ * island, twin rooms — procedural/shapes.ts) + goal courtyard placement with
+ * a difficulty-scaled FENCE pattern (openings at deliberate angles) + player
+ * spawn + one or more obstacle MOTIFS (divider, funnel, pillars, islands,
+ * ring, maze, channel, mirrored scatter) built from the region's preferred
+ * Batch 4 obstacle roles — never random clutter. Then fish, enemies, surfaces
+ * and level modifiers are placed/rolled, the result is validated at real
+ * collider sizes, and invalid layouts are regenerated deterministically
+ * (bounded retries) with a verified fallback. Only + − × ÷ and sqrt are used
+ * so the same seed gives the same layout in every browser.
  */
-import { ENEMIES, FISH, PLAYER, STASH, type EnemyType, type FishVariant, type SurfaceType } from '../config/gameplay';
+import { ENEMIES, FISH, GOAL, PLAYER, type EnemyType, type FishVariant, type SurfaceType } from '../config/gameplay';
 import { OBSTACLES, OBSTACLE_IDS, type ObstacleId, type ObstacleRole } from '../config/obstacles';
 import { REGION_BY_ID, type RegionDef, type RegionId } from '../config/regions';
 import { CONTENT_VERSION, GENERATOR_VERSION } from '../config/versions';
 import { Rng } from '../core/rng';
 import { buildStatics, obstacleColliders } from '../gameplay/arena';
-import type { EnemySpawn, FishSpawn, GameMode, LevelDef, ObstaclePlacement, Point, SurfacePatch, TutorialInfo, WallBlock } from '../levels/types';
+import type { ArenaShape, EnemySpawn, FishSpawn, GameMode, LevelDef, ObstaclePlacement, Point, SurfacePatch, TutorialInfo } from '../levels/types';
+import { OPEN_SLOTS, RING_DIRS, isLegalLayout, type GoalLayout } from '../gameplay/goal';
+import { LEVEL_MODIFIERS, LEVEL_MODIFIER_IDS, compatible, parFactor, type LevelModifierId } from '../gameplay/levelModifiers';
+import { buildShape, chooseShape } from './shapes';
 import { Layer, PhysicsWorld, type StaticShape } from '../physics/world';
 import { NavGrid } from '../enemies/nav';
 import { knobs, type DifficultyKnobs } from './difficulty';
@@ -33,15 +38,32 @@ export interface GenRequest {
   hard: boolean;
   seedCode?: string;
   tutorial?: TutorialInfo;
-  overrides?: Partial<DifficultyKnobs> & { motifs?: Motif[]; stashAnchor?: [number, number]; noEnemies?: boolean };
+  overrides?: Partial<DifficultyKnobs> & {
+    motifs?: Motif[];
+    stashAnchor?: [number, number];
+    noEnemies?: boolean;
+    arenaShape?: ArenaShape;
+    goalPattern?: GoalPattern;
+    /** Explicit modifiers ([] = none). */
+    modifiers?: LevelModifierId[];
+  };
+  /** Chance (0–1) that this level carries level modifiers (mode-specific; 0 for Ranked/Practice). */
+  modifierChance?: number;
 }
+
+/** Fence patterns, roughly in order of challenge. */
+export type GoalPattern = 'open' | 'wide' | 'two' | 'single' | 'singleSide';
 
 export type Motif = 'scatter' | 'divider' | 'funnel' | 'pillars' | 'islands' | 'ring' | 'maze' | 'channel' | 'mirror';
 
 const WALL_CLEAR = 72;
+void LEVEL_MODIFIERS;
 const GAP = 76;
 const MAX_ATTEMPTS = 28;
 const dist = (ax: number, ay: number, bx: number, by: number): number => Math.sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
+/** Footprint the goal assembly needs: courtyard ring + igloo behind it. */
+const GOAL_CLEAR = GOAL.wallRadius + GOAL.wallThickness;
+const IGLOO_TOP = -(GOAL.iglooBody.h / 2 - GOAL.iglooBody.cy) - 10;
 const round = (v: number, step = 1): number => Math.round(v / step) * step;
 
 interface Box { minX: number; minY: number; maxX: number; maxY: number }
@@ -170,7 +192,7 @@ function motifIslands(b: LayoutBuilder, count: number): void {
 
 function motifRing(b: LayoutBuilder, stash: Point): void {
   const n = b.rng.int(3, 4);
-  const r = STASH.radius + 170 + b.rng.range(0, 50);
+  const r = GOAL_CLEAR + 150 + b.rng.range(0, 50);
   const start = b.rng.range(0, 1);
   for (let i = 0; i < n; i++) {
     // Angles from a fixed table (no trig) — eight compass points + jitter.
@@ -204,6 +226,86 @@ const COMPASS: ReadonlyArray<readonly [number, number]> = [
   [1, 0], [0.7071067812, 0.7071067812], [0, 1], [-0.7071067812, 0.7071067812], [-1, 0], [-0.7071067812, -0.7071067812], [0, -1], [0.7071067812, -0.7071067812],
 ];
 
+// ------------------------------------------------------------------ goal fences
+
+/**
+ * Picks a fence layout. Openings are runs of consecutive open slots (slots =
+ * ring segments clockwise from the igloo's east end). Early patterns leave a
+ * wide front; later ones leave one or two narrower gates whose direction may
+ * face a wall (bank shots). `facing(slot)` scores how open the space outside a
+ * slot is (higher = easier approach).
+ */
+function chooseGoalLayout(rng: Rng, pattern: GoalPattern, facing: (slot: number) => number): GoalLayout {
+  const n = OPEN_SLOTS.length; // 16
+  const minW = GOAL.minOpeningSegments;
+  const openRuns: Array<[number, number]> = []; // [startSlot, length]
+  const pickStart = (len: number, preferOpen: boolean): number => {
+    const cands: number[] = [];
+    for (let st = 0; st + len <= n; st++) cands.push(st);
+    return rng.weighted(cands, (st) => {
+      let f = 0;
+      for (let k = st; k < st + len; k++) f += facing(k);
+      return preferOpen ? 0.05 + f * f : 0.4 + f;
+    });
+  };
+  switch (pattern) {
+    case 'open':
+      openRuns.push([0, n]);
+      break;
+    case 'wide': {
+      const left = rng.int(1, 3), right = rng.int(1, 3);
+      openRuns.push([left, n - left - right]);
+      break;
+    }
+    case 'two': {
+      const w1 = rng.int(minW, minW + 2), w2 = rng.int(minW, minW + 1);
+      const gap = rng.int(2, Math.max(2, n - w1 - w2 - 1));
+      const total = w1 + gap + w2;
+      const start = rng.int(0, Math.max(0, n - total));
+      openRuns.push([start, w1], [start + w1 + gap, w2]);
+      break;
+    }
+    case 'single': {
+      const w = rng.int(minW, minW + 2);
+      openRuns.push([pickStart(w, true), w]);
+      break;
+    }
+    case 'singleSide': {
+      const w = rng.int(minW, minW + 1);
+      openRuns.push([pickStart(w, false), w]);
+      break;
+    }
+  }
+  let mask = 0;
+  const open = new Set<number>();
+  for (const [st, len] of openRuns) for (let k = st; k < st + len && k < n; k++) open.add(k);
+  for (let k = 0; k < n; k++) if (!open.has(k)) mask |= 1 << OPEN_SLOTS[k]!;
+  const layout = { fenceMask: mask };
+  return isLegalLayout(layout) ? layout : { fenceMask: 0 };
+}
+
+function goalPatternFor(d: number, rng: Rng): GoalPattern {
+  if (d < 2) return 'open';
+  if (d < 8) return rng.chance(0.7) ? 'wide' : 'open';
+  if (d < 18) return rng.weighted<GoalPattern>(['wide', 'two', 'single'], (p) => (p === 'wide' ? 1.2 : p === 'two' ? 1.5 : 0.6));
+  if (d < 34) return rng.weighted<GoalPattern>(['two', 'single', 'singleSide', 'wide'], (p) => (p === 'two' ? 1.4 : p === 'single' ? 1.4 : p === 'singleSide' ? 0.6 : 0.3));
+  return rng.weighted<GoalPattern>(['single', 'singleSide', 'two'], (p) => (p === 'single' ? 1.3 : p === 'singleSide' ? 1.1 : 0.7));
+}
+
+// ------------------------------------------------------------------ modifiers
+
+function rollModifiers(rng: Rng, chance: number, d: number): LevelModifierId[] {
+  if (chance <= 0 || !rng.chance(chance)) return [];
+  const pool = LEVEL_MODIFIER_IDS.filter((id) => !(id === 'hungryHunters' && d < 10));
+  const first = rng.pick(pool);
+  const out: LevelModifierId[] = [first];
+  if (d > 30 && rng.chance(0.25)) {
+    const second = pool.filter((id) => compatible(first, id));
+    if (second.length) out.push(rng.pick(second));
+  }
+  return out.sort((a, b) => LEVEL_MODIFIER_IDS.indexOf(a) - LEVEL_MODIFIER_IDS.indexOf(b));
+}
+
 // ------------------------------------------------------------------ main
 
 export function generateLevel(req: GenRequest): LevelDef {
@@ -232,49 +334,85 @@ function tryGenerate(req: GenRequest, k: DifficultyKnobs, rng: Rng, fullSeed: st
   // Arena: target area from difficulty, aspect from the region's layout language.
   const aspect = rng.range(region.aspect[0], region.aspect[1]);
   const area = k.arenaW * k.arenaH * rng.range(0.92, 1.08);
-  const W = round(Math.sqrt(area * aspect), 20);
-  const H = round(W / aspect, 20);
-  const walls: WallBlock[] = [];
-  const wallBoxes: Box[] = [];
-  if (rng.chance(k.wallBlockChance)) {
-    const corners = rng.int(1, 2);
-    const used = new Set<number>();
-    for (let i = 0; i < corners; i++) {
-      const c = rng.int(0, 3);
-      if (used.has(c)) continue;
-      used.add(c);
-      const s = round(rng.range(140, 230), 10);
-      const x = c % 2 === 0 ? 0 : W, y = c < 2 ? 0 : H;
-      const sx = c % 2 === 0 ? 1 : -1, sy = c < 2 ? 1 : -1;
-      // Triangular corner cut (convex).
-      walls.push({ points: [[x - sx * 40, y - sy * 40], [x + sx * s, y - sy * 40], [x - sx * 40, y + sy * s]] });
-      wallBoxes.push({ minX: Math.min(x, x + sx * s), minY: Math.min(y, y + sy * s), maxX: Math.max(x, x + sx * s), maxY: Math.max(y, y + sy * s) });
-    }
-  }
+  // Carved shapes remove floor; enlarge the box a little so play space stays comparable.
+  const shapeKind: ArenaShape = req.overrides?.arenaShape ?? chooseShape(rng, req.difficulty, region.layout);
+  const grow = shapeKind === 'rect' ? 1 : shapeKind === 'cove' ? 1.06 : 1.12;
+  const W = round(Math.sqrt(area * grow * aspect), 20);
+  const H = round(Math.sqrt(area * grow / aspect), 20);
+  const shape = buildShape(shapeKind, W, H, rng);
+  const walls = shape.walls;
 
-  // Stash anchor weighted by edge preference.
+  // Statics so far (shape only) for placement tests.
+  const shapeWorld = new PhysicsWorld();
+  shapeWorld.statics = buildStatics({ ...emptyLevel(W, H), arena: { width: W, height: H, walls } }, { goal: false });
+
+  // Goal anchor weighted by edge preference; must fit the courtyard + igloo clear of carved walls.
   const e = k.stashEdge;
   const anchors: Array<{ p: [number, number]; w: number }> = [
-    { p: [0.5, 0.5], w: (1 - e) * 3 },
-    { p: [0.72, 0.5], w: 1.2 }, { p: [0.28, 0.5], w: 1.2 }, { p: [0.5, 0.26], w: 0.8 }, { p: [0.5, 0.74], w: 0.8 },
-    { p: [0.2, 0.24], w: e * 1.6 }, { p: [0.8, 0.24], w: e * 1.6 }, { p: [0.2, 0.76], w: e * 1.6 }, { p: [0.8, 0.76], w: e * 1.6 },
-    { p: [0.14, 0.5], w: e * 1.2 }, { p: [0.86, 0.5], w: e * 1.2 },
+    { p: [0.5, 0.55], w: (1 - e) * 3 },
+    { p: [0.72, 0.55], w: 1.2 }, { p: [0.28, 0.55], w: 1.2 }, { p: [0.5, 0.36], w: 0.8 }, { p: [0.5, 0.74], w: 0.8 },
+    { p: [0.22, 0.34], w: e * 1.6 }, { p: [0.78, 0.34], w: e * 1.6 }, { p: [0.22, 0.76], w: e * 1.6 }, { p: [0.78, 0.76], w: e * 1.6 },
+    { p: [0.16, 0.55], w: e * 1.2 }, { p: [0.84, 0.55], w: e * 1.2 },
   ];
-  const ap = req.overrides?.stashAnchor ?? rng.weighted(anchors, (a) => a.w).p;
-  const stash = { x: round(Math.max(STASH.radius + 70, Math.min(W - STASH.radius - 70, ap[0] * W))), y: round(Math.max(STASH.radius + 70, Math.min(H - STASH.radius - 70, ap[1] * H))) };
+  const fits = (x: number, y: number): boolean =>
+    x - GOAL_CLEAR >= WALL_CLEAR && x + GOAL_CLEAR <= W - WALL_CLEAR && y + IGLOO_TOP >= WALL_CLEAR && y + GOAL_CLEAR <= H - WALL_CLEAR &&
+    !shapeWorld.overlapsStatic(x, y, GOAL_CLEAR + 24, Layer.Player) &&
+    !shapeWorld.overlapsStatic(x + GOAL.iglooBody.cx, y + GOAL.iglooBody.cy, GOAL.iglooBody.w / 2 + 16, Layer.Player);
+  let stash: Point | null = null;
+  const forced = req.overrides?.stashAnchor;
+  for (let tries = 0; tries < 12 && !stash; tries++) {
+    const ap = forced ?? rng.weighted(anchors, (a) => a.w).p;
+    const jx = forced ? 0 : rng.range(-0.04, 0.04), jy = forced ? 0 : rng.range(-0.04, 0.04);
+    const x = round(Math.max(GOAL_CLEAR + WALL_CLEAR, Math.min(W - GOAL_CLEAR - WALL_CLEAR, (ap[0] + jx) * W)));
+    const y = round(Math.max(WALL_CLEAR - IGLOO_TOP, Math.min(H - GOAL_CLEAR - WALL_CLEAR, (ap[1] + jy) * H)));
+    if (fits(x, y)) stash = { x, y };
+  }
+  if (!stash) return null;
 
-  // Player spawn: one of the far candidates from the stash.
+  // Player spawn: one of the far candidates from the goal, on open floor.
   const diag = Math.sqrt(W * W + H * H);
   const pc: Point[] = [[0.12, 0.5], [0.88, 0.5], [0.5, 0.15], [0.5, 0.85], [0.14, 0.2], [0.86, 0.2], [0.14, 0.8], [0.86, 0.8]]
     .map(([fx, fy]) => ({ x: round(fx! * W), y: round(fy! * H) }))
-    .filter((p) => dist(p.x, p.y, stash.x, stash.y) > diag * 0.3);
-  pc.sort((a, b) => dist(b.x, b.y, stash.x, stash.y) - dist(a.x, a.y, stash.x, stash.y));
+    .filter((p) => dist(p.x, p.y, stash!.x, stash!.y) > Math.max(diag * 0.3, GOAL_CLEAR + 160))
+    .filter((p) => !shapeWorld.overlapsStatic(p.x, p.y, PLAYER.radius + 40, Layer.Player));
+  pc.sort((a, b) => dist(b.x, b.y, stash!.x, stash!.y) - dist(a.x, a.y, stash!.x, stash!.y));
   if (pc.length === 0) return null;
   const player = pc[rng.int(0, Math.min(2, pc.length - 1))]!;
 
-  // Obstacles from motifs.
-  const keepOut = [{ x: stash.x, y: stash.y, r: STASH.radius + 95 }, { x: player.x, y: player.y, r: 105 }];
-  const lb = new LayoutBuilder(rng, W, H, region, keepOut, wallBoxes);
+  // Goal fences: how open is the space beyond each slot (ray march to the nearest wall)?
+  const facing = (slot: number): number => {
+    const seg = OPEN_SLOTS[slot]!;
+    const a = RING_DIRS[seg]!, b = RING_DIRS[(seg + 1) % RING_DIRS.length]!;
+    const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+    const ml = Math.sqrt(mx * mx + my * my) || 1;
+    let free = 0;
+    for (let step = 1; step <= 6; step++) {
+      const rr = GOAL_CLEAR + step * 45;
+      const x = stash!.x + (mx / ml) * rr, y = stash!.y + (my / ml) * rr;
+      if (x < WALL_CLEAR || y < WALL_CLEAR || x > W - WALL_CLEAR || y > H - WALL_CLEAR || shapeWorld.overlapsStatic(x, y, 30, Layer.Player)) break;
+      free++;
+    }
+    return free / 6;
+  };
+  const pattern = req.overrides?.goalPattern ?? goalPatternFor(req.difficulty, rng);
+  const goal = chooseGoalLayout(rng, pattern, facing);
+
+  // Obstacles from motifs (keep the courtyard, igloo and gate approaches clear).
+  const keepOut = [
+    { x: stash.x, y: stash.y, r: GOAL_CLEAR + 90 },
+    { x: stash.x + GOAL.iglooBody.cx, y: stash.y + GOAL.iglooBody.cy, r: GOAL.iglooBody.w / 2 + 70 },
+    { x: player.x, y: player.y, r: 105 },
+  ];
+  if (req.difficulty < 22) {
+    // Early levels: nothing parked right in front of a gate.
+    for (let slot = 0; slot < OPEN_SLOTS.length; slot++) {
+      const seg = OPEN_SLOTS[slot]!;
+      if ((goal.fenceMask & (1 << seg)) !== 0) continue;
+      const a = RING_DIRS[seg]!;
+      keepOut.push({ x: stash.x + a[0] * (GOAL_CLEAR + 110), y: stash.y + a[1] * (GOAL_CLEAR + 110), r: 80 });
+    }
+  }
+  const lb = new LayoutBuilder(rng, W, H, region, keepOut, shape.boxes);
   const motifs: Motif[] = req.overrides?.motifs ?? chooseMotifs(rng, k, region);
   for (const m of motifs) {
     switch (m) {
@@ -289,14 +427,17 @@ function tryGenerate(req: GenRequest, k: DifficultyKnobs, rng: Rng, fullSeed: st
       case 'channel': motifChannel(lb, stash); break;
     }
   }
-  if (lb.obstacles.length < k.obstacleCount && k.obstacleCount > 0) {
-    motifScatter(lb, k.obstacleCount - lb.obstacles.length, false, { sx: stash.x, sy: stash.y, px: player.x, py: player.y });
+  // Carved shapes already shape routes; fill less aggressively.
+  const target = shapeKind === 'rect' || shapeKind === 'cove' ? k.obstacleCount : Math.max(0, k.obstacleCount - 2);
+  if (lb.obstacles.length < target && target > 0) {
+    motifScatter(lb, target - lb.obstacles.length, false, { sx: stash.x, sy: stash.y, px: player.x, py: player.y });
   }
 
+  const modifiers = req.overrides?.modifiers ?? rollModifiers(rng, req.modifierChance ?? 0, req.difficulty);
   const partial: LevelDef = {
     id: req.id, mode: req.mode, index: req.index, seed: fullSeed, contentVersion: CONTENT_VERSION, generatorVersion: GENERATOR_VERSION,
-    region: req.region, arena: { width: W, height: H, walls }, player, stash, fish: [], fishRequired: k.fishRequired,
-    enemies: [], obstacles: lb.obstacles, surfaces: [], enemySpeed: Math.round(k.enemySpeed * 1000) / 1000,
+    region: req.region, arena: { width: W, height: H, walls, shape: shapeKind }, player, stash, goal, fish: [], fishRequired: k.fishRequired,
+    enemies: [], obstacles: lb.obstacles, surfaces: [], modifiers, enemySpeed: Math.round(k.enemySpeed * 1000) / 1000,
     parSeconds: 0, difficulty: Math.round(req.difficulty * 100) / 100, hard: req.hard,
     ...(req.seedCode ? { seedCode: req.seedCode } : {}),
     ...(req.tutorial ? { tutorial: req.tutorial } : {}),
@@ -316,9 +457,17 @@ function tryGenerate(req: GenRequest, k: DifficultyKnobs, rng: Rng, fullSeed: st
     if (partial.enemies.length < k.enemyCount) return null;
   }
   // Surfaces (region-specific).
-  partial.surfaces = placeSurfaces(rng, k, region, partial);
+  partial.surfaces = placeSurfaces(rng, k, region, partial, world);
   void attempt;
   return partial;
+}
+
+function emptyLevel(W: number, H: number): LevelDef {
+  return {
+    id: '', mode: 'practice', index: 0, seed: '', contentVersion: CONTENT_VERSION, generatorVersion: GENERATOR_VERSION, region: 'classic_winter',
+    arena: { width: W, height: H, walls: [] }, player: { x: 0, y: 0 }, stash: { x: -9999, y: -9999 }, goal: { fenceMask: 0 }, fish: [], fishRequired: 1,
+    enemies: [], obstacles: [], surfaces: [], modifiers: [], enemySpeed: 1, parSeconds: 0, difficulty: 0, hard: false,
+  };
 }
 
 function chooseMotifs(rng: Rng, k: DifficultyKnobs, region: RegionDef): Motif[] {
@@ -342,7 +491,7 @@ function chooseMotifs(rng: Rng, k: DifficultyKnobs, region: RegionDef): Motif[] 
 function placeFish(rng: Rng, k: DifficultyKnobs, level: LevelDef, world: PhysicsWorld, grid: NavGrid, stashField: Float32Array, diag: number): FishSpawn[] {
   const out: FishSpawn[] = [];
   const W = level.arena.width, H = level.arena.height;
-  const minD = Math.max(STASH.radius + 90, k.fishDistance * diag);
+  const minD = Math.max(GOAL_CLEAR + 130, k.fishDistance * diag);
   const variants: FishVariant[] = [];
   for (let i = 0; i < k.fishCount; i++) variants.push('standard');
   if (level.difficulty > 18) {
@@ -389,7 +538,7 @@ function placeEnemies(rng: Rng, k: DifficultyKnobs, level: LevelDef, world: Phys
       const x = round(edge === 0 ? m : edge === 1 ? W - m : t * W);
       const y = round(edge === 2 ? m : edge === 3 ? H - m : t * H);
       if (dist(x, y, level.player.x, level.player.y) < 380) continue;
-      if (dist(x, y, level.stash.x, level.stash.y) < STASH.radius + 180) continue;
+      if (dist(x, y, level.stash.x, level.stash.y) < GOAL_CLEAR + 200) continue;
       if (level.fish.some((f) => dist(f.x, f.y, x, y) < k.enemyFishGap)) continue;
       if (out.some((o) => dist(o.x, o.y, x, y) < 140)) continue;
       if (world.overlapsStatic(x, y, r + 8, Layer.Enemy)) continue;
@@ -400,7 +549,7 @@ function placeEnemies(rng: Rng, k: DifficultyKnobs, level: LevelDef, world: Phys
   return out;
 }
 
-function placeSurfaces(rng: Rng, k: DifficultyKnobs, region: RegionDef, level: LevelDef): SurfacePatch[] {
+function placeSurfaces(rng: Rng, k: DifficultyKnobs, region: RegionDef, level: LevelDef, world: PhysicsWorld): SurfacePatch[] {
   const out: SurfacePatch[] = [];
   if (region.surfaces.length === 0 || !rng.chance(k.surfaceChance)) return out;
   const n = rng.int(1, 3);
@@ -410,6 +559,8 @@ function placeSurfaces(rng: Rng, k: DifficultyKnobs, region: RegionDef, level: L
     const x = round(rng.range(rx + 40, level.arena.width - rx - 40));
     const y = round(rng.range(ry + 40, level.arena.height - ry - 40));
     if (dist(x, y, level.player.x, level.player.y) < Math.max(rx, ry) + 60) continue;
+    if (dist(x, y, level.stash.x, level.stash.y) < Math.max(rx, ry) + GOAL_CLEAR + 10) continue;
+    if (world.overlapsStatic(x, y, Math.min(rx, ry) * 0.6, Layer.Player)) continue;
     out.push({ type, x, y, rx, ry });
   }
   return out;
@@ -423,7 +574,9 @@ function estimatePar(level: LevelDef, fishToStash: number[], playerToFish: numbe
   let total = playerToFish[order[0]!.i]! + order[0]!.d;
   for (let j = 1; j < order.length; j++) total += order[j]!.d * 2.15;
   const enemyTax = level.enemies.length * 0.9;
-  const t = total / dribble + order.length * 1.1 + 0.8 + enemyTax;
+  // Narrow gates cost lining-up time per fish.
+  const gates = level.goal.fenceMask === 0 ? 0 : 0.45;
+  const t = (total / dribble + order.length * (1.1 + gates) + 0.8 + enemyTax) * parFactor(level.modifiers);
   return Math.round(t * 10) / 10;
 }
 
@@ -432,7 +585,7 @@ function fallbackLevel(req: GenRequest, k: DifficultyKnobs, fullSeed: string): L
   const W = 1200, H = 760;
   const fishCount = Math.max(1, Math.min(k.fishCount, 4));
   const fish: FishSpawn[] = [];
-  for (let i = 0; i < fishCount; i++) fish.push({ x: 520 + (i % 2) * 120, y: 200 + i * 120, variant: 'standard' });
+  for (let i = 0; i < fishCount; i++) fish.push({ x: 480 + (i % 2) * 110, y: 200 + i * 120, variant: 'standard' });
   const enemyCount = Math.min(k.enemyCount, 2);
   const enemies: EnemySpawn[] = [];
   const types = k.enemyTypes;
@@ -440,9 +593,10 @@ function fallbackLevel(req: GenRequest, k: DifficultyKnobs, fullSeed: string): L
   if (enemyCount > 1) enemies.push({ type: types[types.length - 1]!, x: 1100, y: 650, delay: 2.5 });
   const level: LevelDef = {
     id: req.id, mode: req.mode, index: req.index, seed: `${fullSeed}#fallback`, contentVersion: CONTENT_VERSION, generatorVersion: GENERATOR_VERSION,
-    region: req.region, arena: { width: W, height: H, walls: [] }, player: { x: 160, y: 380 }, stash: { x: 940, y: 380 },
+    region: req.region, arena: { width: W, height: H, walls: [], shape: 'rect' }, player: { x: 160, y: 420 }, stash: { x: 940, y: 440 },
+    goal: { fenceMask: 0 }, modifiers: [],
     fish, fishRequired: Math.min(fishCount, k.fishRequired), enemies,
-    obstacles: [{ type: 'mediumBlock', x: 760, y: 170, scale: 0.9, flip: false }, { type: 'mediumBlock', x: 760, y: 590, scale: 0.9, flip: false }],
+    obstacles: [{ type: 'mediumBlock', x: 700, y: 150, scale: 0.85, flip: false }, { type: 'mediumBlock', x: 700, y: 640, scale: 0.85, flip: false }],
     surfaces: [], enemySpeed: Math.round(k.enemySpeed * 1000) / 1000, parSeconds: 0, difficulty: req.difficulty, hard: req.hard,
     ...(req.seedCode ? { seedCode: req.seedCode } : {}),
     ...(req.tutorial ? { tutorial: req.tutorial } : {}),

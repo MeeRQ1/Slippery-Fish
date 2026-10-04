@@ -39,7 +39,9 @@ export type SynthRecipe =
   | 'hover' | 'click' | 'clickSoft' | 'back' | 'chaChing' | 'chestClunk' | 'chestJingle' | 'paperStamp' | 'gearClick'
   | 'bobber' | 'bell' | 'boing' | 'pop' | 'scoreChime' | 'thud' | 'heartbeat' | 'chomp' | 'whoosh' | 'beepLow'
   | 'deflate' | 'fanfare' | 'clang' | 'wahWah' | 'cry' | 'tromboneSad' | 'starDing' | 'coin' | 'fwip' | 'chains'
-  | 'woodCreak' | 'woodKnock' | 'reel' | 'splash' | 'gong' | 'puff' | 'slideSeal' | 'growl' | 'swoosh' | 'denied';
+  | 'woodCreak' | 'woodKnock' | 'reel' | 'splash' | 'gong' | 'puff' | 'slideSeal' | 'growl' | 'swoosh' | 'denied'
+  | 'knockLow' | 'cheep' | 'bearGrowl' | 'wolfYip' | 'sealBark' | 'bubble' | 'munch' | 'sprinkle' | 'brandMotif'
+  | 'skid' | 'sprintEnd' | 'titleUnlock' | 'mapWhoosh' | 'lampClick' | 'gateChime';
 
 export interface SfxDef {
   synth?: SynthRecipe;
@@ -100,6 +102,23 @@ export const SFX = {
   reel: s('reel', 0.45, 200, 0, 1),
   splash: s('splash', 0.5, 150, 0.06, 2),
   rankedRound: s('gong', 0.6, 800, 0, 1),
+  // Goal & species personalities
+  fenceKnock: s('knockLow', 0.45, 55, 0.1, 3),
+  chickCheep: s('cheep', 0.4, 140, 0.12, 2),
+  gateChime: s('gateChime', 0.35, 400, 0.02, 1),
+  bearGrowl: s('bearGrowl', 0.4, 900, 0.08, 1),
+  wolfYip: s('wolfYip', 0.35, 700, 0.1, 1),
+  sealBark: s('sealBark', 0.4, 700, 0.1, 1),
+  sprintEnd: s('sprintEnd', 0.22, 300, 0.05, 1),
+  skid: s('skid', 0.18, 220, 0.12, 1),
+  // Pet, progression, brand
+  petBubble: s('bubble', 0.28, 90, 0.2, 3),
+  petMunch: s('munch', 0.4, 120, 0.1, 2),
+  feedSprinkle: s('sprinkle', 0.35, 200, 0.05, 1),
+  titleUnlock: s('titleUnlock', 0.55, 800, 0, 1),
+  mapWhoosh: s('mapWhoosh', 0.22, 300, 0.05, 1),
+  lampClick: s('lampClick', 0.35, 200, 0.05, 1),
+  brandMotif: s('brandMotif', 0.55, 2000, 0, 1),
 } satisfies Record<string, SfxDef>;
 
 export type SfxId = keyof typeof SFX;

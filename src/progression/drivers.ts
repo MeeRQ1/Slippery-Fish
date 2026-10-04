@@ -299,7 +299,7 @@ export function infiniteDriver(svc: DriverServices, seed: InfiniteSeed, hard: bo
  * Clearly labelled practice: no opponent, no rankings, no ranked rewards.
  */
 export function practiceDriver(svc: DriverServices, seed: InfiniteSeed): PlayDriver {
-  const level = { ...infiniteLevel(seed, false), mode: 'practice' as const };
+  const level = { ...infiniteLevel(seed, false, true), mode: 'practice' as const };
   const code = encodeSeed(seed);
   const bestKey = bestTimeKey({ mode: 'practice', levelKey: code, contentVersion: level.contentVersion, generatorVersion: level.generatorVersion, hard: false, normalized: true });
   return {

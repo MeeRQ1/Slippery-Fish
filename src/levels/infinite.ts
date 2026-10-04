@@ -81,18 +81,21 @@ export function nextSeed(cur: InfiniteSeed): InfiniteSeed {
   return { level: cur.level + 1, layout: hash32(`next:${cur.layout}:${cur.level}`) };
 }
 
-export function infiniteLevel(seed: InfiniteSeed, hard = false): LevelDef {
+/** `normalized` (Ranked/Practice) levels never carry level modifiers. */
+export function infiniteLevel(seed: InfiniteSeed, hard = false, normalized = false): LevelDef {
   const code = encodeSeed(seed);
   // Regions cycle every 10 levels so long runs travel the whole world.
   const region = REGIONS[(Math.floor((seed.level - 1) / 10) + (seed.layout % 4)) % REGIONS.length]!;
   return generateLevel({
     seed: `infinite:${seed.layout}:${seed.level}`,
-    id: `inf-${code}`,
+    id: normalized ? `rk-${code}` : `inf-${code}`,
     mode: 'infinite',
     index: seed.level,
     region: region.id,
     difficulty: infiniteDifficulty(seed.level),
     hard,
     seedCode: code,
+    modifierChance: normalized || seed.level < 3 ? 0 : 0.2,
+    ...(normalized ? { overrides: { modifiers: [] } } : {}),
   });
 }
