@@ -252,3 +252,19 @@ html[data-season="autumn"] .play-cta .cta-snow { background: #f2a14a; }
 .tc-body p { margin: 2px 0; line-height: 1.35; }
 .tc-goal { font-weight: 800; color: #1f7a3a; }
 @media (max-width: 600px) { .training-card { grid-template-columns: 36px 1fr; } .training-card > :last-child { grid-column: 1 / -1; justify-self: end; } }
+
+/* ---------- themed sprint button (level theme; identical size, icon and hit area) ---------- */
+.sprint-btn::after { content: ''; position: absolute; pointer-events: none; }
+.sprint-btn.theme-winter { background: radial-gradient(circle at 35% 30%, #ffffff, #bfe6ff 62%, #6fb6e6); box-shadow: inset 0 -8px 0 rgba(40,100,160,0.35), 0 6px 0 var(--navy); }
+.sprint-btn.theme-winter::after { left: 14px; right: 14px; top: -10px; height: 22px; border-radius: 14px 14px 10px 10px; background: #fff; border: 4px solid var(--navy); border-bottom: none; }
+.sprint-btn.theme-spring { background: radial-gradient(circle at 35% 30%, #fff6fb, #ffc6e0 62%, #e86aa8); }
+.sprint-btn.theme-spring::after { right: -6px; top: -6px; width: 30px; height: 22px; border-radius: 60% 0 60% 0; background: #8fd18a; border: 3px solid var(--navy); }
+.sprint-btn.theme-summer { background: radial-gradient(circle at 35% 30%, #fffbe0, #ffe27a 60%, #f2a01a); }
+.sprint-btn.theme-summer::after { inset: -9px; border-radius: 50%; border: 4px dashed rgba(242,160,26,0.85); }
+.sprint-btn.theme-autumn { background: radial-gradient(circle at 35% 30%, #fff2e0, #ffb46a 62%, #d9622a); }
+.sprint-btn.theme-autumn::after { left: -8px; top: 4px; width: 30px; height: 20px; border-radius: 0 70% 0 70%; background: #e8742a; border: 3px solid var(--navy); transform: rotate(-24deg); }
+.sprint-btn.theme-sweet { background: radial-gradient(circle at 35% 30%, #fff, #ffd0ea 60%, #ef6f9c); }
+.sprint-btn.theme-sweet::after { left: 18px; right: 18px; top: -8px; height: 16px; border-radius: 10px; background: repeating-linear-gradient(90deg, #7fd0f0 0 6px, #fff 6px 12px, #f6c945 12px 18px); border: 3px solid var(--navy); }
+.sprint-btn.theme-night { background: radial-gradient(circle at 35% 30%, #e8ecff, #9aa8ff 60%, #4a4fb8); color: #fff; }
+.sprint-btn.theme-night::after { right: 6px; top: 2px; width: 16px; height: 16px; border-radius: 50%; box-shadow: -5px 3px 0 0 #fff3a0; }
+.sprint-btn.low { background: radial-gradient(circle at 35% 30%, #ffe6cc, #ff9a4a 75%) !important; }

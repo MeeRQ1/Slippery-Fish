@@ -41,7 +41,7 @@ export class SettingsSign extends SignScreen {
           slider('Master volume', s.masterVolume, { min: 0, max: 1, step: 0.05, onInput: (v) => this.set({ masterVolume: v }) }),
           slider('Music', s.musicVolume, { min: 0, max: 1, step: 0.05, onInput: (v) => this.set({ musicVolume: v }) }),
           slider('Sound effects', s.sfxVolume, { min: 0, max: 1, step: 0.05, onInput: (v) => this.set({ sfxVolume: v }), onCommit: () => this.app.audio.play('fishBounce') }),
-          toggle('Music on', s.musicOn, (v) => this.set({ musicOn: v }), musicMissing ? { note: 'No music tracks are bundled yet — this applies once they are added.' } : {}),
+          toggle('Music on', s.musicOn, (v) => this.set({ musicOn: v }), musicMissing ? { note: 'Menus play the original synthesized Slippery Fish theme; levels stay quiet until recorded tracks are added.' } : {}),
           toggle('Button sounds', s.buttonSounds, (v) => this.set({ buttonSounds: v })),
         ),
         this.group('CONTROLS',

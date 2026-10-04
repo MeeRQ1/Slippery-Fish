@@ -12,6 +12,7 @@
 import { AUDIO_TIMING, MUSIC, SFX, type MusicSlot, type SfxDef, type SfxId } from '../config/audio';
 import type { Settings } from '../save/settings';
 import { playRecipe } from './synth';
+import { ThemeTune, tuneStyleFor, type TuneStyle } from './themeTune';
 
 interface Voice { id: SfxId; endsAt: number }
 
@@ -25,6 +26,8 @@ export class AudioManager {
   private buffers = new Map<string, Promise<AudioBuffer | null>>();
   private currentSlot: MusicSlot | null = null;
   private musicSource: { node: AudioBufferSourceNode; gain: GainNode } | null = null;
+  /** Original synthesized theme used for menu slots without a recorded track. */
+  private tune: { tune: ThemeTune; style: TuneStyle } | null = null;
   private settings: Settings;
   private hidden = false;
   /** Set when the requested slot has no assigned track (UI can report it). */
@@ -79,6 +82,19 @@ export class AudioManager {
     this.master.gain.setTargetAtTime(s.masterVolume, t, 0.05);
     this.sfxBus.gain.setTargetAtTime(s.sfxVolume, t, 0.05);
     this.musicBus.gain.setTargetAtTime(s.musicOn ? s.musicVolume : 0, t, 0.08);
+    // Don't run the theme's scheduler at all while music is off.
+    if (!s.musicOn && this.tune) { this.tune.tune.stop(0.3); this.tune = null; }
+    else if (s.musicOn && !this.tune && this.currentSlot) this.syncTune(this.currentSlot);
+  }
+
+  private syncTune(slot: MusicSlot): void {
+    const style = MUSIC[slot] ? null : tuneStyleFor(slot);
+    if (this.tune && this.tune.style === style) return;
+    if (this.tune) { this.tune.tune.stop(); this.tune = null; }
+    if (!style || !this.ctx || !this.musicBus || !this.settings.musicOn) return;
+    const tune = new ThemeTune(this.ctx, this.musicBus, style);
+    tune.start();
+    this.tune = { tune, style };
   }
 
   /** Plays an effect. `intensity` 0–1 modulates recipes like bounces/stars. */
@@ -147,8 +163,9 @@ export class AudioManager {
     if (slot === this.currentSlot) return;
     this.currentSlot = slot;
     const track = MUSIC[slot];
-    this.missingMusicSlot = track ? null : slot;
+    this.missingMusicSlot = track || tuneStyleFor(slot) ? null : slot;
     if (!this.ctx || !this.musicBus) return;
+    this.syncTune(slot);
     const fade = AUDIO_TIMING.musicCrossfadeSeconds;
     const t = this.ctx.currentTime;
     if (this.musicSource) {

@@ -281,3 +281,20 @@ export const STARS = {
   /** Each fish lost to enemies removes this many stars (min 1). */
   starsLostPerEatenFish: 1,
 } as const;
+
+/**
+ * Enemy expression bands (presentation only — never read by the AI).
+ * The distance is measured from the enemy to the fish it is currently
+ * targeting; if it has no live target, to the nearest exposed (free) fish.
+ * Calming down needs the distance to exceed a band by `hysteresis` units and
+ * a state must be held for `minHold` seconds, so faces never flicker.
+ */
+export const ENEMY_EXPRESSION = {
+  alert: 520,
+  eager: 260,
+  imminent: 110,
+  hysteresis: 50,
+  minHold: 0.35,
+  /** Species voice (growl / yip / bark) when an enemy turns eager, per enemy. */
+  voiceCooldown: 4.5,
+} as const;

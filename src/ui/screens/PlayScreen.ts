@@ -25,6 +25,16 @@ import { Screen, type ScreenParams } from '../screen';
 import type { App } from '../../app';
 import type { Router } from '../router';
 
+/** Sprint-button material by LEVEL theme (never by menu season). */
+function sprintTheme(region: string): string {
+  if (['spring_thaw'].includes(region)) return 'spring';
+  if (['beach', 'summer'].includes(region)) return 'summer';
+  if (region === 'fall') return 'autumn';
+  if (['ice_cream', 'candy_snow', 'festival'].includes(region)) return 'sweet';
+  if (['aurora', 'arctic_night', 'mastery'].includes(region)) return 'night';
+  return 'winter';
+}
+
 const WIN_TITLES = ['FISH-TASTIC!', 'STASHED IT!', 'WADDLE-ICIOUS!', 'SLIPPERY SUCCESS!', 'FIN-CREDIBLE!', 'NICE DRIBBLING!'];
 const FAIL_TITLES = ['FISH TRAGICALLY EATEN!', 'OH NO, MY FISH!', 'NOM NOM… NOT YOURS.'];
 
@@ -137,7 +147,7 @@ export class PlayScreen extends Screen {
 
   private enableTouch(): void {
     if (this.touch || this.app.settings.get().touchControls === 'off') return;
-    this.touch = new TouchControls(this.app.input, this.app.settings.get().swapTouchSides, () => this.app.audio.unlock());
+    this.touch = new TouchControls(this.app.input, this.app.settings.get().swapTouchSides, () => this.app.audio.unlock(), sprintTheme(this.driver.level.region));
     this.el.append(this.touch.el);
     this.el.classList.add('has-touch');
     this.d.add(() => this.touch?.destroy());

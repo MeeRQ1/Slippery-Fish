@@ -5,7 +5,7 @@
  */
 import Phaser from 'phaser';
 import { BANK_MARGIN, drawGlaze, drawSnowbanks, drawSurfacePatch, hexToInt } from '../art/procedural';
-import { CAMERA, ENEMIES, FISH, GOAL, PLAYER } from '../config/gameplay';
+import { CAMERA, ENEMIES, ENEMY_EXPRESSION, FISH, GOAL, PLAYER } from '../config/gameplay';
 import { OBSTACLES } from '../config/obstacles';
 import { REGION_BY_ID, type RegionDef } from '../config/regions';
 import { decorPool, groupsForRegion, type FrameMeta } from '../core/assets';
@@ -29,9 +29,10 @@ export interface GameSceneData {
   onReady?: () => void;
 }
 
-interface FishView { fish: FishEntity; img: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; lines: Phaser.GameObjects.Image; angle: number; baseFrame: { key: string; frame?: string }; scale: number; entering: { t: number; x: number; y: number } | null }
+interface FishView { fish: FishEntity; img: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; lines: Phaser.GameObjects.Image; angle: number; baseFrame: { key: string; frame?: string }; scale: number; entering: { t: number; x: number; y: number } | null; trailT?: number }
 interface ChickView { img: Phaser.GameObjects.Image; x: number; y: number; phase: number; tint: number; mood: ChickMood }
-interface EnemyView { enemy: EnemyEntity; root: Phaser.GameObjects.Container; img: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; scale: number; lean: number; phase: number; alert: number }
+type Expression = 'idle' | 'alert' | 'eager' | 'imminent';
+interface EnemyView { enemy: EnemyEntity; root: Phaser.GameObjects.Container; img: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; scale: number; lean: number; phase: number; alert: number; expr: Expression; exprHold: number; emote: Phaser.GameObjects.Image; voiceCd: number }
 interface Particle { img: Phaser.GameObjects.Image; vx: number; vy: number; life: number; max: number; s0: number; s1: number; a0: number; a1: number; spin: number; gravity: number; active: boolean }
 interface Flake { img: Phaser.GameObjects.Image; vx: number; vy: number; phase: number }
 
@@ -55,6 +56,8 @@ export class GameScene extends Phaser.Scene {
   private popups: Phaser.GameObjects.Text[] = [];
   private stashArrow: Phaser.GameObjects.Image | null = null;
   private particles: Particle[] = [];
+  private skidTimer = 0;
+  private lastPv = { x: 0, y: 0 };
   private flakes: Flake[] = [];
   private followMode = false;
   private cssPerUnit = 1;
@@ -159,6 +162,7 @@ export class GameScene extends Phaser.Scene {
       this.fishViews.push({ fish: f, img, shadow: sh, lines, angle: 0, baseFrame: t, scale, entering: null });
     }
 
+    this.makeFxTextures();
     // --- enemies
     for (const e of this.session.sim.enemies) {
       const cfg = ENEMIES[e.type];
@@ -168,7 +172,8 @@ export class GameScene extends Phaser.Scene {
       img.setScale(scale);
       const shadow = this.add.image(e.body.x, e.body.y + cfg.radius * 0.75, 'proc_shadow').setDisplaySize(cfg.radius * 2.4, cfg.radius * 0.9).setAlpha(0.5);
       const root = this.add.container(e.body.x, e.body.y, [img]);
-      this.enemyViews.push({ enemy: e, root, img, shadow, scale, lean: 0, phase: Math.random() * 6, alert: 0 });
+      const emote = this.add.image(e.body.x, e.body.y, 'emote_alert').setVisible(false).setDepth(DEPTH.fx - 1);
+      this.enemyViews.push({ enemy: e, root, img, shadow, scale, lean: 0, phase: Math.random() * 6, alert: 0, expr: 'idle', exprHold: 0, emote, voiceCd: 0 });
     }
 
     // --- player penguin (round, single-sided, rotates while moving)
@@ -358,6 +363,21 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
+    // Ice skid marks when turning or braking hard at speed (presentation only, pooled, short-lived).
+    this.skidTimer -= dt;
+    if (!reduced && speed > 170 && this.skidTimer <= 0) {
+      const pv = Math.hypot(this.lastPv.x, this.lastPv.y);
+      const turn = pv > 1 ? 1 - (pb.vx * this.lastPv.x + pb.vy * this.lastPv.y) / (speed * pv) : 0;
+      const brake = pv - speed;
+      if (turn > 0.012 || brake > 9) {
+        this.skidTimer = 0.035;
+        this.spawn('fx_skid', undefined, px, py + 14, { vx: 0, vy: 0, life: 1.1, s0: 0.9, s1: 0.9, a0: 0.6, a1: 0, depth: DEPTH.decal + 1 })?.img.setRotation(heading);
+        if (turn > 0.03 || brake > 18) this.data_.audio.play('skid');
+      }
+    }
+    this.lastPv.x = pb.vx;
+    this.lastPv.y = pb.vy;
+
     // Fish
     for (const v of this.fishViews) this.updateFish(v, alpha, dt);
     // Enemies
@@ -438,6 +458,13 @@ export class GameScene extends Phaser.Scene {
     v.shadow.setPosition(x, y + f.cfg.radius * 0.75).setDepth(DEPTH.actors + y - 1);
     // Speed lines only at high velocity (Batch 3 rule).
     const th = FISH.speedLinesThreshold;
+    if (speed > th * 0.8 && !this.data_.settings().reducedMotion) {
+      v.trailT = (v.trailT ?? 0) - dt;
+      if (v.trailT <= 0) {
+        v.trailT = 0.045;
+        this.spawn('fx_trail', undefined, x - (b.vx / speed) * f.cfg.radius, y - (b.vy / speed) * f.cfg.radius, { vx: 0, vy: 0, life: 0.45, s0: 0.9, s1: 0.4, a0: 0.7, a1: 0, depth: DEPTH.actors + y - 3 });
+      }
+    }
     if (speed > th) {
       const a = Math.min(1, (speed - th) / (FISH.maxSpeed - th));
       v.lines.setAlpha(0.35 + a * 0.6);
@@ -478,6 +505,80 @@ export class GameScene extends Phaser.Scene {
     v.root.setDepth(DEPTH.actors + y);
     v.shadow.setDepth(DEPTH.actors + y - 1);
     if (v.alert > 0) v.alert -= dt;
+    this.updateExpression(v, x, y, dt, t, reduced);
+  }
+
+  /** Readable expression state from distance to the enemy's target (or nearest exposed fish), with hysteresis. */
+  private updateExpression(v: EnemyView, x: number, y: number, dt: number, t: number, reduced: boolean): void {
+    const e = v.enemy;
+    const sim = this.session.sim;
+    v.voiceCd = Math.max(0, v.voiceCd - dt);
+    v.exprHold += dt;
+    let d = Infinity;
+    const target = sim.fish.find((f) => f.id === e.targetFish && f.state === 'free');
+    if (target) d = Math.hypot(target.body.x - e.body.x, target.body.y - e.body.y);
+    else for (const f of sim.exposedFish) d = Math.min(d, Math.hypot(f.body.x - e.body.x, f.body.y - e.body.y));
+    const E = ENEMY_EXPRESSION;
+    const raw: Expression = e.state === 'munching' || e.state === 'waiting' ? 'idle' : d <= E.imminent ? 'imminent' : d <= E.eager ? 'eager' : d <= E.alert ? 'alert' : 'idle';
+    const rank = { idle: 0, alert: 1, eager: 2, imminent: 3 } as const;
+    let next = v.expr;
+    if (rank[raw] > rank[v.expr]) next = raw; // escalate immediately
+    else if (rank[raw] < rank[v.expr] && v.exprHold >= E.minHold) {
+      // calm down only once clearly outside the band
+      const band = v.expr === 'imminent' ? E.imminent : v.expr === 'eager' ? E.eager : E.alert;
+      if (d > band + E.hysteresis || e.state === 'munching' || e.state === 'waiting') next = raw;
+    }
+    if (next !== v.expr) {
+      if (rank[next] >= 2 && rank[v.expr] < 2 && v.voiceCd <= 0) {
+        this.data_.audio.play(e.type === 'polarBear' ? 'bearGrowl' : e.type === 'arcticWolf' ? 'wolfYip' : 'sealBark');
+        v.voiceCd = E.voiceCooldown;
+      }
+      v.expr = next;
+      v.exprHold = 0;
+      if (next === 'idle') v.emote.setVisible(false);
+      else v.emote.setTexture(`emote_${next}`).setVisible(true);
+    }
+    if (v.emote.visible) {
+      const bob = reduced ? 0 : Math.sin(t * (v.expr === 'imminent' ? 14 : 5)) * (v.expr === 'imminent' ? 3 : 2);
+      v.emote.setPosition(x + e.cfg.radius * 0.55, y - e.cfg.radius - 22 + bob).setScale(v.expr === 'imminent' ? 0.62 : 0.5);
+    }
+    v.img.setTint(v.expr === 'imminent' && !reduced && Math.sin(t * 16) > 0 ? 0xffd0d0 : 0xffffff);
+  }
+
+  /** Emote bubbles and trail decals (procedural, generated once per scene). */
+  private makeFxTextures(): void {
+    const bubble = (key: string, fill: string, glyph: string, glyphColor: string) => addCanvasTexture(this, key, () => {
+      const c = document.createElement('canvas');
+      c.width = 72; c.height = 72;
+      const g = c.getContext('2d')!;
+      g.lineWidth = 5; g.strokeStyle = '#1b2a44'; g.fillStyle = fill;
+      g.beginPath(); g.arc(36, 32, 26, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.beginPath(); g.moveTo(26, 54); g.lineTo(22, 68); g.lineTo(38, 57); g.closePath(); g.fill(); g.stroke();
+      g.fillStyle = fill; g.beginPath(); g.arc(36, 32, 23, 0, Math.PI * 2); g.fill();
+      g.font = '900 34px Fredoka, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.lineWidth = 6; g.strokeStyle = '#1b2a44'; g.strokeText(glyph, 36, 34); g.fillStyle = glyphColor; g.fillText(glyph, 36, 34);
+      return c;
+    });
+    bubble('emote_alert', '#ffffff', '?', '#3d8fd6');
+    bubble('emote_eager', '#fff3c4', '!', '#f2a01a');
+    bubble('emote_imminent', '#ffd6d6', '!!', '#ff3b3b');
+    addCanvasTexture(this, 'fx_skid', () => {
+      const c = document.createElement('canvas');
+      c.width = 34; c.height = 14;
+      const g = c.getContext('2d')!;
+      g.strokeStyle = 'rgba(160,205,240,0.9)'; g.lineWidth = 3; g.lineCap = 'round';
+      for (const yy of [4, 10]) { g.beginPath(); g.moveTo(3, yy); g.quadraticCurveTo(17, yy - 2, 31, yy); g.stroke(); }
+      return c;
+    });
+    addCanvasTexture(this, 'fx_trail', () => {
+      const c = document.createElement('canvas');
+      c.width = 16; c.height = 16;
+      const g = c.getContext('2d')!;
+      const gr = g.createRadialGradient(8, 8, 1, 8, 8, 8);
+      gr.addColorStop(0, 'rgba(255,255,255,0.95)'); gr.addColorStop(1, 'rgba(200,235,255,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 16, 16);
+      return c;
+    });
   }
 
   // ------------------------------------------------------------------ goal
@@ -703,6 +804,9 @@ export class GameScene extends Phaser.Scene {
       case 'sprintStart':
         audio.play('sprint');
         break;
+      case 'sprintEnd':
+        audio.play('sprintEnd');
+        break;
       case 'staminaLow':
         audio.play('staminaLow');
         break;
@@ -782,14 +886,20 @@ export class GameScene extends Phaser.Scene {
 
   private updateWeather(dt: number, t: number): void {
     if (this.flakes.length === 0) return;
-    const level = this.session.config.level;
-    const W = level.arena.width + 400, H = level.arena.height + 400;
+    // Flakes live in world space (they parallax correctly as the camera follows) but wrap
+    // around the CURRENT camera view, so weather keeps filling the screen while moving.
+    const v = this.cameras.main.worldView;
+    const m = 120;
+    const W = v.width + m * 2, H = v.height + m * 2;
     for (const f of this.flakes) {
       f.img.x += (f.vx + Math.sin(t * 1.3 + f.phase) * 18) * dt;
       f.img.y += f.vy * dt;
       f.img.rotation += dt * 0.8;
-      if (f.img.x > W - 200) f.img.x -= W;
-      if (f.img.y > H - 200) f.img.y -= H;
+      if (f.img.x > v.right + m) f.img.x -= W;
+      else if (f.img.x < v.x - m) f.img.x += W;
+      if (f.img.y > v.bottom + m) f.img.y -= H;
+      else if (f.img.y < v.y - m) f.img.y += H;
     }
   }
+
 }

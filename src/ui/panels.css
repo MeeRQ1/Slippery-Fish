@@ -125,7 +125,8 @@
 /* Penguin + Hood preview */
 .peng-preview { position: relative; display: inline-flex; justify-content: center; align-items: flex-end; }
 .peng-preview .pp-body { position: relative; z-index: 1; }
-.peng-preview .pp-hood { position: absolute; z-index: 2; left: 50%; top: 2%; transform: translateX(-50%); height: auto; pointer-events: none; }
+.peng-preview { overflow: visible; flex: none; }
+.peng-preview .pp-hood { position: absolute; z-index: 2; left: 50%; transform: translateX(-50%); height: auto; pointer-events: none; }
 
 /* ------------------------------------------------------------------ sign shared */
 .sign-board.wide { width: 100%; }
