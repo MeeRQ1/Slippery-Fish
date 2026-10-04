@@ -120,6 +120,7 @@ export class MainMenuScreen extends Screen {
       const def = roadmapChest(upcoming);
       if (def) note([h('b', { text: '🎁' }), `${def.kind === 'region' ? 'Region Treasure' : 'Next chest'}: Level ${upcoming}`], () => void this.router.go('adventure', { focus: upcoming }), `Next route chest at level ${upcoming}`);
     }
+    if (s.tutorial.lessonsDone.length === 0 && Object.keys(s.adventure.stars).length < 15) note([h('b', { text: '⛸' }), 'New here? Training Rink'], () => void this.router.go('training'), 'Open the optional Training Rink tutorial');
     const q = this.app.quests.claimableCount();
     if (q > 0) note([h('b', { text: '✔' }), `${q} quest reward${q > 1 ? 's' : ''} ready`], () => void this.router.go('quests'), 'Claim quest rewards');
     if (daily.done < DAILY_LEVELS) note([h('b', { text: '🍦' }), `Daily ${daily.done} / ${DAILY_LEVELS}`], () => void this.router.go('daily'), `Daily Challenge: ${daily.done} of ${DAILY_LEVELS} done today`);

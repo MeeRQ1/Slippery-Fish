@@ -163,6 +163,7 @@ export class PlayScreen extends Screen {
     this.vignette.update(snap.danger, dt, WARNING.pulseHzFar, WARNING.pulseHzNear, WARNING.opacityFar, WARNING.opacityNear);
     this.touch?.setSprintAvailable(snap.canSprint, snap.staminaState === 'low');
     if (snap.danger > 0.65 && this.lastDanger <= 0.65) this.app.audio.play('danger');
+    if (this.driver.objective && snap.status === 'playing' && this.driver.objective.met(this.session.sim)) this.session.sim.completeObjective();
     this.lastDanger = snap.danger;
     if (snap.status === 'won' && this.handled === 'none') {
       this.handled = 'won';
@@ -325,6 +326,7 @@ export class PlayScreen extends Screen {
     const next = this.driver.next();
     const title = WIN_TITLES[Math.floor(Math.random() * WIN_TITLES.length)]!;
     const stars = h('div', { class: 'stars-row', attrs: { 'aria-label': `${summary.stars} of 5 Excellence Stars` } });
+    if (this.driver.mode === 'training') stars.style.display = 'none';
     for (let i = 0; i < 5; i++) stars.append(h('div', { class: 'star-slot' }, canvasImg(drawPaperStar(i * 7 + 3, 96, false), 'star-empty')));
     const times = h('div', { class: 'result-times' },
       h('div', { class: 'rt' }, h('span', { class: 'rt-k', text: 'TIME' }), h('span', { class: 'rt-v', text: formatTime(summary.timeMs) })),

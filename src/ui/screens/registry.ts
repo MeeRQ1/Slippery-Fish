@@ -10,6 +10,7 @@ import { LegalSign } from './LegalSign';
 import { MainMenuScreen } from './MainMenuScreen';
 import { PetSign } from './PetSign';
 import { PlayScreen } from './PlayScreen';
+import { TrainingSign } from './TrainingSign';
 import { ProfileSign } from './ProfileSign';
 import { QuestsSign } from './QuestsSign';
 import { RankedScreen } from './RankedScreen';
@@ -39,4 +40,5 @@ export function registerScreens(router: Router): void {
   router.register('legal', (app, r, p) => new LegalSign(app, r, p));
   router.register('profile', (app, r, p) => new ProfileSign(app, r, p));
   router.register('pet', (app, r, p) => new PetSign(app, r, p));
+  router.register('training', (app, r, p) => new TrainingSign(app, r, p));
 }

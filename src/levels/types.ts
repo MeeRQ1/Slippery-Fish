@@ -6,7 +6,7 @@ import type { LevelModifierId } from '../gameplay/levelModifiers';
 
 export type ArenaShape = 'rect' | 'cove' | 'bay' | 'lroom' | 'hourglass' | 'island' | 'twinRooms';
 
-export type GameMode = 'adventure' | 'daily' | 'infinite' | 'ranked' | 'practice';
+export type GameMode = 'adventure' | 'daily' | 'infinite' | 'ranked' | 'practice' | 'training';
 
 export interface Point {
   x: number;
@@ -47,7 +47,7 @@ export interface TutorialInfo {
   /** Show the Batch 3 stash arrow guidance. */
   showStashArrow: boolean;
   /** Quest/tutorial step this level teaches. */
-  teaches: 'movement' | 'sprint' | 'stamina' | 'dribbling' | 'scoring' | 'enemies' | 'stars' | 'bank';
+  teaches: 'movement' | 'sprint' | 'stamina' | 'dribbling' | 'scoring' | 'enemies' | 'stars' | 'bank' | 'momentum';
 }
 
 export interface LevelDef {

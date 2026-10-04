@@ -241,3 +241,14 @@ html[data-season="autumn"] .play-cta .cta-snow { background: #f2a14a; }
   .rm-info .wood-btn.big { font-size: 0.85em; }
 }
 .rm-hills { position: absolute; inset: 0; -webkit-mask-image: linear-gradient(to right, transparent 0, #000 360px, #000 calc(100% - 520px), transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 360px, #000 calc(100% - 520px), transparent 100%); }
+
+/* ---------- training rink ---------- */
+.training-list { display: grid; gap: 10px; }
+.training-card { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 16px; border: 3px solid var(--navy); background: linear-gradient(180deg, #fff, #eaf5fd); box-shadow: 0 3px 0 var(--navy); }
+.training-card.done { background: linear-gradient(180deg, #f4fff4, #dff4e3); }
+.tc-step { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-wood); font-size: 1.2em; color: #fff; background: var(--ice-4); border: 3px solid var(--navy); }
+.training-card.done .tc-step { background: var(--mint); }
+.tc-body b { font-size: 1.05em; color: var(--navy); }
+.tc-body p { margin: 2px 0; line-height: 1.35; }
+.tc-goal { font-weight: 800; color: #1f7a3a; }
+@media (max-width: 600px) { .training-card { grid-template-columns: 36px 1fr; } .training-card > :last-child { grid-column: 1 / -1; justify-self: end; } }

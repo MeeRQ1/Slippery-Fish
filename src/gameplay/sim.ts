@@ -146,6 +146,8 @@ export class GameSim {
   readonly lvl: LevelModifierEffects;
   readonly hard: boolean;
   status: SimStatus = 'playing';
+  /** Set by a Training Rink lesson whose objective is not "stash the fish" (move, sprint, dribble…). */
+  private objectiveDone = false;
   /** Monotonic simulation time (ms) — advances only by fixed steps, so pauses never count. */
   timeMs = 0;
   steps = 0;
@@ -580,8 +582,13 @@ export class GameSim {
     this.events.push({ type: 'fishScored', fish: f, stashed: this.stashedValue, required: this.required, x, y, bank });
   }
 
+  /** Marks a lesson objective as met; the level ends as a win on the next step. */
+  completeObjective(): void {
+    if (this.status === 'playing') this.objectiveDone = true;
+  }
+
   private checkEnd(): void {
-    if (this.stashedValue >= this.required) {
+    if (this.stashedValue >= this.required || this.objectiveDone) {
       this.status = 'won';
       this.events.push({ type: 'won', timeMs: this.timeMs });
     } else if (this.remainingPotential < this.required) {

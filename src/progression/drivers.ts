@@ -17,6 +17,8 @@ import type { SaveManager } from '../save/saveManager';
 import { economyBonus, HOOD_BY_ID, HOODS } from './hoods';
 import { addStats, computeStars, recordBest, trackQuests, type ResultSummary, type RunOutcome } from './results';
 import { Rng } from '../core/rng';
+import type { GameSim } from '../gameplay/sim';
+import { TRAINING_LESSONS, type TrainingLesson } from '../levels/training';
 import { LEVEL_MODIFIERS, rewardBonus } from '../gameplay/levelModifiers';
 
 export interface DriverServices {
@@ -41,6 +43,8 @@ export interface PlayDriver {
   /** Ranked rules: Hood stat bonuses disabled (cosmetic only). */
   normalized: boolean;
   musicSlot: MusicSlot;
+  /** Training Rink: a non-scoring objective checked every frame (the level ends as a win when met). */
+  objective?: { text: string; met: (sim: GameSim) => boolean };
   complete(o: RunOutcome): ResultSummary;
   failed(o: RunOutcome): void;
   next(): PlayDriver | null;
@@ -334,6 +338,34 @@ export function practiceDriver(svc: DriverServices, seed: InfiniteSeed): PlayDri
         addStats(st, o, true, stars);
       });
       return { stars, timeMs: o.timeMs, previousBestMs, newBest, parSeconds: level.parSeconds, rewards: {}, firstClear: false, notes: ['Practice runs never award ranked rewards.'] };
+    },
+  };
+}
+
+// ------------------------------------------------------------------ training rink (optional tutorial)
+
+/** Training lessons: real gameplay, no currency, completion recorded once. */
+export function trainingDriver(svc: DriverServices, lesson: TrainingLesson): PlayDriver {
+  const level = lesson.level!();
+  const teaches = ({ move: 'movement', sprint: 'sprint', dribble: 'dribbling', gate: 'scoring', momentum: 'momentum', bank: 'bank', enemies: 'enemies' } as const)[lesson.id as 'move'] ?? 'movement';
+  level.tutorial = { hint: `${lesson.demo} ${lesson.controls ? `(${lesson.controls}) ` : ''}Goal: ${lesson.objective}`, showStashArrow: lesson.id === 'gate', teaches };
+  const idx = TRAINING_LESSONS.indexOf(lesson);
+  const nextPlayable = TRAINING_LESSONS.slice(idx + 1).find((l) => l.level);
+  return {
+    mode: 'training', level, hard: false, bestKey: `training|${lesson.id}`, seedCode: null, allowContinue: false, normalized: false,
+    label: 'TRAINING RINK', levelNumber: null,
+    sublabel: lesson.title,
+    musicSlot: 'quests',
+    exit: { screen: 'training' },
+    retry: () => trainingDriver(svc, lesson),
+    next: () => (nextPlayable ? trainingDriver(svc, nextPlayable) : null),
+    ...(lesson.met ? { objective: { text: lesson.objective, met: lesson.met } } : {}),
+    failed: () => undefined,
+    complete: (o) => {
+      svc.save.mutate((s) => { if (!s.tutorial.lessonsDone.includes(lesson.id)) s.tutorial.lessonsDone.push(lesson.id); });
+      const notes = [`Lesson complete: ${lesson.title}!`];
+      if (o.stats.bankShots > 0) notes.push('Bank shot! The chicks loved that.');
+      return { stars: 0, timeMs: o.timeMs, previousBestMs: null, newBest: false, parSeconds: level.parSeconds, rewards: {}, firstClear: false, notes };
     },
   };
 }
