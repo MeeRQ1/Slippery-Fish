@@ -274,3 +274,13 @@ html[data-season="autumn"] .play-cta .cta-snow { background: #f2a14a; }
   .living .lm-right .mode-info { display: none; }
   .living .mode-card .mode-info { font-size: 0.66em; bottom: -6px; }
 }
+
+/* Seasonal material details on menu plaques/pills (menus only; the gameplay HUD keeps its icy look). */
+html[data-season="spring"] .screen:not(.play-screen) .snow-plaque::before { background: #ffe0ee; border-color: #f2a6c8; }
+html[data-season="summer"] .screen:not(.play-screen) .snow-plaque::before { background: #fff3b8; border-color: #f2c94a; }
+html[data-season="autumn"] .screen:not(.play-screen) .snow-plaque::before { background: #ffd9b0; border-color: #e8964a; }
+html[data-season="spring"] .screen:not(.play-screen) .snow-plaque { background: linear-gradient(180deg, #fff 0%, #fbf0f6 55%, #f2d6e6 100%); }
+html[data-season="summer"] .screen:not(.play-screen) .snow-plaque { background: linear-gradient(180deg, #fff 0%, #fffbe8 55%, #f8eab8 100%); }
+html[data-season="autumn"] .screen:not(.play-screen) .snow-plaque { background: linear-gradient(180deg, #fff 0%, #fdf2e6 55%, #f2dcc4 100%); }
+.screen:not(.play-screen) .mode-info { border-color: var(--navy); box-shadow: 0 2px 0 rgba(27,42,68,0.5), inset 0 -2px 0 var(--season-accent-2); }
+html[data-daynight="night"] .screen:not(.play-screen) .next-note { background: #fff7e6; box-shadow: 0 3px 0 rgba(27,42,68,0.8), 0 0 12px rgba(255,214,140,0.45); }
