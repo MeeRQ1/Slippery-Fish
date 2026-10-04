@@ -311,3 +311,11 @@ kbd { font: inherit; font-weight: 700; font-size: 0.78em; padding: 0.1em 0.45em;
 
 /* Reduced motion: no looping decorative animation. */
 .reduced-motion .q-claim, .reduced-motion .chest-open.burst .co-rays { animation: none; }
+.trade-card.spent { opacity: 0.7; }
+.trade-limit { font-weight: 700; }
+.hc-price.can { color: #1f7a3a; }
+.hc-price.cannot { color: #8a95a8; }
+.hd-meta { margin-top: 2px; }
+.hd-afford { margin-top: 4px; font-weight: 700; font-size: 0.9em; }
+.hd-afford.can { color: #1f7a3a; }
+.hd-afford.cannot { color: #a0502a; }

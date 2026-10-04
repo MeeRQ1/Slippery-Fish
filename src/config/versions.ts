@@ -8,5 +8,5 @@
  */
 export const CONTENT_VERSION = 2;
 export const GENERATOR_VERSION = 2;
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 export const APP_VERSION: string = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'dev';

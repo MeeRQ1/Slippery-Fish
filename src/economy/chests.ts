@@ -3,14 +3,15 @@
  * the transaction id, then applied atomically with the Fish payment via
  * Wallet.exchange (so a refresh can never re-roll or double-pay).
  */
-import { CHEST_TIERS, type ChestTierId } from '../config/economy';
+import { CHEST_HOOD_ODDS, CHEST_TIERS, DUPLICATE_HOOD_SHARD_FRACTION, type ChestTierId } from '../config/economy';
 import { Rng } from '../core/rng';
 import { HOODS, type HoodDef } from '../progression/hoods';
 import type { Reward } from './wallet';
 
-const RARITY_WINDOW: Record<ChestTierId, [number, number]> = {
-  minnow: [0, 2], mackerel: [1, 3], tuna: [2, 5], emperor: [4, 7], leviathan: [6, 9],
-};
+/** Rolls a rarity index from the disclosed odds table. */
+function rollRarity(rng: Rng, tier: ChestTierId): number {
+  return rng.weighted([...CHEST_HOOD_ODDS[tier]], (o) => o[1])[0];
+}
 
 export interface ChestItem {
   kind: 'icicles' | 'shards' | 'fish' | 'hood' | 'duplicate';
@@ -27,7 +28,6 @@ export interface ChestRoll {
 export function rollChest(tier: ChestTierId, txId: string, owned: readonly string[]): ChestRoll {
   const def = CHEST_TIERS.find((c) => c.id === tier)!;
   const rng = new Rng(`chest:${txId}`);
-  const [lo, hi] = RARITY_WINDOW[tier];
   const items: ChestItem[] = [];
   const reward: Reward = { icicles: 0, shards: 0, fish: 0, hoods: [] };
   const ownedSet = new Set(owned);
@@ -35,11 +35,11 @@ export function rollChest(tier: ChestTierId, txId: string, owned: readonly strin
     const forceHood = i === 0 && rng.chance(def.hoodChance);
     const roll = rng.next();
     if (forceHood || roll < 0.15) {
-      const rarity = rng.int(lo, hi);
+      const rarity = rollRarity(rng, tier);
       const pool = HOODS.filter((h) => h.rarityIndex === rarity);
       const hood = rng.pick(pool);
       if (ownedSet.has(hood.id) || reward.hoods!.includes(hood.id)) {
-        const amount = Math.round(hood.price * 0.5);
+        const amount = Math.round(hood.price * DUPLICATE_HOOD_SHARD_FRACTION);
         reward.shards! += amount;
         items.push({ kind: 'duplicate', amount, hood });
       } else {

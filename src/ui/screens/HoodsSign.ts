@@ -64,7 +64,7 @@ export class HoodsSign extends SignScreen {
         h('img', { class: 'hc-art', attrs: { src: hoodImageUrl(hd.id, 1), alt: '', draggable: 'false', loading: 'lazy' } }),
         h('span', { class: 'hc-name', text: hd.name }),
         h('span', { class: 'hc-fam', text: FAMILY_BY_ID[hd.family].label }),
-        isEq ? h('span', { class: 'hc-tag eq', text: 'EQUIPPED' }) : isOwned ? h('span', { class: 'hc-tag', text: 'OWNED' }) : h('span', { class: 'hc-price' }, currencyIcon('shards', 16), String(hd.price)),
+        isEq ? h('span', { class: 'hc-tag eq', text: 'EQUIPPED' }) : isOwned ? h('span', { class: 'hc-tag', text: 'OWNED' }) : h('span', { class: `hc-price ${s.wallet.shards >= hd.price ? 'can' : 'cannot'}` }, currencyIcon('shards', 16), String(hd.price)),
       );
       makePhysical(card, card, { personality: 'hoods', sound: 'clickSoft', onActivate: () => { this.focus = hd; this.renderGrid(); this.renderDetail(); } });
       this.grid.append(card);
@@ -92,6 +92,8 @@ export class HoodsSign extends SignScreen {
         h('div', { class: 'hd-name', text: hd.name }),
         h('div', { class: 'hd-rarity', style: { '--rc': r.color }, text: r.name }),
         h('div', { class: 'hd-ability' }, h('b', { text: `${FAMILY_BY_ID[hd.family].label}: ` }), describeHood(hd)),
+        h('div', { class: 'hd-meta muted small', text: FAMILY_BY_ID[hd.family].kind === 'gameplay' ? 'Gameplay stat · normalized (cosmetic only) in Ranked' : 'Economy bonus · never affects Ranked' }),
+        !owned ? h('div', { class: `hd-afford ${s.wallet.shards >= hd.price ? 'can' : 'cannot'}`, text: s.wallet.shards >= hd.price ? `You can afford this (${s.wallet.shards} Shards).` : `You have ${s.wallet.shards} Shards — ${hd.price - s.wallet.shards} more to go.` }) : null,
         h('div', { class: 'hd-actions' }, action, iceButton('PREVIEW ON PENGUIN', { class: 'small', sound: 'clickSoft', onActivate: () => this.wiggle() })),
       ),
     );

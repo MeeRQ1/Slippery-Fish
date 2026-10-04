@@ -43,9 +43,10 @@ describe('Wallet transactions', () => {
     const save = await freshSave();
     const w = new Wallet(save);
     w.grant('seed', { fish: 100 });
+    const before = w.balance('fish');
     const roll = rollChest('mackerel', 'chest:mackerel:t1', save.data.hoods.owned);
     expect(w.exchange('chest:mackerel:t1', { fish: 100 }, roll.reward)).toBe(true);
-    expect(w.balance('fish')).toBe(roll.reward.fish ?? 0);
+    expect(w.balance('fish')).toBe(before - 100 + (roll.reward.fish ?? 0));
     expect(w.exchange('chest:mackerel:t1', { fish: 100 }, roll.reward)).toBe(false);
     for (const id of roll.reward.hoods ?? []) expect(save.data.hoods.owned).toContain(id);
   });

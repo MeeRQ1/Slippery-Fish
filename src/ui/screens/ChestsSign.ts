@@ -7,7 +7,7 @@
  * in ONE idempotent transaction, so a refresh mid-animation can never re-roll
  * or double-charge. The opening animation grows more dramatic per tier.
  */
-import { AD_CHEST, CHEST_TIERS, type ChestTierId } from '../../config/economy';
+import { AD_CHEST, CHEST_HOOD_ODDS, CHEST_TIERS, DUPLICATE_HOOD_SHARD_FRACTION, type ChestTierId } from '../../config/economy';
 import { formatCount, formatCountdown } from '../../core/format';
 import { rollChest, type ChestItem, type ChestRoll } from '../../economy/chests';
 import { RARITIES } from '../../progression/hoods';
@@ -40,7 +40,11 @@ export class ChestsSign extends SignScreen {
       h('div', { class: 'sign-toolbar' }, h('span', { class: 'muted small', text: 'Chests cost Fish. Bigger chests roll more items and rarer Hoods.' }), bar.el),
       this.grid,
       this.adRow,
-      h('p', { class: 'muted small odds-note', text: 'What’s inside: every chest rolls Icicles, Icicle Shards, Fish or a Hood. Hood rarity windows — Minnow: Pollution–Lost & Found · Mackerel: Human Trash–Oooh Shiny · Tuna: Lost & Found–Epic · Emperor: SPARKLING–Glorious · Leviathan: Legendary–Food. Duplicate Hoods convert to Icicle Shards.' }),
+      h('details', { class: 'odds-note muted small' },
+        h('summary', { text: 'What’s inside & Hood odds' }),
+        h('p', { text: `Every chest rolls Icicles, Icicle Shards, Fish or a Hood. Duplicate Hoods convert to ${Math.round(DUPLICATE_HOOD_SHARD_FRACTION * 100)}% of their Shard price. When a Hood drops, its rarity is rolled from these odds:` }),
+        h('ul', {}, ...CHEST_TIERS.map((t) => h('li', {}, h('b', { text: `${t.name}: ` }), CHEST_HOOD_ODDS[t.id].map(([ri, w]) => `${RARITIES[ri]!.name} ${w}%`).join(' · ')))),
+      ),
     );
     this.d.add(this.app.save.changes.on('change', () => { if (!this.opening) this.render(); }));
     this.render();

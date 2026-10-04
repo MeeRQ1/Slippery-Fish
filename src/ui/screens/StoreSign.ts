@@ -8,7 +8,8 @@
  *    client-side "success" ever grants anything.
  *  - Recover Purchases explains there is nothing to recover.
  */
-import { EXCHANGE_OFFERS } from '../../config/economy';
+import { EXCHANGE_OFFERS, type ExchangeOffer } from '../../config/economy';
+import { trade, tradesLeft } from '../../economy/exchange';
 import { formatCount } from '../../core/format';
 import { newRunId } from '../../progression/results';
 import { animate } from '../anim';
@@ -94,23 +95,28 @@ export class StoreSign extends SignScreen {
     clear(this.trade);
     for (const o of EXCHANGE_OFFERS) {
       const costEntries = Object.entries(o.cost) as Array<['icicles' | 'shards' | 'fish', number]>;
+      const left = tradesLeft(this.app.save.data, o, Date.now());
       const afford = this.app.wallet.canAfford(o.cost);
       const costLabel = h('span', { class: 'trade-cost' }, ...costEntries.flatMap(([cur, v]) => [currencyIcon(cur, 18), formatCount(v)]));
+      const per = o.limit.per === 'daily' ? 'today' : 'this week';
       const btn = woodButton(costLabel, {
         variant: 'gold', size: 'small', sound: 'chaChing', label: `Trade for ${o.label}`,
-        disabled: !afford,
-        disabledReason: `You need ${costEntries.map(([cur, v]) => `${formatCount(v)} ${cur === 'icicles' ? 'Icicles' : cur === 'shards' ? 'Icicle Shards' : 'Fish'}`).join(' and ')}.`,
+        disabled: !afford || left <= 0,
+        disabledReason: left <= 0
+          ? `Trade limit reached — resets ${o.limit.per === 'daily' ? 'at the next UTC day' : 'next UTC week (Monday)'}.`
+          : `You need ${costEntries.map(([cur, v]) => `${formatCount(v)} ${cur === 'icicles' ? 'Icicles' : cur === 'shards' ? 'Icicle Shards' : 'Fish'}`).join(' and ')}.`,
         onActivate: () => this.buy(o, btn),
       });
-      this.trade.append(h('div', { class: 'trade-card' }, rewardChips(o.grants, 26), h('div', { class: 'trade-label', text: o.label }), btn));
+      this.trade.append(h('div', { class: `trade-card ${left <= 0 ? 'spent' : ''}` }, rewardChips(o.grants, 26), h('div', { class: 'trade-label', text: o.label }),
+        h('div', { class: 'trade-limit muted small', text: `${left} of ${o.limit.count} left ${per}` }), btn));
     }
   }
 
-  private buy(o: (typeof EXCHANGE_OFFERS)[number], btn: HTMLElement): void {
+  private buy(o: ExchangeOffer, btn: HTMLElement): void {
     const r = btn.getBoundingClientRect();
-    const ok = this.app.wallet.exchange(`store:${o.id}:${newRunId()}`, o.cost, o.grants, undefined, { x: r.left + r.width / 2, y: r.top });
-    if (!ok) {
-      this.router.toast('Not enough to trade.');
+    const res = trade(this.app.save, this.app.wallet, o, Date.now(), `store:${o.id}:${newRunId()}`, { x: r.left + r.width / 2, y: r.top });
+    if (res !== 'ok') {
+      this.router.toast(res === 'limit' ? 'That trade is used up for now.' : 'Not enough to trade.');
       return;
     }
     this.chaChing();

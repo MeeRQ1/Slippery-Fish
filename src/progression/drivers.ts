@@ -4,7 +4,7 @@
  * is mode-agnostic and only talks to this interface.
  */
 import type { MusicSlot } from '../config/audio';
-import { CHEST_TIERS, LEVEL_REWARDS, type ChestTierId } from '../config/economy';
+import { CHEST_TIERS, DUPLICATE_HOOD_SHARD_FRACTION, LEVEL_REWARDS, roadmapChest, type ChestTierId } from '../config/economy';
 import { REGION_BY_ID, ADVENTURE_LEVEL_COUNT, LEVELS_PER_REGION } from '../config/regions';
 import type { Reward, Wallet } from '../economy/wallet';
 import { adventureLevel } from '../levels/adventure';
@@ -50,7 +50,6 @@ function econ(s: SaveData) {
   const h = s.hoods.equipped;
   return {
     icicles: economyBonus(h, 'icicleEarnings') * economyBonus(h, 'generalUtility'),
-    shards: economyBonus(h, 'shardEarnings') * economyBonus(h, 'generalUtility'),
     star: economyBonus(h, 'excellenceBonus'),
     hard: economyBonus(h, 'hardModeRewards'),
     adventure: economyBonus(h, 'adventureUtility'),
@@ -104,12 +103,9 @@ export function adventureDriver(svc: DriverServices, n: number, hard: boolean): 
       const notes: string[] = [];
       ic = hardify(ic, hard, e.hard) * e.icicles * e.adventure * levelBonus(level, notes);
       const reward: Reward = { icicles: Math.round(ic) };
-      if (firstClear && n % 10 === 0) { reward.shards = Math.round(10 * e.shards); notes.push('Milestone level! +Icicle Shards'); }
-      if (firstClear && n % LEVELS_PER_REGION === 0) {
-        reward.shards = (reward.shards ?? 0) + Math.round(50 * e.shards);
-        reward.fish = 10;
-        notes.push(`${region.name} conquered!`);
-      }
+      // Milestone rewards now live in roadmap chests (claimed on the Adventure map, exactly once).
+      const chest = !hard && firstClear ? roadmapChest(n) : null;
+      if (chest) notes.push(chest.kind === 'region' ? `${region.name} conquered! A Region Treasure waits on the map.` : 'A Milestone Chest unlocked on the map!');
       let previousBestMs: number | null = null;
       let newBest = false;
       svc.wallet.grant(`adv:${n}:${hard ? 'H' : 'N'}:${o.runId}`, reward, (st) => {
@@ -144,19 +140,24 @@ export interface MilestoneReward {
 /** Specific, visible-before-earning rewards for each of the 8 Popsicles. Level 40 is the strongest. */
 export function dailyMilestoneRewards(dateKey: string): MilestoneReward[] {
   const rng = new Rng(`daily-rewards:${dateKey}`);
-  const hoodPool = HOODS.filter((h) => h.rarityIndex >= 3 && h.rarityIndex <= 5);
+  // Economy v2: Popsicle 7's Hood comes from Human Trash–Oooh Shiny (v1 allowed up to Epic,
+  // which made one day of Daily play a shortcut past the Hood curve).
+  const hoodPool = HOODS.filter((h) => h.rarityIndex >= DAILY_HOOD_RARITY[0] && h.rarityIndex <= DAILY_HOOD_RARITY[1]);
   const hood = rng.pick(hoodPool);
   return [
     { index: 1, label: '150 Icicles', reward: { icicles: 150 } },
-    { index: 2, label: '20 Icicle Shards', reward: { shards: 20 } },
-    { index: 3, label: '300 Icicles + 8 Fish', reward: { icicles: 300, fish: 8 } },
-    { index: 4, label: '45 Icicle Shards', reward: { shards: 45 } },
-    { index: 5, label: '500 Icicles + 15 Fish', reward: { icicles: 500, fish: 15 } },
+    { index: 2, label: '15 Icicle Shards + 2 Fish', reward: { shards: 15, fish: 2 } },
+    { index: 3, label: '300 Icicles + 5 Fish', reward: { icicles: 300, fish: 5 } },
+    { index: 4, label: '30 Icicle Shards', reward: { shards: 30 } },
+    { index: 5, label: '500 Icicles + 8 Fish', reward: { icicles: 500, fish: 8 } },
     { index: 6, label: 'Minnow Crate', reward: {}, chest: 'minnow' },
     { index: 7, label: `Hood: ${hood.name}`, reward: { hoods: [hood.id] }, hoodId: hood.id },
-    { index: 8, label: '1,000 Icicles + 100 Shards + 40 Fish + Mackerel Chest', reward: { icicles: 1000, shards: 100, fish: 40 }, chest: 'mackerel' },
+    { index: 8, label: '1,000 Icicles + 60 Shards + 25 Fish + Mackerel Chest', reward: { icicles: 1000, shards: 60, fish: 25 }, chest: 'mackerel' },
   ];
 }
+
+/** Rarity window (inclusive) of the Popsicle 7 Hood. */
+export const DAILY_HOOD_RARITY = [1, 3] as const;
 
 /** Resets local daily progress when the shared cycle changes (and records the max observed clock). */
 export function syncDailyCycle(svc: DriverServices): { cycleId: string; dateKey: string; clockRolledBack: boolean } {
@@ -230,10 +231,11 @@ export function dailyDriver(svc: DriverServices, index: number, hard: boolean): 
         const grant: Reward = { ...mr.reward };
         if (mr.hoodId && svc.save.data.hoods.owned.includes(mr.hoodId)) {
           grant.hoods = [];
-          grant.shards = (grant.shards ?? 0) + (HOOD_BY_ID[mr.hoodId]?.price ?? 100);
+          grant.shards = (grant.shards ?? 0) + Math.round((HOOD_BY_ID[mr.hoodId]?.price ?? 100) * DUPLICATE_HOOD_SHARD_FRACTION);
         }
         const applied = svc.wallet.grant(`daily:${cycleId}:milestone:${m}`, grant, (st) => {
           if (!st.daily.claimed.includes(m)) st.daily.claimed.push(m);
+          if (st.daily.claimed.length >= 8) st.stats.dailyFullClears += 1;
           if (mr.chest) st.chests.inventory[mr.chest] = (st.chests.inventory[mr.chest] ?? 0) + 1;
         });
         if (applied) {
