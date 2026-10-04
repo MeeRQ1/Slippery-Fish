@@ -11,6 +11,7 @@ import type { GameSession } from '../../gameplay/session';
 import type { PlayDriver } from '../../progression/drivers';
 import { economyBonus, gameplayModifiers } from '../../progression/hoods';
 import { LEVEL_MODIFIERS, rewardBonus } from '../../gameplay/levelModifiers';
+import { evaluateProgressTitles, evaluateRunTitles } from '../../progression/titles';
 import { newRunId, type ResultSummary, type RunOutcome } from '../../progression/results';
 import { waddleFrame } from '../../profile/waddles';
 import { drawPaperStar, drawTrophy } from '../../art/procedural';
@@ -44,6 +45,8 @@ export class PlayScreen extends Screen {
   private runId = newRunId();
   private continued = false;
   private handled: 'none' | 'won' | 'failed' = 'none';
+  /** Any pause during this attempt (timed titles require an unpaused run). */
+  private pausedEver = false;
   private lastDanger = 0;
 
   constructor(app: App, router: Router, params: ScreenParams) {
@@ -105,7 +108,11 @@ export class PlayScreen extends Screen {
       penguinFrame: waddleFrame(s.waddles.selected),
       hoodId,
     });
-    this.d.add(this.session.events.on('pauseChanged', (p) => (p ? this.showPause() : this.hidePause())));
+    this.d.add(this.session.events.on('pauseChanged', (p) => {
+      if (p) this.pausedEver = true;
+      if (p) this.showPause();
+      else this.hidePause();
+    }));
     this.d.add(this.session.events.on('sim', (e) => {
       if (e.type === 'fishEaten') this.flashFishLost();
     }));
@@ -248,7 +255,19 @@ export class PlayScreen extends Screen {
   private async onWin(): Promise<void> {
     this.touch?.releaseAll();
     this.app.input.setEnabled(false);
-    const summary = this.driver.complete(this.outcome());
+    const outcome = this.outcome();
+    const summary = this.driver.complete(outcome);
+    // Titles: evaluated from the committed result only.
+    const earned = [
+      ...evaluateRunTitles(this.app.save, {
+        mode: this.driver.mode, won: true, level: this.driver.levelNumber, hard: this.driver.hard, timeMs: outcome.timeMs,
+        fishTotal: this.driver.level.fish.length, continued: this.continued, paused: this.pausedEver,
+        modifiers: this.driver.level.modifiers, hoodId: this.driver.normalized ? null : this.app.save.data.hoods.equipped,
+      }, Date.now()),
+      ...evaluateProgressTitles(this.app.save, Date.now()),
+    ];
+    for (const t of earned) summary.notes.push(`Title earned: “${t.name}” — equip it in Profile`);
+    if (earned.length) this.app.audio.play('titleUnlock');
     await wait(450);
     if (this.d.isDisposed) return;
     this.app.audio.playMusic('victory');

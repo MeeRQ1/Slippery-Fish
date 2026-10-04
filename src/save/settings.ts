@@ -27,6 +27,10 @@ export interface Settings {
   /** Put the sprint button on the left and joystick on the right. */
   swapTouchSides: boolean;
   showFps: boolean;
+  /** Menu season preset: 'auto' follows the calendar (Northern Hemisphere default). Menus only — never levels. */
+  menuSeason: 'auto' | 'spring' | 'summer' | 'autumn' | 'winter';
+  /** Menu lighting: 'auto' follows the local clock. Visual only. */
+  menuDayNight: 'auto' | 'dawn' | 'day' | 'dusk' | 'night';
 }
 
 const KEY = 'slipperyfish.settings.v1';
@@ -55,6 +59,8 @@ export function defaultSettings(): Settings {
     touchControls: 'auto',
     swapTouchSides: false,
     showFps: false,
+    menuSeason: 'auto',
+    menuDayNight: 'auto',
   };
 }
 
@@ -83,6 +89,8 @@ export function sanitizeSettings(raw: unknown): Settings {
     touchControls: oneOf(r.touchControls, ['auto', 'on', 'off'] as const, d.touchControls),
     swapTouchSides: bool(r.swapTouchSides, d.swapTouchSides),
     showFps: bool(r.showFps, d.showFps),
+    menuSeason: oneOf(r.menuSeason, ['auto', 'spring', 'summer', 'autumn', 'winter'] as const, d.menuSeason),
+    menuDayNight: oneOf(r.menuDayNight, ['auto', 'dawn', 'day', 'dusk', 'night'] as const, d.menuDayNight),
   };
 }
 

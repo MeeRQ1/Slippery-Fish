@@ -319,3 +319,18 @@ kbd { font: inherit; font-weight: 700; font-size: 0.78em; padding: 0.1em 0.45em;
 .hd-afford { margin-top: 4px; font-weight: 700; font-size: 0.9em; }
 .hd-afford.can { color: #1f7a3a; }
 .hd-afford.cannot { color: #a0502a; }
+
+/* ---------- earned titles ---------- */
+.title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.title-card { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; padding: 10px 12px; border-radius: 14px; border: 3px solid var(--navy); background: linear-gradient(180deg, #fff, #eaf5fd); font: inherit; color: var(--ink); cursor: pointer; box-shadow: 0 3px 0 var(--navy); }
+.title-card.unlocked { background: linear-gradient(180deg, #fffbe8, #ffe9a3); }
+.title-card.locked { background: linear-gradient(180deg, #f2f5f9, #dfe6ee); color: #4a5a74; cursor: help; }
+.title-card.on { outline: 4px solid var(--gold); outline-offset: 1px; }
+.title-card:focus-visible { outline: 4px solid var(--ice-4); outline-offset: 2px; }
+.tc-name { font-family: var(--font-wood); letter-spacing: 0.04em; font-size: 1.05em; color: var(--navy); }
+.title-card.locked .tc-name { color: #5a6a84; }
+.tc-crit { line-height: 1.3; }
+.tc-bar { width: 100%; height: 8px; border-radius: 4px; background: #c9d6e4; overflow: hidden; border: 2px solid var(--navy); }
+.tc-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--mint), #8fe0a0); }
+.tc-eq { position: absolute; top: -10px; right: 10px; padding: 1px 8px; border-radius: 8px; background: var(--gold); border: 2px solid var(--navy); font-weight: 800; font-size: 0.72em; }
+.ph-title { display: inline-block; margin: 2px 0 4px; padding: 2px 10px; border-radius: 10px; background: #fff3c4; border: 2px solid var(--navy); font-weight: 800; font-size: 0.85em; color: #8a5a10; }

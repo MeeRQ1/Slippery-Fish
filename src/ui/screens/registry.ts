@@ -8,6 +8,7 @@ import { HoodsSign } from './HoodsSign';
 import { InfiniteScreen } from './InfiniteScreen';
 import { LegalSign } from './LegalSign';
 import { MainMenuScreen } from './MainMenuScreen';
+import { PetSign } from './PetSign';
 import { PlayScreen } from './PlayScreen';
 import { ProfileSign } from './ProfileSign';
 import { QuestsSign } from './QuestsSign';
@@ -37,4 +38,5 @@ export function registerScreens(router: Router): void {
   router.register('settings', (app, r, p) => new SettingsSign(app, r, p));
   router.register('legal', (app, r, p) => new LegalSign(app, r, p));
   router.register('profile', (app, r, p) => new ProfileSign(app, r, p));
+  router.register('pet', (app, r, p) => new PetSign(app, r, p));
 }

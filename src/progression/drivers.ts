@@ -32,6 +32,8 @@ export interface PlayDriver {
   hard: boolean;
   /** "LEVEL 127", "DAILY 7/40", "INFINITE 12". */
   label: string;
+  /** Adventure level number (null in other modes). */
+  levelNumber: number | null;
   sublabel: string;
   bestKey: string;
   seedCode: string | null;
@@ -77,7 +79,7 @@ export function adventureDriver(svc: DriverServices, n: number, hard: boolean): 
   const bestKey = bestTimeKey({ mode: 'adventure', levelKey: String(n), contentVersion: level.contentVersion, generatorVersion: level.generatorVersion, hard });
   return {
     mode: 'adventure', level, hard, bestKey, seedCode: null, allowContinue: true, normalized: false,
-    label: `LEVEL ${n}`,
+    label: `LEVEL ${n}`, levelNumber: n,
     sublabel: `${region.name}${hard ? ' · HARD' : ''}`,
     musicSlot: region.musicSlot as MusicSlot,
     exit: { screen: 'adventure', params: { region: region.id, focus: n } },
@@ -186,7 +188,7 @@ export function dailyDriver(svc: DriverServices, index: number, hard: boolean): 
   const bestKey = bestTimeKey({ mode: 'daily', levelKey: `${dateKey}:${index}`, contentVersion: level.contentVersion, generatorVersion: level.generatorVersion, hard });
   return {
     mode: 'daily', level, hard, bestKey, seedCode: null, allowContinue: true, normalized: false,
-    label: `DAILY ${index} / ${DAILY_LEVELS}`,
+    label: `DAILY ${index} / ${DAILY_LEVELS}`, levelNumber: null,
     sublabel: `Popsicle ${milestoneOf(index)} · ${region.name}${hard ? ' · HARD' : ''}`,
     musicSlot: 'daily',
     exit: { screen: 'daily' },
@@ -264,7 +266,7 @@ export function infiniteDriver(svc: DriverServices, seed: InfiniteSeed, hard: bo
   });
   return {
     mode: 'infinite', level, hard, bestKey, seedCode: code, allowContinue: true, normalized: false,
-    label: `INFINITE ${seed.level}`,
+    label: `INFINITE ${seed.level}`, levelNumber: null,
     sublabel: `${REGION_BY_ID[level.region].name}${hard ? ' · HARD' : ''}`,
     musicSlot: 'infinite',
     exit: { screen: 'infinite' },
@@ -314,7 +316,7 @@ export function practiceDriver(svc: DriverServices, seed: InfiniteSeed): PlayDri
   const bestKey = bestTimeKey({ mode: 'practice', levelKey: code, contentVersion: level.contentVersion, generatorVersion: level.generatorVersion, hard: false, normalized: true });
   return {
     mode: 'practice', level, hard: false, bestKey, seedCode: code, allowContinue: true, normalized: true,
-    label: 'PRACTICE',
+    label: 'PRACTICE', levelNumber: null,
     sublabel: 'Ranked rules · offline · not ranked',
     musicSlot: 'ranked',
     exit: { screen: 'ranked' },

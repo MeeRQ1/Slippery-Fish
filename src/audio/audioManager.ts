@@ -45,8 +45,10 @@ export class AudioManager {
     if (!this.ctx) {
       const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!Ctor) return;
+      // Adopt the context the startup intro created on an earlier tap (same gesture-unlocked graph).
+      const early = (window as unknown as { __sfEarlyAudio?: AudioContext }).__sfEarlyAudio;
       try {
-        this.ctx = new Ctor({ latencyHint: 'interactive' });
+        this.ctx = early && early.state !== 'closed' ? early : new Ctor({ latencyHint: 'interactive' });
       } catch {
         return;
       }
