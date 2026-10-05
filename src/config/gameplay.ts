@@ -116,15 +116,38 @@ export const FISH = {
   impactReactSpeed: 240,
   /** Tangential friction coefficient (gives spin on glancing hits). */
   friction: 0.16,
-  /** Score when the fish centre is inside stashRadius - radius*this. */
-  stashEnterFactor: 0.35,
 } as const;
 
-export const STASH = {
-  /** Visual + scoring radius (u). */
-  radius: 58,
-  /** Enemies are blocked by an invisible rim this much larger than the stash (limited collider). */
-  enemyRimExtra: 6,
+/**
+ * The goal: a snowy courtyard in front of the chicks' igloo (src/gameplay/goal.ts).
+ *
+ * Geometry (world units): a ring of 24 wall segments of radius `wallRadius`
+ * surrounds a circular scoring interior of radius `interiorRadius`. The igloo
+ * always closes the back (north) arc; per-level fences close more segments;
+ * the remaining gaps are the openings. A fish scores only when at least
+ * `scoreFraction` of its collider disk lies inside the interior disk, having
+ * entered through an opening.
+ */
+export const GOAL = {
+  /** Scoring interior radius (u). */
+  interiorRadius: 64,
+  /** Centre-line radius of the fence / igloo wall ring (u). */
+  wallRadius: 84,
+  /** Fence collider thickness (u) — a capsule along each fenced segment. */
+  wallThickness: 14,
+  /** Minimum contained-area fraction of the fish's collider disk. Configurable; default 0.70. */
+  scoreFraction: 0.7,
+  /** Every opening spans at least this many ring segments (≈88u clear — fits the largest fish and the penguin). */
+  minOpeningSegments: 5,
+  /** Ring segments [first, last] closed by the igloo (segment i spans direction i → i+1; 18 = north). */
+  iglooSegments: [14, 21] as const,
+  /** Igloo body collider (relative to goal centre): rounded rectangle. */
+  iglooBody: { cx: 0, cy: -118, w: 172, h: 92, radius: 30 },
+  /** Igloo art: base line offset and display width (u). */
+  iglooBaseY: -70,
+  iglooWidth: 178,
+  /** Enemies are blocked from the whole courtyard by an enemy-only disk this much larger than the ring. */
+  enemyBlockExtra: 4,
 } as const;
 
 export type EnemyType = 'polarBear' | 'arcticWolf' | 'seal';
@@ -257,4 +280,21 @@ export const STARS = {
   ],
   /** Each fish lost to enemies removes this many stars (min 1). */
   starsLostPerEatenFish: 1,
+} as const;
+
+/**
+ * Enemy expression bands (presentation only — never read by the AI).
+ * The distance is measured from the enemy to the fish it is currently
+ * targeting; if it has no live target, to the nearest exposed (free) fish.
+ * Calming down needs the distance to exceed a band by `hysteresis` units and
+ * a state must be held for `minHold` seconds, so faces never flicker.
+ */
+export const ENEMY_EXPRESSION = {
+  alert: 520,
+  eager: 260,
+  imminent: 110,
+  hysteresis: 50,
+  minHold: 0.35,
+  /** Species voice (growl / yip / bark) when an enemy turns eager, per enemy. */
+  voiceCooldown: 4.5,
 } as const;

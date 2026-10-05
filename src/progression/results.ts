@@ -64,9 +64,11 @@ export function addStats(s: SaveData, o: RunOutcome, won: boolean, stars: number
   s.stats.wallBounces += o.stats.wallBounces;
   s.stats.sprintSeconds += Math.round(o.stats.sprintSeconds * 10) / 10;
   s.stats.sprintHits += o.stats.sprintHits;
+  s.stats.bankShots += o.stats.bankShots;
   if (won) {
     s.stats.levelsCompleted += 1;
     if (stars >= 5) s.stats.fiveStarLevels += 1;
+    if (o.hadEnemies && o.stats.fishEaten === 0) s.stats.cleanEnemyClears += 1;
   }
 }
 
@@ -79,7 +81,9 @@ export function trackQuests(q: QuestService, o: RunOutcome, won: boolean, stars:
   q.track('wallBounces', o.stats.wallBounces);
   q.track('sprintHits', o.stats.sprintHits);
   q.track('rareFishStashed', o.stats.rareStashed);
+  // Bank shots count only on a win: the level's result is committed then (no farming by quitting).
   if (!won) return;
+  q.track('bankShots', o.stats.bankShots);
   q.track('levelsCompleted', 1);
   q.track('starsEarned', stars);
   if (stars >= 3) q.track('threeStarLevels', 1);

@@ -1,8 +1,12 @@
 import type { EnemyType, FishVariant, SurfaceType } from '../config/gameplay';
 import type { ObstacleId } from '../config/obstacles';
 import type { RegionId } from '../config/regions';
+import type { GoalLayout } from '../gameplay/goal';
+import type { LevelModifierId } from '../gameplay/levelModifiers';
 
-export type GameMode = 'adventure' | 'daily' | 'infinite' | 'ranked' | 'practice';
+export type ArenaShape = 'rect' | 'cove' | 'bay' | 'lroom' | 'hourglass' | 'island' | 'twinRooms';
+
+export type GameMode = 'adventure' | 'daily' | 'infinite' | 'ranked' | 'practice' | 'training';
 
 export interface Point {
   x: number;
@@ -43,7 +47,7 @@ export interface TutorialInfo {
   /** Show the Batch 3 stash arrow guidance. */
   showStashArrow: boolean;
   /** Quest/tutorial step this level teaches. */
-  teaches: 'movement' | 'sprint' | 'stamina' | 'dribbling' | 'scoring' | 'enemies' | 'stars' | 'bank';
+  teaches: 'movement' | 'sprint' | 'stamina' | 'dribbling' | 'scoring' | 'enemies' | 'stars' | 'bank' | 'momentum';
 }
 
 export interface LevelDef {
@@ -59,14 +63,20 @@ export interface LevelDef {
   contentVersion: number;
   generatorVersion: number;
   region: RegionId;
-  arena: { width: number; height: number; walls: WallBlock[] };
+  /** Arena bounds, carved interior walls (collision == visuals) and the shape template used. */
+  arena: { width: number; height: number; walls: WallBlock[]; shape?: ArenaShape };
   player: Point;
+  /** Centre of the goal courtyard (scoring interior) in front of the igloo. */
   stash: Point;
+  /** Fence layout around the goal (see src/gameplay/goal.ts). */
+  goal: GoalLayout;
   fish: FishSpawn[];
   fishRequired: number;
   enemies: EnemySpawn[];
   obstacles: ObstaclePlacement[];
   surfaces: SurfacePatch[];
+  /** Level modifiers (rule twists) baked into this level's definition. Empty for Ranked/Practice. */
+  modifiers: LevelModifierId[];
   /** Level-specific multiplier on enemy speed (difficulty knob; Hard Mode stacks on top). */
   enemySpeed: number;
   /** Estimated expert completion time (s) used for Excellence Stars. */

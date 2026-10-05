@@ -20,11 +20,15 @@ export class TouchControls {
   private readonly radius = 56;
   private d = new Disposer();
 
-  constructor(private input: InputManager, swapSides: boolean, private onAnyTouch: () => void) {
+  /**
+   * @param theme level-theme group for the sprint button's material (the action,
+   *   icon, label, size and hit area stay identical in every theme).
+   */
+  constructor(private input: InputManager, swapSides: boolean, private onAnyTouch: () => void, theme = 'winter') {
     this.knob = h('div', { class: 'joy-knob' });
     this.base = h('div', { class: 'joy-base' }, this.knob);
     const joyZone = h('div', { class: `joy-zone ${swapSides ? 'right' : 'left'}` }, this.base);
-    this.sprintBtn = h('div', { class: 'sprint-btn', attrs: { role: 'button', 'aria-label': 'Sprint (hold)' } },
+    this.sprintBtn = h('div', { class: `sprint-btn theme-${theme}`, attrs: { role: 'button', 'aria-label': 'Sprint (hold)' } },
       h('span', { class: 'sprint-ico', text: '⚡' }), h('span', { class: 'sprint-txt', text: 'SPRINT' }));
     const sprintZone = h('div', { class: `sprint-zone ${swapSides ? 'left' : 'right'}` }, this.sprintBtn);
     this.el = h('div', { class: 'touch-controls' }, joyZone, sprintZone);

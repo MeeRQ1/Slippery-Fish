@@ -23,6 +23,7 @@ import { RankedAdapter, type RankedService } from './services/ranked';
 import { RemoteConfig } from './services/remoteConfig';
 import type { DriverServices } from './progression/drivers';
 import { Router } from './ui/router';
+import { MenuThemeController } from './ui/menuTheme';
 
 export class App {
   readonly settings = new SettingsStore();
@@ -39,6 +40,7 @@ export class App {
   readonly remoteConfig = new RemoteConfig();
   readonly privacy: PrivacyManager;
   readonly router: Router;
+  readonly menuTheme: MenuThemeController;
   game!: Phaser.Game;
   readonly uiRoot: HTMLElement;
   private currentDpr = 1;
@@ -50,6 +52,8 @@ export class App {
     this.wallet = new Wallet(this.save);
     this.quests = new QuestService(this.save, this.wallet);
     this.privacy = new PrivacyManager(this.save);
+    this.menuTheme = new MenuThemeController(this.settings);
+    this.menuTheme.changes.on('change', () => { if (this.game?.scene.isActive('backdrop')) void this.backdrop().themeChanged(); });
     this.router = new Router(this);
     const ui = document.getElementById('ui');
     if (!ui) throw new Error('#ui root missing');
@@ -90,10 +94,12 @@ export class App {
     return { w: Math.max(200, w), h: Math.max(200, h) };
   }
 
-  async boot(onProgress: (p: number) => void): Promise<void> {
-    await this.save.load();
+  /** Loads the save (unless already loaded) and the core art. Resolves with any asset keys that failed. */
+  async boot(onProgress: (p: number) => void, opts: { saveLoaded?: boolean } = {}): Promise<string[]> {
+    if (!opts.saveLoaded) await this.save.load();
     this.currentDpr = this.computeDpr();
     const { w, h } = this.viewportSize();
+    let failed: string[] = [];
     await new Promise<void>((resolve) => {
       this.game = new Phaser.Game({
         type: Phaser.AUTO,
@@ -109,11 +115,12 @@ export class App {
       });
       this.game.scene.add('backdrop', BackdropScene, false);
       this.game.scene.add('game', GameScene, false);
-      this.game.scene.add('boot', BootScene, true, { onProgress, onReady: () => resolve() });
+      this.game.scene.add('boot', BootScene, true, { onProgress, onReady: (f: string[]) => { failed = f; resolve(); } });
     });
     window.addEventListener('resize', this.scheduleResize);
     window.visualViewport?.addEventListener('resize', this.scheduleResize);
     window.addEventListener('orientationchange', this.scheduleResize);
+    return failed;
   }
 
   private scheduleResize = (): void => {

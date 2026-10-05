@@ -7,6 +7,8 @@
  * an anti-cheat authority.
  */
 import { SAVE_VERSION } from '../config/versions';
+import { ADVENTURE_CHEST_EVERY, ECONOMY_VERSION, STARTING_WALLET } from '../config/economy';
+import { DECOR_PRESETS, FISH_LOOKS, FOOD_PRESETS, PET_DECOR_SLOTS, PET_DEFAULT_NAME, PET_MAX_TIER, TANK_STYLES } from '../config/pet';
 
 export interface SeedHistoryEntry {
   code: string;
@@ -32,6 +34,32 @@ export interface StatsData {
   levelsCompleted: number;
   chestsOpened: number;
   sprintHits: number;
+  /** Fish scored after a wall/obstacle rebound that followed a penguin touch (tracked since save v2). */
+  bankShots: number;
+  /** Won levels that had predators and lost no fish (tracked since save v2). */
+  cleanEnemyClears: number;
+  /** Days on which all 8 Daily Popsicles were opened (tracked since save v2). */
+  dailyFullClears: number;
+}
+
+export interface PetSave {
+  name: string;
+  tier: number;
+  look: string;
+  tank: string;
+  decor: string[];
+  food: string;
+  owned: { looks: string[]; tanks: string[]; decor: string[]; foods: string[] };
+  /** Economic (UTC) day id of the last committed feeding, '' if never. */
+  fedDay: string;
+  /** Tier, cost and benefit locked in by that feeding. */
+  fedTier: number;
+  fedCost: number;
+  fedBenefit: number;
+  /** Economic day whose benefit has been granted ('' if none yet). */
+  benefitDay: string;
+  /** Distinct economic days fed (for the Goldfish Best Friend title). */
+  daysFed: number;
 }
 
 export interface SaveData {
@@ -49,6 +77,10 @@ export interface SaveData {
     highestUnlocked: number;
     stars: Record<string, number>;
     hardStars: Record<string, number>;
+    /** Roadmap milestone chests claimed, by unlocking level number (10, 20, …). */
+    chestsClaimed: number[];
+    /** Last level focused on the roadmap (restores the map position). */
+    lastViewed: number;
   };
   /** Keyed by bestTimeKey(); values in ms. */
   bestTimes: Record<string, number>;
@@ -70,8 +102,31 @@ export interface SaveData {
   chests: { adChestReadyAt: number; opened: Record<string, number>; inventory: Record<string, number> };
   stats: StatsData;
   ranked: { localPracticeWins: number; localPracticeLosses: number };
-  tutorial: { seenHints: string[] };
+  tutorial: {
+    seenHints: string[];
+    /** Optional in-depth tutorial (Training Rink): finished lessons, completion. */
+    lessonsDone: string[];
+    guideCompletedAt: number;
+  };
   privacy: { consent: ConsentState; updatedAt: number; policyVersionSeen: string | null };
+  titles: { unlocked: Record<string, number>; equipped: string | null };
+  pet: PetSave;
+  /** Limited shop exchanges: `${offerId}@${periodKey}` → trades made. */
+  store: { trades: Record<string, number> };
+  economy: { version: number; migratedFrom: number | null };
+}
+
+export function defaultPet(): PetSave {
+  return {
+    name: PET_DEFAULT_NAME, tier: 1, look: 'classic', tank: 'bowl', decor: ['kelp'], food: 'flakes',
+    owned: {
+      looks: FISH_LOOKS.filter((x) => x.price === 0).map((x) => x.id),
+      tanks: TANK_STYLES.filter((x) => x.price === 0).map((x) => x.id),
+      decor: DECOR_PRESETS.filter((x) => x.price === 0).map((x) => x.id),
+      foods: FOOD_PRESETS.filter((x) => x.price === 0).map((x) => x.id),
+    },
+    fedDay: '', fedTier: 1, fedCost: 0, fedBenefit: 0, benefitDay: '', daysFed: 0,
+  };
 }
 
 export const DEFAULT_USERNAME = 'Waddler';
@@ -80,6 +135,7 @@ export function defaultStats(): StatsData {
   return {
     fishStashed: 0, fishEaten: 0, distanceWaddled: 0, timesOutmatched: 0, fiveStarLevels: 0,
     rankedVictories: 0, wallBounces: 0, sprintSeconds: 0, levelsCompleted: 0, chestsOpened: 0, sprintHits: 0,
+    bankShots: 0, cleanEnemyClears: 0, dailyFullClears: 0,
   };
 }
 
@@ -89,11 +145,11 @@ export function defaultSave(now = Date.now()): SaveData {
     createdAt: now,
     updatedAt: now,
     profile: { username: DEFAULT_USERNAME, iconId: 'icon_penguin_classic', createdAt: now },
-    wallet: { icicles: 200, shards: 0, fish: 0 },
+    wallet: { ...STARTING_WALLET },
     appliedTx: [],
     waddles: { owned: ['classic'], selected: 'classic' },
     hoods: { owned: [], equipped: null },
-    adventure: { highestUnlocked: 1, stars: {}, hardStars: {} },
+    adventure: { highestUnlocked: 1, stars: {}, hardStars: {}, chestsClaimed: [], lastViewed: 1 },
     bestTimes: {},
     infinite: { highestLevel: 0, highestLevelHard: 0, history: [] },
     daily: { cycleId: '', completed: [], completedHard: [], claimed: [], maxObservedTime: now },
@@ -101,8 +157,12 @@ export function defaultSave(now = Date.now()): SaveData {
     chests: { adChestReadyAt: 0, opened: {}, inventory: {} },
     stats: defaultStats(),
     ranked: { localPracticeWins: 0, localPracticeLosses: 0 },
-    tutorial: { seenHints: [] },
+    tutorial: { seenHints: [], lessonsDone: [], guideCompletedAt: 0 },
     privacy: { consent: 'unknown', updatedAt: 0, policyVersionSeen: null },
+    titles: { unlocked: {}, equipped: null },
+    pet: defaultPet(),
+    store: { trades: {} },
+    economy: { version: ECONOMY_VERSION, migratedFrom: null },
   };
 }
 
@@ -154,6 +214,9 @@ export function sanitizeSave(raw: unknown, now = Date.now()): SaveData {
   const ranked = isObj(r.ranked) ? r.ranked : {};
   const tutorial = isObj(r.tutorial) ? r.tutorial : {};
   const privacy = isObj(r.privacy) ? r.privacy : {};
+  const titles = isObj(r.titles) ? r.titles : {};
+  const store = isObj(r.store) ? r.store : {};
+  const economy = isObj(r.economy) ? r.economy : {};
   const ds = defaultStats();
   const ownedWaddles = strArr(waddles.owned, 100);
   if (!ownedWaddles.includes('classic')) ownedWaddles.unshift('classic');
@@ -185,8 +248,8 @@ export function sanitizeSave(raw: unknown, now = Date.now()): SaveData {
     },
     wallet: {
       icicles: int(wallet.icicles, d.wallet.icicles, 0, MAX_CURRENCY),
-      shards: int(wallet.shards, 0, 0, MAX_CURRENCY),
-      fish: int(wallet.fish, 0, 0, MAX_CURRENCY),
+      shards: int(wallet.shards, d.wallet.shards, 0, MAX_CURRENCY),
+      fish: int(wallet.fish, d.wallet.fish, 0, MAX_CURRENCY),
     },
     appliedTx: strArr(r.appliedTx, 500),
     waddles: { owned: ownedWaddles, selected: ownedWaddles.includes(selected) ? selected : 'classic' },
@@ -195,6 +258,8 @@ export function sanitizeSave(raw: unknown, now = Date.now()): SaveData {
       highestUnlocked: int(adv.highestUnlocked, 1, 1, 800),
       stars: numRecord(adv.stars, 1, 5),
       hardStars: numRecord(adv.hardStars, 1, 5),
+      chestsClaimed: intArr(adv.chestsClaimed, 1, 800).filter((n) => n % ADVENTURE_CHEST_EVERY === 0),
+      lastViewed: int(adv.lastViewed, int(adv.highestUnlocked, 1, 1, 800), 1, 800),
     },
     bestTimes: numRecord(r.bestTimes, 1, 1e9),
     infinite: {
@@ -218,13 +283,59 @@ export function sanitizeSave(raw: unknown, now = Date.now()): SaveData {
     chests: { adChestReadyAt: num(chests.adChestReadyAt, 0, 0), opened: numRecord(chests.opened, 0, 1e9), inventory: numRecord(chests.inventory, 0, 1e6) },
     stats: Object.fromEntries(Object.keys(ds).map((k) => [k, num(stats[k], 0, 0)])) as unknown as StatsData,
     ranked: { localPracticeWins: int(ranked.localPracticeWins, 0), localPracticeLosses: int(ranked.localPracticeLosses, 0) },
-    tutorial: { seenHints: strArr(tutorial.seenHints, 100) },
+    tutorial: { seenHints: strArr(tutorial.seenHints, 100), lessonsDone: strArr(tutorial.lessonsDone, 40), guideCompletedAt: num(tutorial.guideCompletedAt, 0, 0) },
     privacy: {
       consent,
       updatedAt: num(privacy.updatedAt, 0, 0),
       policyVersionSeen: typeof privacy.policyVersionSeen === 'string' ? privacy.policyVersionSeen.slice(0, 40) : null,
     },
+    titles: sanitizeTitles(titles),
+    pet: sanitizePet(r.pet),
+    store: { trades: numRecord(store.trades, 0, 1000) },
+    economy: { version: int(economy.version, ECONOMY_VERSION, 1, 1000), migratedFrom: typeof economy.migratedFrom === 'number' ? int(economy.migratedFrom, 1, 0, 1000) : null },
   };
+}
+
+function sanitizeTitles(t: Obj): SaveData['titles'] {
+  const unlocked = numRecord(t.unlocked, 0, 1e15);
+  const equipped = typeof t.equipped === 'string' && t.equipped in unlocked ? t.equipped : null;
+  return { unlocked, equipped };
+}
+
+/** Validates pet state; unknown preset ids fall back to free starters, ownership never shrinks below the free set. */
+function sanitizePet(raw: unknown): PetSave {
+  const d = defaultPet();
+  if (!isObj(raw)) return d;
+  const owned = isObj(raw.owned) ? raw.owned : {};
+  const known = (ids: readonly { id: string }[], list: string[], free: string[]) => [...new Set([...free, ...list.filter((x) => ids.some((i) => i.id === x))])];
+  const looks = known(FISH_LOOKS, strArr(owned.looks, 50), d.owned.looks);
+  const tanks = known(TANK_STYLES, strArr(owned.tanks, 50), d.owned.tanks);
+  const decor = known(DECOR_PRESETS, strArr(owned.decor, 50), d.owned.decor);
+  const foods = known(FOOD_PRESETS, strArr(owned.foods, 50), d.owned.foods);
+  const pick = (v: unknown, list: string[], def: string) => (typeof v === 'string' && list.includes(v) ? v : def);
+  const dayRe = /^\d{4}-\d{2}-\d{2}$/;
+  const day = (v: unknown) => (typeof v === 'string' && dayRe.test(v) ? v : '');
+  const tier = int(raw.tier, 1, 1, PET_MAX_TIER);
+  return {
+    name: sanitizePetName(str(raw.name, d.name, 24)),
+    tier,
+    look: pick(raw.look, looks, d.look),
+    tank: pick(raw.tank, tanks, d.tank),
+    decor: [...new Set(strArr(raw.decor, 10).filter((x) => decor.includes(x)))].slice(0, PET_DECOR_SLOTS),
+    food: pick(raw.food, foods, d.food),
+    owned: { looks, tanks, decor, foods },
+    fedDay: day(raw.fedDay),
+    fedTier: int(raw.fedTier, 1, 1, PET_MAX_TIER),
+    fedCost: int(raw.fedCost, 0, 0, 1000),
+    fedBenefit: int(raw.fedBenefit, 0, 0, 10000),
+    benefitDay: day(raw.benefitDay),
+    daysFed: int(raw.daysFed, 0, 0, 1e6),
+  };
+}
+
+export function sanitizePetName(name: string): string {
+  const cleaned = name.replace(/[^\p{L}\p{N} _\-.']/gu, '').trim().slice(0, 14);
+  return cleaned.length >= 2 ? cleaned : PET_DEFAULT_NAME;
 }
 
 function sanitizeUsernameLoose(name: string): string {
@@ -245,6 +356,27 @@ const migrations: Record<number, (raw: Obj) => Obj> = {
     wallet: isObj(raw.wallet) ? raw.wallet : { icicles: raw.icicles, shards: raw.shards, fish: raw.fishCurrency },
     version: 1,
   }),
+  // 1 → 2 (progression update / economy v2): nothing owned or earned is
+  // removed — wallet, Hoods (bought at v1 prices), Waddles, stars and unlocks
+  // are kept as-is. v1 auto-paid the every-10th-level Shards on first clear,
+  // so the roadmap chests for milestones already cleared are marked claimed
+  // (no double payment). New sections (pet, titles, store limits) start fresh
+  // and are filled with defaults by the sanitizer; titles are backfilled from
+  // reliable counters at load. v1 wallets had no starting Fish: unchanged.
+  1: (raw) => {
+    const adv = isObj(raw.adventure) ? raw.adventure : {};
+    const stars = isObj(adv.stars) ? adv.stars : {};
+    const claimed: number[] = [];
+    for (let n = ADVENTURE_CHEST_EVERY; n <= 800; n += ADVENTURE_CHEST_EVERY) if (typeof stars[String(n)] === 'number') claimed.push(n);
+    const wallet = isObj(raw.wallet) ? raw.wallet : {};
+    return {
+      ...raw,
+      wallet: { icicles: wallet.icicles, shards: wallet.shards ?? 0, fish: wallet.fish ?? 0 },
+      adventure: { ...adv, chestsClaimed: claimed },
+      economy: { version: ECONOMY_VERSION, migratedFrom: 1 },
+      version: 2,
+    };
+  },
 };
 
 export function migrate(raw: Obj): Obj {

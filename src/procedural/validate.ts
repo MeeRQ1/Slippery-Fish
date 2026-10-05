@@ -5,8 +5,9 @@
  * radius) so "reachable" means a real penguin can get there and dribble a
  * fish along the route — not just point reachability.
  */
-import { ENEMIES, FISH, PLAYER, STASH } from '../config/gameplay';
+import { ENEMIES, FISH, GOAL, PLAYER } from '../config/gameplay';
 import { buildStatics } from '../gameplay/arena';
+import { isLegalLayout } from '../gameplay/goal';
 import { NavGrid } from '../enemies/nav';
 import type { LevelDef } from '../levels/types';
 import { Layer, PhysicsWorld, type StaticShape } from '../physics/world';
@@ -57,15 +58,22 @@ export function validateLevel(level: LevelDef, statics: StaticShape[] = buildSta
     const r = FISH.variants[f.variant].radius;
     if (!inside(f.x, f.y, r) || world.overlapsStatic(f.x, f.y, r + 6, Layer.Fish)) problems.push(`fish ${i} overlaps a collider`);
     const dS = dist(f.x, f.y, level.stash.x, level.stash.y);
-    if (dS < STASH.radius + r + 30) problems.push(`fish ${i} starts inside/near the stash`);
+    if (dS < GOAL.wallRadius + GOAL.wallThickness + r + 24) problems.push(`fish ${i} starts inside/near the goal courtyard`);
     if (dist(f.x, f.y, level.player.x, level.player.y) < PLAYER.radius + r + 30) problems.push(`fish ${i} overlaps player spawn`);
     level.fish.forEach((g, j) => {
       if (j <= i) return;
       if (dist(f.x, f.y, g.x, g.y) < r + FISH.variants[g.variant].radius + 24) problems.push(`fish ${i}/${j} overlap`);
     });
   });
-  if (!inside(level.stash.x, level.stash.y, STASH.radius + 20)) problems.push('stash too close to the edge');
-  if (world.overlapsStatic(level.stash.x, level.stash.y, STASH.radius + 8, Layer.Fish | Layer.Player)) problems.push('stash overlaps an obstacle');
+  const ib = GOAL.iglooBody;
+  const ringOuter = GOAL.wallRadius + GOAL.wallThickness;
+  if (!inside(level.stash.x, level.stash.y, ringOuter + 8) || level.stash.y + ib.cy - ib.h / 2 < 0) problems.push('goal too close to the edge');
+  if (!isLegalLayout(level.goal)) problems.push('goal fence layout has no legal opening');
+  // The courtyard and igloo must not overlap carved walls or obstacles (goal colliders excluded from this test).
+  const nonGoal = new PhysicsWorld();
+  nonGoal.statics = buildStatics(level, { goal: false });
+  if (nonGoal.overlapsStatic(level.stash.x, level.stash.y, ringOuter + 4, Layer.Fish | Layer.Player)) problems.push('goal courtyard overlaps an obstacle or wall');
+  if (nonGoal.overlapsStatic(level.stash.x + ib.cx, level.stash.y + ib.cy, ib.w / 2, Layer.Fish | Layer.Player)) problems.push('igloo overlaps an obstacle or wall');
 
   // --- reachability at penguin size
   const pCell = pGrid.cellOf(level.player.x, level.player.y);

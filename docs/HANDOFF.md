@@ -2,7 +2,9 @@
 
 This guide is for the repository owner. You don't need web-deployment experience; every step names the exact file, command or settings page.
 
-> **Deployment status: NOT YET PERFORMED.** The deploy workflow is ready and its build/test job passes on GitHub. To actually publish, two owner actions are needed: (1) merge the pull request into `main`, and (2) set **Settings → Pages → Source: GitHub Actions**. After that, every push to `main` deploys automatically. The expected URL is **https://meerq1.github.io/Slippery-Fish/** (not live until those steps are done).
+> **Deployment status: live** at **https://meerq1.github.io/Slippery-Fish/**. GitHub Pages is set to *GitHub Actions* and every push to `main` redeploys. The **progression update** is on its own pull request and reaches the live site only after that PR is merged.
+>
+> **Progression update:** see **[UPDATE.md](UPDATE.md)** for the 70% igloo goal, roadmap, Inverse Smiles startup, titles, pet goldfish, seasons/day-night, Training Rink and tests, and **[ECONOMY.md](ECONOMY.md)** for the Hood rebalance and simulation results.
 >
 > **Release scope:** this is a complete **offline single-player** browser game. Ads, accounts, cloud save, online Ranked and real-money payments are **not connected**. The game says so honestly wherever they appear. Legal pages are **drafts with placeholders**. See [Release blockers](#11-release-blockers).
 
@@ -39,7 +41,8 @@ Contents
 | `scripts/` | `validate-content.mjs` (runs before every build), `serve-subpath.mjs` (Pages-like preview), `gen-notices.mjs`, `extract_assets.py`. |
 | `tests/unit/` (Vitest), `tests/e2e/` (Playwright) | Automated tests. |
 | `.github/workflows/pages.yml` | CI + GitHub Pages deployment. |
-| `docs/` | This guide, [ASSETS.md](ASSETS.md), [SERVICES.md](SERVICES.md). |
+| `docs/` | This guide, [UPDATE.md](UPDATE.md) (progression update), [ECONOMY.md](ECONOMY.md), [ASSETS.md](ASSETS.md), [SERVICES.md](SERVICES.md), `screenshots/`. |
+| `src/pet/`, `src/progression/`, `src/economy/` | Pet goldfish (care rules, habitat renderer, routines), roadmap chests, titles, economy simulation harness. |
 
 ## 2. Run it locally
 
@@ -149,9 +152,9 @@ How the workflow (`.github/workflows/pages.yml`) behaves:
 **Automated checks that pass** (local and in CI):
 
 - `npm run typecheck`: clean.
-- `npm test`: 44 unit tests. Physics, simulation (sprint/stamina, fish, stash, enemies), generation (**all 800 Adventure levels generated and validated at real collider sizes**, Daily 40, Infinite seeds), economy (idempotent grants, atomic chest purchases, duplicate-Hood conversion), quests, save sanitize/export/import/erase, usernames, Ranked helpers.
+- `npm test`: **99 unit tests** (progression update; see [UPDATE.md §12](UPDATE.md#12-tests-and-checks-run)). Original coverage: Physics, simulation (sprint/stamina, fish, stash, enemies), generation (**all 800 Adventure levels generated and validated at real collider sizes**, Daily 40, Infinite seeds), economy (idempotent grants, atomic chest purchases, duplicate-Hood conversion), quests, save sanitize/export/import/erase, usernames, Ranked helpers.
 - `npm run validate:content`: catalog counts, all referenced art present, spot-checked levels, legal pages, notices and secret scan.
-- `npm run test:e2e`: 11 smoke tests × 2 device profiles (desktop, phone) against the **production build on the `/Slippery-Fish/` sub-path**: zero console errors and zero failed requests on boot; all 12 menu buttons in view (including short landscape); Adventure level 1 played with the HUD (BEST/TIME, LEVEL, stamina), pause and leave; every hanging sign opens/closes; deep link + refresh; invalid seed message; honest unavailable ads/Ranked; username persists across reload; legal pages served; full-motion sign drop; tab switch auto-pauses; **two-thumb touch** (joystick + held sprint simultaneously drains stamina).
+- `npm run test:e2e`: **15 smoke tests × 2 device profiles** (28 run, 2 profile-specific skips). The original 11: (desktop, phone) against the **production build on the `/Slippery-Fish/` sub-path**: zero console errors and zero failed requests on boot; all 12 menu buttons in view (including short landscape); Adventure level 1 played with the HUD (BEST/TIME, LEVEL, stamina), pause and leave; every hanging sign opens/closes; deep link + refresh; invalid seed message; honest unavailable ads/Ranked; username persists across reload; legal pages served; full-motion sign drop; tab switch auto-pauses; **two-thumb touch** (joystick + held sprint simultaneously drains stamina).
 
 **Checklist status:**
 
@@ -260,12 +263,12 @@ None of these features can be switched on safely yet:
 
 | Requirement | Implemented behavior | Verification | Remaining |
 |---|---|---|---|
-| Physical fish dribbling (never pickups) | Fish are physics bodies: bumped, kicked, bank shots, friction spin; scored by entering the stash | Unit tests (sim/physics); e2e plays level 1; bot wins level 1 | — |
+| Physical fish dribbling (never pickups) | Fish are physics bodies: bumped, kicked, bank shots, friction spin; scored when **≥ 70% of the fish is inside the igloo yard, entered through a fence opening** | Unit tests (sim/physics/goal); e2e plays level 1 | — |
 | Controls: WASD + held Left Shift; joystick + held sprint | Keyboard and Pointer-Events touch controls; both thumbs at once; side swap option | e2e (keyboard; two-thumb touch) | Real-device touch check |
 | Stamina (NORMAL / SPRINTING / LOW / EMPTY) | Drain, delayed regen, exhausted lockout; meter states and sounds | Unit tests; e2e checks drain while sprinting | — |
 | Enemies: polar bear, arctic wolf, seal + red proximity vignette | Distinct AIs (heavy chaser, fast interceptor, dashing seal), flow-field navigation, munch | Unit tests | Polar bear art is a placeholder |
 | HUD: BEST / TIME / SEED top-left, LEVEL top-right | As specified, plus fish tracker and pause | e2e | — |
-| **Adventure: 800 levels, 16 regions × 50** | Deterministic shared levels; tutorial levels 1–8; difficulty ramps; Hard Mode | **All 800 generated and validated** in unit tests (0 fallbacks) | — |
+| **Adventure: 800 levels, 16 regions × 50** | Deterministic shared levels (generator v2: arena shapes, goal gates, level twists); a roadmap with region landscapes, route chests and current marker; Hard Mode | **All 800 generated and validated** in unit tests; e2e roadmap | — |
 | **Daily: 40 levels/day, 8 Popsicles, rewards shown in advance, UTC reset** | Same set for everyone; milestone rewards every 5 levels (incl. chest, Hood, strongest at #8); live countdown; Hard Mode | Unit tests (40 valid, deterministic); validator; e2e deep link | — |
 | Infinite: seeded, reproducible, rising difficulty | Seed codes (e.g. `FR0ST-8K2M`) incl. level; ENTER SEED / PREVIOUS SEEDS / PLAY / HARD MODE / BACK | Unit tests (round-trip, validity far past ceiling); e2e invalid seed | — |
 | Ranked: best of 3, same seed, normalized stats, "OUTMATCHED" | Rules, normalization and screens implemented; honest "unavailable"; offline Practice | e2e (unavailable state); unit tests (helpers, normalization) | **Server required** for real matches |
@@ -275,7 +278,7 @@ None of these features can be switched on safely yet:
 | **Username + exactly 30 profile icons** | Validation, local-only notice; 30 distinct icons | Validator (count = 30); e2e (persistence) | — |
 | Choose Your Waddle | 10 species + 10 Signature Waddles; buy with Icicles, equip | Manual screenshots | — |
 | **200 Hoods, 10 rarities × 20, 20 power families** | Data-driven scaling; cosmetic-only in Ranked; buy with Shards | Validator + unit tests | Hood art is procedural |
-| Quests: tutorial / daily / weekly / monthly | 8 tutorial + rotating 3/3/3 by UTC period; claim stamps | Unit tests | — |
+| Quests: tutorial / daily / weekly / monthly | 11 tutorial + rotating 3/3/3 by UTC period (incl. bank shots, goldfish, route chests); claim stamps; optional Training Rink | Unit tests; e2e Training Rink | — |
 | Chests: 5 tiers (25/100/225/400/625 Fish) + ad chest (30-min cooldown) | Seeded atomic rolls, duplicate → Shards, dramatic opening scaled by tier | Unit tests; validator | Ad chest needs a provider; 2 chest arts substituted |
 | Fishing (Watch Ads) screen | Never auto-plays an ad; honest availability; reward only on verified event | e2e | Provider |
 | Store with CHA-CHING | Crumpled-dollar animation + sound; earned-currency trading post; real money disabled | Manual screenshots | Payments (optional) |
@@ -283,16 +286,16 @@ None of these features can be switched on safely yet:
 | Object buttons: hover expands, press squash, contextual sounds | Spring physics per button personality; keyboard/touch equivalents | Manual | — |
 | Main menu (Batch 5 scene + igloo), single logo | As specified; responsive incl. short landscape | e2e (all 12 buttons in view) | — |
 | **Asset extraction** | 432 frames from 13 supplied sheets; documented substitutions; Batch 9 missing | Validator; [ASSETS.md](ASSETS.md) | Optional final art |
-| **Music slots** | 30 slots in one manifest, all empty (`null`), honest | Validator note | Add licensed tracks |
+| **Music slots** | 30 slots in one manifest, no recorded tracks; menus play an **original synthesized theme** (`src/audio/themeTune.ts`) | Validator note | Add recorded tracks (optional) |
 | **Saves** | Versioned, sanitized, migrated; IndexedDB → localStorage → memory; export/import/erase; idempotent transactions | Unit tests; e2e persistence | Cloud save (optional) |
 | Settings incl. Privacy & Legal | Audio, controls, accessibility, graphics, save & account, legal hub with document viewer | e2e (open/close; legal pages) | — |
 | Legal drafts | Privacy, Terms, data deletion, support, third-party notices | e2e; validator | Publisher info + review |
-| GitHub Actions / Pages | Workflow verified green on PR | CI | Owner enables Pages; first deploy |
+| GitHub Actions / Pages | Workflow green; site live | CI; live site checked | — |
 
 ## 13. Optional next work
 
 1. Commission or add final art for the Polar Bear, trophy, Hoods and the two extra chests (paths in [ASSETS.md](ASSETS.md)).
-2. Add licensed music to the 30 slots in `src/config/audio.ts`.
+2. Add recorded, licensed music to the slots in `src/config/audio.ts` (menus already play the synthesized theme).
 3. Test on real devices and in Firefox and Safari, and tune `CAMERA`/HUD sizes if needed.
 4. If you want online features: follow [SERVICES.md](SERVICES.md) one service at a time, starting with the backend, then update the Privacy Policy and Terms before enabling anything.
 5. An offline/PWA mode was deliberately **not** added; it would need a versioned service worker and update testing.

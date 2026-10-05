@@ -30,6 +30,12 @@ export class SaveManager {
   private writing: Promise<void> = Promise.resolve();
   readonly changes = new Emitter<{ change: SaveData }>();
   readonly health: SaveHealth = { kind: 'memory', recoveredFromBackup: false, resetBecauseCorrupt: false, lastWriteError: null };
+  /**
+   * Read-only while another tab owns the game (TabGuard): changes and
+   * transactions are refused and nothing is written, so two tabs can never
+   * both spend or both claim from stale copies of the save.
+   */
+  private readOnly = false;
 
   async load(backend?: KVBackend): Promise<void> {
     this.backend = backend ?? (await openBestBackend());
@@ -54,9 +60,32 @@ export class SaveManager {
     } else {
       this.state = sanitizeSave(parsed ?? null);
     }
-    // Refresh the backup with the good state we just loaded.
-    await this.safeWrite(BACKUP_KEY, JSON.stringify(this.state));
+    // Refresh the backup with the good state we just loaded (never from a read-only tab).
+    if (!this.readOnly) await this.safeWrite(BACKUP_KEY, JSON.stringify(this.state));
     await this.flush();
+  }
+
+  setReadOnly(v: boolean): void {
+    this.readOnly = v;
+  }
+
+  get isReadOnly(): boolean {
+    return this.readOnly;
+  }
+
+  /** Re-reads the persisted save (after another tab released ownership). */
+  async reload(): Promise<void> {
+    let raw: string | null = null;
+    try {
+      raw = await this.backend.get(KEY);
+    } catch (err) {
+      console.warn('[save] reload failed', err);
+      return;
+    }
+    const parsed = tryParse(raw);
+    if (parsed === undefined || parsed === null) return;
+    this.state = sanitizeSave(parsed);
+    this.changes.emit('change', this.state);
   }
 
   get data(): Readonly<SaveData> {
@@ -69,6 +98,7 @@ export class SaveManager {
 
   /** Apply a change; persisted after a short debounce. */
   mutate(fn: (s: SaveData) => void, opts: { immediate?: boolean } = {}): void {
+    if (this.readOnly) return;
     fn(this.state);
     this.state.updatedAt = Date.now();
     this.changes.emit('change', this.state);
@@ -81,7 +111,7 @@ export class SaveManager {
    * already applied. Always persisted immediately.
    */
   transact(txId: string, fn: (s: SaveData) => void): boolean {
-    if (this.state.appliedTx.includes(txId)) return false;
+    if (this.readOnly || this.state.appliedTx.includes(txId)) return false;
     fn(this.state);
     this.state.appliedTx.push(txId);
     if (this.state.appliedTx.length > 500) this.state.appliedTx.splice(0, this.state.appliedTx.length - 500);
@@ -109,6 +139,7 @@ export class SaveManager {
       clearTimeout(this.timer);
       this.timer = null;
     }
+    if (this.readOnly) return this.writing;
     const snapshot = JSON.stringify(this.state);
     this.writing = this.writing.then(() => this.safeWrite(KEY, snapshot));
     return this.writing;

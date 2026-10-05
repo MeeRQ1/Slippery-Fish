@@ -10,6 +10,8 @@ import type { HudSnapshot } from '../../gameplay/session';
 import type { GameSession } from '../../gameplay/session';
 import type { PlayDriver } from '../../progression/drivers';
 import { economyBonus, gameplayModifiers } from '../../progression/hoods';
+import { LEVEL_MODIFIERS, rewardBonus } from '../../gameplay/levelModifiers';
+import { evaluateProgressTitles, evaluateRunTitles } from '../../progression/titles';
 import { newRunId, type ResultSummary, type RunOutcome } from '../../progression/results';
 import { waddleFrame } from '../../profile/waddles';
 import { drawPaperStar, drawTrophy } from '../../art/procedural';
@@ -22,6 +24,16 @@ import { canvasImg, h, sprite, wait } from '../dom';
 import { Screen, type ScreenParams } from '../screen';
 import type { App } from '../../app';
 import type { Router } from '../router';
+
+/** Sprint-button material by LEVEL theme (never by menu season). */
+function sprintTheme(region: string): string {
+  if (['spring_thaw'].includes(region)) return 'spring';
+  if (['beach', 'summer'].includes(region)) return 'summer';
+  if (region === 'fall') return 'autumn';
+  if (['ice_cream', 'candy_snow', 'festival'].includes(region)) return 'sweet';
+  if (['aurora', 'arctic_night', 'mastery'].includes(region)) return 'night';
+  return 'winter';
+}
 
 const WIN_TITLES = ['FISH-TASTIC!', 'STASHED IT!', 'WADDLE-ICIOUS!', 'SLIPPERY SUCCESS!', 'FIN-CREDIBLE!', 'NICE DRIBBLING!'];
 const FAIL_TITLES = ['FISH TRAGICALLY EATEN!', 'OH NO, MY FISH!', 'NOM NOM… NOT YOURS.'];
@@ -43,6 +55,8 @@ export class PlayScreen extends Screen {
   private runId = newRunId();
   private continued = false;
   private handled: 'none' | 'won' | 'failed' = 'none';
+  /** Any pause during this attempt (timed titles require an unpaused run). */
+  private pausedEver = false;
   private lastDanger = 0;
 
   constructor(app: App, router: Router, params: ScreenParams) {
@@ -68,6 +82,21 @@ export class PlayScreen extends Screen {
     );
     this.banner = h('div', { class: 'ready-banner', attrs: { 'aria-live': 'assertive' } });
     this.el.append(this.vignette.el, this.hud, this.banner);
+    const mods = this.driver.level.modifiers;
+    if (mods.length > 0) {
+      // Persistent compact chips (hover/tap for the rule) + a briefing card that steps aside once play starts.
+      const chips = h('div', { class: 'hud-mods', attrs: { 'aria-label': 'Level modifiers' } },
+        ...mods.map((m) => h('span', { class: 'mod-chip', attrs: { title: LEVEL_MODIFIERS[m].description, tabindex: '0' } }, h('b', { text: LEVEL_MODIFIERS[m].icon, attrs: { 'aria-hidden': 'true' } }), LEVEL_MODIFIERS[m].name)));
+      this.hud.querySelector('.hud-right')!.append(chips);
+      const bonus = rewardBonus(mods);
+      const card = h('div', { class: 'mod-card paper-panel', attrs: { role: 'note' } },
+        h('div', { class: 'mod-card-title', text: mods.length > 1 ? 'LEVEL TWISTS' : 'LEVEL TWIST' }),
+        ...mods.map((m) => h('div', { class: 'mod-card-row' }, h('b', { class: 'mod-ico', text: LEVEL_MODIFIERS[m].icon, attrs: { 'aria-hidden': 'true' } }), h('div', {}, h('strong', { text: LEVEL_MODIFIERS[m].name }), h('span', { text: LEVEL_MODIFIERS[m].description })))),
+        bonus > 0 ? h('div', { class: 'mod-card-bonus', text: `Clear it for +${Math.round(bonus * 100)}% Icicles` }) : null,
+      );
+      this.el.append(card);
+      this.d.timeout(() => card.classList.add('faded'), 6500);
+    }
     const hint = this.driver.level.tutorial?.hint;
     if (hint) {
       const hintEl = h('div', { class: 'tutorial-hint paper-panel', attrs: { role: 'note' } }, h('span', { class: 'hint-pin', attrs: { 'aria-hidden': 'true' } }), hint);
@@ -89,7 +118,11 @@ export class PlayScreen extends Screen {
       penguinFrame: waddleFrame(s.waddles.selected),
       hoodId,
     });
-    this.d.add(this.session.events.on('pauseChanged', (p) => (p ? this.showPause() : this.hidePause())));
+    this.d.add(this.session.events.on('pauseChanged', (p) => {
+      if (p) this.pausedEver = true;
+      if (p) this.showPause();
+      else this.hidePause();
+    }));
     this.d.add(this.session.events.on('sim', (e) => {
       if (e.type === 'fishEaten') this.flashFishLost();
     }));
@@ -114,7 +147,7 @@ export class PlayScreen extends Screen {
 
   private enableTouch(): void {
     if (this.touch || this.app.settings.get().touchControls === 'off') return;
-    this.touch = new TouchControls(this.app.input, this.app.settings.get().swapTouchSides, () => this.app.audio.unlock());
+    this.touch = new TouchControls(this.app.input, this.app.settings.get().swapTouchSides, () => this.app.audio.unlock(), sprintTheme(this.driver.level.region));
     this.el.append(this.touch.el);
     this.el.classList.add('has-touch');
     this.d.add(() => this.touch?.destroy());
@@ -140,6 +173,7 @@ export class PlayScreen extends Screen {
     this.vignette.update(snap.danger, dt, WARNING.pulseHzFar, WARNING.pulseHzNear, WARNING.opacityFar, WARNING.opacityNear);
     this.touch?.setSprintAvailable(snap.canSprint, snap.staminaState === 'low');
     if (snap.danger > 0.65 && this.lastDanger <= 0.65) this.app.audio.play('danger');
+    if (this.driver.objective && snap.status === 'playing' && this.driver.objective.met(this.session.sim)) this.session.sim.completeObjective();
     this.lastDanger = snap.danger;
     if (snap.status === 'won' && this.handled === 'none') {
       this.handled = 'won';
@@ -182,6 +216,7 @@ export class PlayScreen extends Screen {
     const panel = h('div', { class: 'pause-panel ice-panel', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Paused' } },
       h('h2', { class: 'title-ice', text: 'PAUSED' }),
       h('p', { class: 'pause-sub', text: `${this.driver.label} · ${formatTime(this.session.sim.timeMs)}` }),
+      this.driver.level.modifiers.length > 0 ? h('ul', { class: 'pause-mods' }, ...this.driver.level.modifiers.map((m) => h('li', {}, h('b', { text: `${LEVEL_MODIFIERS[m].icon} ${LEVEL_MODIFIERS[m].name}: ` }), LEVEL_MODIFIERS[m].description))) : null,
       h('div', { class: 'pause-actions' },
         woodButton('RESUME', { variant: 'green', size: 'big', onActivate: () => this.session.setPaused(false) }),
         woodButton('RESTART', { onActivate: () => this.restart() }),
@@ -231,7 +266,19 @@ export class PlayScreen extends Screen {
   private async onWin(): Promise<void> {
     this.touch?.releaseAll();
     this.app.input.setEnabled(false);
-    const summary = this.driver.complete(this.outcome());
+    const outcome = this.outcome();
+    const summary = this.driver.complete(outcome);
+    // Titles: evaluated from the committed result only.
+    const earned = [
+      ...evaluateRunTitles(this.app.save, {
+        mode: this.driver.mode, won: true, level: this.driver.levelNumber, hard: this.driver.hard, timeMs: outcome.timeMs,
+        fishTotal: this.driver.level.fish.length, continued: this.continued, paused: this.pausedEver,
+        modifiers: this.driver.level.modifiers, hoodId: this.driver.normalized ? null : this.app.save.data.hoods.equipped,
+      }, Date.now()),
+      ...evaluateProgressTitles(this.app.save, Date.now()),
+    ];
+    for (const t of earned) summary.notes.push(`Title earned: “${t.name}” — equip it in Profile`);
+    if (earned.length) this.app.audio.play('titleUnlock');
     await wait(450);
     if (this.d.isDisposed) return;
     this.app.audio.playMusic('victory');
@@ -289,6 +336,7 @@ export class PlayScreen extends Screen {
     const next = this.driver.next();
     const title = WIN_TITLES[Math.floor(Math.random() * WIN_TITLES.length)]!;
     const stars = h('div', { class: 'stars-row', attrs: { 'aria-label': `${summary.stars} of 5 Excellence Stars` } });
+    if (this.driver.mode === 'training') stars.style.display = 'none';
     for (let i = 0; i < 5; i++) stars.append(h('div', { class: 'star-slot' }, canvasImg(drawPaperStar(i * 7 + 3, 96, false), 'star-empty')));
     const times = h('div', { class: 'result-times' },
       h('div', { class: 'rt' }, h('span', { class: 'rt-k', text: 'TIME' }), h('span', { class: 'rt-v', text: formatTime(summary.timeMs) })),

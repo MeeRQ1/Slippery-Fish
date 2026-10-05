@@ -57,5 +57,6 @@ export function dailyLevel(dateKey: string, index: number, hard = false): LevelD
     region: regions[milestoneOf(index) - 1]!,
     difficulty: dailyDifficulty(index),
     hard,
+    modifierChance: index >= 6 ? 0.25 : 0,
   });
 }

@@ -1,7 +1,16 @@
 /**
  * Slippery Fish — entry point.
- * Loads fonts + styles, boots the App (save, Phaser, core atlases), wires UI
- * hooks, registers screens and shows the Main Menu (or a safe deep link).
+ *
+ * Startup (see index.html for the inline part that paints before this bundle):
+ *  1. The Inverse Smiles mark animates immediately; everything below runs
+ *     concurrently with it (no serial logo wait).
+ *  2. TabGuard decides whether this tab may own the save.
+ *  3. The save, fonts and core atlases load with REAL progress shown on the
+ *     loading scene, whose profile card was filled from the cached summary
+ *     and is reconciled from the real save as soon as it loads.
+ *  4. When the brand has finished and loading is done, the menu (or a safe
+ *     deep link) appears. If loading finished first, the loading scene is
+ *     skipped entirely.
  */
 import '@fontsource/fredoka/latin-400.css';
 import '@fontsource/fredoka/latin-500.css';
@@ -11,12 +20,34 @@ import '@fontsource/luckiest-guy/latin-400.css';
 import './ui/styles.css';
 import './ui/screens.css';
 import './ui/panels.css';
+import './ui/living.css';
 import { App } from './app';
+import { TabGuard } from './core/tabGuard';
+import { evaluateProgressTitles } from './progression/titles';
+import { buildSummary, writeSummary } from './profile/summaryCache';
+import { DEFAULT_USERNAME } from './save/schema';
+import { showTabBlocker } from './ui/tabBlocker';
 import { uiHooks } from './ui/uiHooks';
 import { registerScreens, SAFE_DEEP_LINKS } from './ui/screens/registry';
 
-const status = document.getElementById('boot-status');
-const loader = document.getElementById('boot-loader');
+interface BootApi {
+  brandDone: Promise<void>;
+  hideBrand(): void;
+  setProgress(label: string | null, fraction?: number): void;
+  setCard(summary: unknown): boolean;
+  fail(message: string): void;
+  finish(): void;
+}
+
+const noopBoot: BootApi = {
+  brandDone: Promise.resolve(),
+  hideBrand: () => undefined,
+  setProgress: () => undefined,
+  setCard: () => false,
+  fail: (m) => console.error(m),
+  finish: () => document.getElementById('boot-loader')?.remove(),
+};
+const boot: BootApi = (window as unknown as { __sfBoot?: BootApi }).__sfBoot ?? noopBoot;
 
 async function start(): Promise<void> {
   const app = new App();
@@ -26,23 +57,80 @@ async function start(): Promise<void> {
   uiHooks.isBusy = () => app.router.busy;
   registerScreens(app.router);
 
+  // When the brand finishes before loading does, reveal the loading scene.
+  let ready = false;
+  void boot.brandDone.then(() => { if (!ready) boot.hideBrand(); });
+
+  // ---- one active tab (before the save is read or written)
+  let removeBlocker: (() => void) | null = null;
+  let started = false;
+  const guard = new TabGuard({
+    onActive: async (afterTakeover) => {
+      app.save.setReadOnly(false);
+      if (afterTakeover) {
+        await app.save.reload();
+        removeBlocker?.();
+        removeBlocker = null;
+        if (started) await app.router.go('menu', {}, { replace: true });
+      }
+    },
+    onBlocked: () => {
+      app.save.setReadOnly(true);
+      removeBlocker = showTabBlocker('blocked', () => void guard.takeOver());
+    },
+    onReleased: async () => {
+      await app.save.flush();
+      app.save.setReadOnly(true);
+      if (app.router.currentId === 'play') await app.router.go('menu', {}, { replace: true });
+      removeBlocker = showTabBlocker('released', () => void guard.takeOver());
+    },
+  });
+  await guard.start();
+
+  // ---- real loading
+  boot.setProgress('Opening your save…', 0.04);
+  await app.save.load();
+  const fresh = Object.keys(app.save.data.adventure.stars).length === 0 && app.save.data.profile.username === DEFAULT_USERNAME;
+  boot.setCard({ ...buildSummary(app.save.data), ...(fresh ? { name: 'Welcome, new waddler!' } : {}) });
+  boot.setProgress('Fetching the art…', 0.1);
   // Fonts first so canvas text and measurements are right (fallbacks are safe if they fail).
   const fonts = Promise.race([
     Promise.all([document.fonts.load('700 20px Fredoka'), document.fonts.load('400 20px "Luckiest Guy"')]),
     new Promise((r) => setTimeout(r, 2500)),
   ]).catch(() => undefined);
-  await app.boot((p) => {
-    if (status) status.textContent = p < 1 ? `Polishing the ice… ${Math.round(p * 100)}%` : 'Waddling in…';
-  });
+  const failed = await app.boot((p) => boot.setProgress(p < 1 ? `Polishing the ice… ${Math.round(p * 100)}%` : 'Building the arena…', 0.1 + p * 0.8), { saveLoaded: true });
+  if (failed.length > 0) {
+    boot.fail(`Some game art couldn't be downloaded (${failed.length} file${failed.length === 1 ? '' : 's'}). Check your connection and try again — your progress is safe.`);
+    return;
+  }
+  boot.setProgress('Waking up the penguins…', 0.94);
   await fonts;
-  app.game.scene.start('backdrop', { reducedMotion: () => app.settings.get().reducedMotion, dpr: () => app.dpr(), quality: () => app.settings.get().quality });
+  // Titles that existing saves already earned (reliable counters only).
+  evaluateProgressTitles(app.save, Date.now());
+  writeSummary(app.save.data);
+  app.game.scene.start('backdrop', { reducedMotion: () => app.settings.get().reducedMotion, dpr: () => app.dpr(), quality: () => app.settings.get().quality, theme: () => app.menuTheme.current });
   app.quests.refresh();
 
   const hash = location.hash.replace(/^#\/?/, '');
   const first = SAFE_DEEP_LINKS.includes(hash) ? hash : 'menu';
   await app.router.go(first);
-  loader?.classList.add('gone');
-  setTimeout(() => loader?.remove(), 600);
+  boot.setProgress('Ready!', 1);
+  ready = true;
+  started = true;
+  await boot.brandDone;
+  boot.finish();
+
+  // Keep the display-only summary in sync with identity/progress/title changes.
+  let summaryTimer = 0;
+  app.save.changes.on('change', () => {
+    window.clearTimeout(summaryTimer);
+    summaryTimer = window.setTimeout(() => {
+      writeSummary(app.save.data);
+      const fresh = evaluateProgressTitles(app.save, Date.now());
+      if (fresh.length === 1) app.router.toast(`Title earned: “${fresh[0]!.name}” — equip it in Profile`);
+      else if (fresh.length > 1) app.router.toast(`${fresh.length} titles earned! See them in Profile.`);
+    }, 600);
+  });
 
   // Hash edits / same-page links (#/daily …) switch screens too — never out
   // of gameplay (leaving a level always goes through its own pause/leave UI).
@@ -64,5 +152,5 @@ async function start(): Promise<void> {
 
 start().catch((err: unknown) => {
   console.error(err);
-  if (status) status.textContent = 'Something went wrong while loading. Please refresh the page.';
+  boot.fail('Something went wrong while loading. Please try again — your progress is safe.');
 });

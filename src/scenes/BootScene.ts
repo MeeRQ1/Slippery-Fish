@@ -12,11 +12,13 @@ export const CORE_IMAGES = ['tex_snow', 'menu_mountains_band', 'tex_ice'];
 
 export interface BootData {
   onProgress: (p: number) => void;
-  onReady: () => void;
+  /** `failed` lists asset keys that could not be downloaded (empty when all loaded). */
+  onReady: (failed: string[]) => void;
 }
 
 export class BootScene extends Phaser.Scene {
   private boot!: BootData;
+  private failed: string[] = [];
 
   constructor() {
     super({ key: 'boot' });
@@ -30,11 +32,14 @@ export class BootScene extends Phaser.Scene {
     for (const p of atlasPages(CORE_ATLAS_GROUPS)) this.load.atlas(p.key, p.image, p.json);
     for (const img of standaloneImages()) if (CORE_IMAGES.includes(img.id)) this.load.image(img.id, img.url);
     this.load.on(Phaser.Loader.Events.PROGRESS, (v: number) => this.boot.onProgress(v));
-    this.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, (file: Phaser.Loader.File) => console.warn('[boot] failed to load', file.key, file.src));
+    this.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, (file: Phaser.Loader.File) => {
+      console.warn('[boot] failed to load', file.key, file.src);
+      this.failed.push(file.key);
+    });
   }
 
   create(): void {
     ensureProceduralTextures(this);
-    this.boot.onReady();
+    this.boot.onReady(this.failed);
   }
 }

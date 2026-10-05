@@ -4,8 +4,8 @@
  * sprites, particles and camera feedback. All gameplay rules live in GameSim.
  */
 import Phaser from 'phaser';
-import { BANK_MARGIN, drawSnowbanks, drawSurfacePatch, hexToInt } from '../art/procedural';
-import { CAMERA, ENEMIES, FISH, PLAYER, STASH } from '../config/gameplay';
+import { BANK_MARGIN, drawGlaze, drawSnowbanks, drawSurfacePatch, hexToInt } from '../art/procedural';
+import { CAMERA, ENEMIES, ENEMY_EXPRESSION, FISH, GOAL, PLAYER } from '../config/gameplay';
 import { OBSTACLES } from '../config/obstacles';
 import { REGION_BY_ID, type RegionDef } from '../config/regions';
 import { decorPool, groupsForRegion, type FrameMeta } from '../core/assets';
@@ -17,6 +17,8 @@ import type { Settings } from '../save/settings';
 import { addCanvasTexture, ensureProceduralTextures, loadAtlasGroups, loadStandaloneImages, tex } from './textures';
 import { drawHood, HOOD_CANVAS } from '../art/hoodArt';
 import { HOOD_BY_ID } from '../progression/hoods';
+import { FENCE_COLORS, drawChick, drawCourtyard, drawFencePost, drawHeart, type ChickMood } from '../art/goalArt';
+import { RING_DIRS, RING_SEGMENTS, doorPoint, isIglooSegment, isSolidSegment, openings, ringPoint } from '../gameplay/goal';
 
 export interface GameSceneData {
   session: GameSession;
@@ -27,8 +29,10 @@ export interface GameSceneData {
   onReady?: () => void;
 }
 
-interface FishView { fish: FishEntity; img: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; lines: Phaser.GameObjects.Image; angle: number; baseFrame: { key: string; frame?: string }; scale: number }
-interface EnemyView { enemy: EnemyEntity; root: Phaser.GameObjects.Container; img: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; scale: number; lean: number; phase: number; alert: number }
+interface FishView { fish: FishEntity; img: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; lines: Phaser.GameObjects.Image; angle: number; baseFrame: { key: string; frame?: string }; scale: number; entering: { t: number; x: number; y: number } | null; trailT?: number }
+interface ChickView { img: Phaser.GameObjects.Image; x: number; y: number; phase: number; tint: number; mood: ChickMood }
+type Expression = 'idle' | 'alert' | 'eager' | 'imminent';
+interface EnemyView { enemy: EnemyEntity; root: Phaser.GameObjects.Container; img: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; scale: number; lean: number; phase: number; alert: number; expr: Expression; exprHold: number; emote: Phaser.GameObjects.Image; voiceCd: number }
 interface Particle { img: Phaser.GameObjects.Image; vx: number; vy: number; life: number; max: number; s0: number; s1: number; a0: number; a1: number; spin: number; gravity: number; active: boolean }
 interface Flake { img: Phaser.GameObjects.Image; vx: number; vy: number; phase: number }
 
@@ -44,11 +48,16 @@ export class GameScene extends Phaser.Scene {
   private playerScale = 1;
   private fishViews: FishView[] = [];
   private enemyViews: EnemyView[] = [];
-  private stash!: Phaser.GameObjects.Image;
-  private stashGlow!: Phaser.GameObjects.Image;
+  private igloo!: Phaser.GameObjects.Image;
+  private goalGlow!: Phaser.GameObjects.Image;
+  private goalPlaque!: Phaser.GameObjects.Text;
+  private chicks: ChickView[] = [];
+  private cheerTimer = 0;
+  private popups: Phaser.GameObjects.Text[] = [];
   private stashArrow: Phaser.GameObjects.Image | null = null;
-  private stashFrameShown = '';
   private particles: Particle[] = [];
+  private skidTimer = 0;
+  private lastPv = { x: 0, y: 0 };
   private flakes: Flake[] = [];
   private followMode = false;
   private cssPerUnit = 1;
@@ -73,7 +82,9 @@ export class GameScene extends Phaser.Scene {
     this.flakes = [];
     this.textureKeys = [];
     this.stashArrow = null;
-    this.stashFrameShown = '';
+    this.chicks = [];
+    this.popups = [];
+    this.cheerTimer = 0;
     this.offEvents = [];
   }
 
@@ -102,9 +113,20 @@ export class GameScene extends Phaser.Scene {
 
     // --- arena floor
     this.add.rectangle(W / 2, H / 2, W, H, hexToInt(pal.floor)).setDepth(DEPTH.floor - 1);
-    const floor = this.add.tileSprite(W / 2, H / 2, W, H, tex(this, this.region.floorTexture).key).setDepth(DEPTH.floor);
+    const floorKey = tex(this, this.region.floorTexture).key;
+    const floor = this.add.tileSprite(W / 2, H / 2, W, H, floorKey).setDepth(DEPTH.floor);
     floor.setTileScale(0.9, 0.9);
-    floor.setAlpha(pal.floorTextureAlpha);
+    floor.setAlpha(pal.floorTextureAlpha * 0.72);
+    // A second, offset layer at a non-multiple scale breaks up the visible tile grid.
+    const floor2 = this.add.tileSprite(W / 2, H / 2, W, H, floorKey).setDepth(DEPTH.floor);
+    floor2.setTileScale(1.37, 1.37).setTilePosition(173, 91).setFlipX(true);
+    floor2.setAlpha(pal.floorTextureAlpha * 0.45);
+    if (level.modifiers.includes('glazedIce')) {
+      const glazeKey = `glaze_${level.id}_${Date.now()}`;
+      this.textures.addCanvas(glazeKey, drawGlaze(W, H, hash32(level.seed) ^ 0x5f3759df));
+      this.textureKeys.push(glazeKey);
+      this.add.image(0, 0, glazeKey).setOrigin(0, 0).setScale(2).setDepth(DEPTH.floor + 1).setAlpha(0.7);
+    }
     this.placeFloorDecals(level.seed);
     level.surfaces.forEach((s, i) => {
       const key = `surf_${level.id}_${i}`;
@@ -119,16 +141,8 @@ export class GameScene extends Phaser.Scene {
     this.textureKeys.push(bankKey);
     this.add.image(-BANK_MARGIN, -BANK_MARGIN, bankKey).setOrigin(0, 0).setDepth(DEPTH.bank);
 
-    // --- stash
-    this.stashGlow = this.add.image(level.stash.x, level.stash.y, 'px_snow').setDepth(DEPTH.stash - 1).setScale(STASH.radius / 9).setAlpha(0);
-    this.stashGlow.setTint(0xfff3a0);
-    const st = tex(this, 'stash_empty');
-    this.stash = this.add.image(level.stash.x, level.stash.y, st.key, st.frame).setDepth(DEPTH.stash);
-    this.updateStashFrame(true);
-    if (level.tutorial?.showStashArrow) {
-      const a = tex(this, 'ui_stash_arrow');
-      this.stashArrow = this.add.image(level.stash.x, level.stash.y - STASH.radius - 70, a.key, a.frame).setDepth(DEPTH.fx - 1).setScale(0.6);
-    }
+    // --- goal: courtyard, fences, igloo, chicks
+    this.buildGoal();
 
     // --- obstacles (Batch 4) with soft contact shadows
     for (const o of level.obstacles) {
@@ -150,9 +164,10 @@ export class GameScene extends Phaser.Scene {
       const sh = this.add.image(f.body.x, f.body.y + f.cfg.radius * 0.7, 'proc_shadow').setDisplaySize(cfgLen * 0.9, f.cfg.radius * 1.1).setAlpha(0.45);
       const lt = tex(this, 'fx_fish_speed_lines');
       const lines = this.add.image(f.body.x, f.body.y, lt.key, lt.frame).setScale(scale * 0.9).setAlpha(0).setDepth(DEPTH.surface + 2);
-      this.fishViews.push({ fish: f, img, shadow: sh, lines, angle: 0, baseFrame: t, scale });
+      this.fishViews.push({ fish: f, img, shadow: sh, lines, angle: 0, baseFrame: t, scale, entering: null });
     }
 
+    this.makeFxTextures();
     // --- enemies
     for (const e of this.session.sim.enemies) {
       const cfg = ENEMIES[e.type];
@@ -162,7 +177,8 @@ export class GameScene extends Phaser.Scene {
       img.setScale(scale);
       const shadow = this.add.image(e.body.x, e.body.y + cfg.radius * 0.75, 'proc_shadow').setDisplaySize(cfg.radius * 2.4, cfg.radius * 0.9).setAlpha(0.5);
       const root = this.add.container(e.body.x, e.body.y, [img]);
-      this.enemyViews.push({ enemy: e, root, img, shadow, scale, lean: 0, phase: Math.random() * 6, alert: 0 });
+      const emote = this.add.image(e.body.x, e.body.y, 'emote_alert').setVisible(false).setDepth(DEPTH.fx - 1);
+      this.enemyViews.push({ enemy: e, root, img, shadow, scale, lean: 0, phase: Math.random() * 6, alert: 0, expr: 'idle', exprHold: 0, emote, voiceCd: 0 });
     }
 
     // --- player penguin (round, single-sided, rotates while moving)
@@ -289,7 +305,7 @@ export class GameScene extends Phaser.Scene {
     const n = rng.int(2, 5);
     for (let i = 0; i < n; i++) {
       const x = rng.range(80, level.arena.width - 80), y = rng.range(80, level.arena.height - 80);
-      if (Math.hypot(x - level.stash.x, y - level.stash.y) < 140) continue;
+      if (Math.hypot(x - level.stash.x, y - level.stash.y) < GOAL.wallRadius + 90) continue;
       if (this.session.sim.world.overlapsStatic(x, y, 50, 7)) continue;
       const f = rng.pick(pool);
       const t = tex(this, f.id);
@@ -352,14 +368,27 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
+    // Ice skid marks when turning or braking hard at speed (presentation only, pooled, short-lived).
+    this.skidTimer -= dt;
+    if (!reduced && speed > 170 && this.skidTimer <= 0) {
+      const pv = Math.hypot(this.lastPv.x, this.lastPv.y);
+      const turn = pv > 1 ? 1 - (pb.vx * this.lastPv.x + pb.vy * this.lastPv.y) / (speed * pv) : 0;
+      const brake = pv - speed;
+      if (turn > 0.012 || brake > 9) {
+        this.skidTimer = 0.035;
+        this.spawn('fx_skid', undefined, px, py + 14, { vx: 0, vy: 0, life: 1.1, s0: 0.9, s1: 0.9, a0: 0.6, a1: 0, depth: DEPTH.decal + 1 })?.img.setRotation(heading);
+        if (turn > 0.03 || brake > 18) this.data_.audio.play('skid');
+      }
+    }
+    this.lastPv.x = pb.vx;
+    this.lastPv.y = pb.vy;
+
     // Fish
     for (const v of this.fishViews) this.updateFish(v, alpha, dt);
     // Enemies
     for (const v of this.enemyViews) this.updateEnemy(v, alpha, dt, t, reduced);
-    // Stash
-    this.updateStashFrame(false);
-    if (this.stashArrow) this.stashArrow.y = sim.level.stash.y - STASH.radius - 70 + Math.sin(t * 4) * 10;
-    this.stashGlow.setAlpha(Math.max(0, this.stashGlow.alpha - dt * 1.5));
+    // Goal
+    this.updateGoal(dt, t, reduced);
 
     // Particles + weather
     this.updateParticles(dt);
@@ -375,8 +404,27 @@ export class GameScene extends Phaser.Scene {
 
   private updateFish(v: FishView, alpha: number, dt: number): void {
     const f = v.fish;
+    if (f.state === 'stashed' && v.entering) {
+      // Presentation only: the fish already left gameplay; it slides into the doorway and is occluded by the igloo.
+      const e = v.entering;
+      e.t = Math.min(1, e.t + dt / 0.36);
+      const [dx, dy] = doorPoint(this.session.config.level.stash.x, this.session.config.level.stash.y);
+      const k = e.t * e.t;
+      const x = e.x + (dx - e.x) * k, y = e.y + (dy - e.y) * k;
+      v.img.setPosition(x, y).setScale(v.scale * (1 - 0.4 * e.t)).setDepth(DEPTH.actors + y);
+      v.img.rotation = Math.atan2(dy - e.y, dx - e.x);
+      v.img.setFlipY(Math.cos(v.img.rotation) < 0);
+      v.img.setAlpha(e.t > 0.8 ? (1 - e.t) / 0.2 : 1);
+      v.shadow.setVisible(false);
+      v.lines.setVisible(false);
+      if (e.t >= 1) {
+        v.entering = null;
+        v.img.setVisible(false);
+      }
+      return;
+    }
     if (f.state !== 'free') {
-      if (v.img.visible && f.state === 'eaten') {
+      if (v.img.visible) {
         v.img.setVisible(false);
         v.shadow.setVisible(false);
         v.lines.setVisible(false);
@@ -415,6 +463,13 @@ export class GameScene extends Phaser.Scene {
     v.shadow.setPosition(x, y + f.cfg.radius * 0.75).setDepth(DEPTH.actors + y - 1);
     // Speed lines only at high velocity (Batch 3 rule).
     const th = FISH.speedLinesThreshold;
+    if (speed > th * 0.8 && !this.data_.settings().reducedMotion) {
+      v.trailT = (v.trailT ?? 0) - dt;
+      if (v.trailT <= 0) {
+        v.trailT = 0.045;
+        this.spawn('fx_trail', undefined, x - (b.vx / speed) * f.cfg.radius, y - (b.vy / speed) * f.cfg.radius, { vx: 0, vy: 0, life: 0.45, s0: 0.9, s1: 0.4, a0: 0.7, a1: 0, depth: DEPTH.actors + y - 3 });
+      }
+    }
     if (speed > th) {
       const a = Math.min(1, (speed - th) / (FISH.maxSpeed - th));
       v.lines.setAlpha(0.35 + a * 0.6);
@@ -455,21 +510,234 @@ export class GameScene extends Phaser.Scene {
     v.root.setDepth(DEPTH.actors + y);
     v.shadow.setDepth(DEPTH.actors + y - 1);
     if (v.alert > 0) v.alert -= dt;
+    this.updateExpression(v, x, y, dt, t, reduced);
   }
 
-  private updateStashFrame(force: boolean): void {
+  /** Readable expression state from distance to the enemy's target (or nearest exposed fish), with hysteresis. */
+  private updateExpression(v: EnemyView, x: number, y: number, dt: number, t: number, reduced: boolean): void {
+    const e = v.enemy;
     const sim = this.session.sim;
-    const n = sim.stashedValue;
-    const id = n <= 0 ? 'stash_empty' : n >= sim.required ? 'stash_complete' : n === 1 ? 'stash_partial_one' : 'stash_partial_multi';
-    if (!force && id === this.stashFrameShown) return;
-    this.stashFrameShown = id;
-    const t = tex(this, id);
-    this.stash.setTexture(t.key, t.frame);
-    // Scale so the snowy rim matches the scoring radius; origin centres the hole.
-    const rimFraction = id === 'stash_complete' ? 0.93 : 0.95;
-    this.stash.setScale((STASH.radius * 2 * 1.18) / (this.stash.width * rimFraction));
-    const holeY = id === 'stash_complete' ? 0.72 : 0.66;
-    this.stash.setOrigin(0.5, holeY);
+    v.voiceCd = Math.max(0, v.voiceCd - dt);
+    v.exprHold += dt;
+    let d = Infinity;
+    const target = sim.fish.find((f) => f.id === e.targetFish && f.state === 'free');
+    if (target) d = Math.hypot(target.body.x - e.body.x, target.body.y - e.body.y);
+    else for (const f of sim.exposedFish) d = Math.min(d, Math.hypot(f.body.x - e.body.x, f.body.y - e.body.y));
+    const E = ENEMY_EXPRESSION;
+    const raw: Expression = e.state === 'munching' || e.state === 'waiting' ? 'idle' : d <= E.imminent ? 'imminent' : d <= E.eager ? 'eager' : d <= E.alert ? 'alert' : 'idle';
+    const rank = { idle: 0, alert: 1, eager: 2, imminent: 3 } as const;
+    let next = v.expr;
+    if (rank[raw] > rank[v.expr]) next = raw; // escalate immediately
+    else if (rank[raw] < rank[v.expr] && v.exprHold >= E.minHold) {
+      // calm down only once clearly outside the band
+      const band = v.expr === 'imminent' ? E.imminent : v.expr === 'eager' ? E.eager : E.alert;
+      if (d > band + E.hysteresis || e.state === 'munching' || e.state === 'waiting') next = raw;
+    }
+    if (next !== v.expr) {
+      if (rank[next] >= 2 && rank[v.expr] < 2 && v.voiceCd <= 0) {
+        this.data_.audio.play(e.type === 'polarBear' ? 'bearGrowl' : e.type === 'arcticWolf' ? 'wolfYip' : 'sealBark');
+        v.voiceCd = E.voiceCooldown;
+      }
+      v.expr = next;
+      v.exprHold = 0;
+      if (next === 'idle') v.emote.setVisible(false);
+      else v.emote.setTexture(`emote_${next}`).setVisible(true);
+    }
+    if (v.emote.visible) {
+      const bob = reduced ? 0 : Math.sin(t * (v.expr === 'imminent' ? 14 : 5)) * (v.expr === 'imminent' ? 3 : 2);
+      v.emote.setPosition(x + e.cfg.radius * 0.55, y - e.cfg.radius - 22 + bob).setScale(v.expr === 'imminent' ? 0.62 : 0.5);
+    }
+    v.img.setTint(v.expr === 'imminent' && !reduced && Math.sin(t * 16) > 0 ? 0xffd0d0 : 0xffffff);
+  }
+
+  /** Emote bubbles and trail decals (procedural, generated once per scene). */
+  private makeFxTextures(): void {
+    const bubble = (key: string, fill: string, glyph: string, glyphColor: string) => addCanvasTexture(this, key, () => {
+      const c = document.createElement('canvas');
+      c.width = 72; c.height = 72;
+      const g = c.getContext('2d')!;
+      g.lineWidth = 5; g.strokeStyle = '#1b2a44'; g.fillStyle = fill;
+      g.beginPath(); g.arc(36, 32, 26, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.beginPath(); g.moveTo(26, 54); g.lineTo(22, 68); g.lineTo(38, 57); g.closePath(); g.fill(); g.stroke();
+      g.fillStyle = fill; g.beginPath(); g.arc(36, 32, 23, 0, Math.PI * 2); g.fill();
+      g.font = '900 34px Fredoka, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.lineWidth = 6; g.strokeStyle = '#1b2a44'; g.strokeText(glyph, 36, 34); g.fillStyle = glyphColor; g.fillText(glyph, 36, 34);
+      return c;
+    });
+    bubble('emote_alert', '#ffffff', '?', '#3d8fd6');
+    bubble('emote_eager', '#fff3c4', '!', '#f2a01a');
+    bubble('emote_imminent', '#ffd6d6', '!!', '#ff3b3b');
+    addCanvasTexture(this, 'fx_skid', () => {
+      const c = document.createElement('canvas');
+      c.width = 34; c.height = 14;
+      const g = c.getContext('2d')!;
+      g.strokeStyle = 'rgba(160,205,240,0.9)'; g.lineWidth = 3; g.lineCap = 'round';
+      for (const yy of [4, 10]) { g.beginPath(); g.moveTo(3, yy); g.quadraticCurveTo(17, yy - 2, 31, yy); g.stroke(); }
+      return c;
+    });
+    addCanvasTexture(this, 'fx_trail', () => {
+      const c = document.createElement('canvas');
+      c.width = 16; c.height = 16;
+      const g = c.getContext('2d')!;
+      const gr = g.createRadialGradient(8, 8, 1, 8, 8, 8);
+      gr.addColorStop(0, 'rgba(255,255,255,0.95)'); gr.addColorStop(1, 'rgba(200,235,255,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 16, 16);
+      return c;
+    });
+  }
+
+  // ------------------------------------------------------------------ goal
+
+  private buildGoal(): void {
+    const level = this.session.config.level;
+    const { x: cx, y: cy } = level.stash;
+    const tx = (key: string, make: () => HTMLCanvasElement) => addCanvasTexture(this, key, make);
+    tx('goal_post', () => drawFencePost(false));
+    tx('goal_post_tall', () => drawFencePost(true));
+    tx('goal_courtyard', () => drawCourtyard(GOAL.wallRadius, GOAL.interiorRadius));
+    tx('goal_heart', drawHeart);
+    for (let i = 0; i < 3; i++) for (const m of ['idle', 'cheer', 'worried'] as const) tx(`chick_${m}_${i}`, () => drawChick(m, i));
+
+    // Courtyard floor + score flash.
+    this.add.image(cx, cy, 'goal_courtyard').setScale(0.5).setDepth(DEPTH.surface + 0.5);
+    this.goalGlow = this.add.image(cx, cy, 'px_snow').setDepth(DEPTH.surface + 0.6).setScale(GOAL.interiorRadius / 9).setAlpha(0).setTint(0xfff3a0);
+
+    // Gate approaches: a softly trampled path outside each opening so gates read from afar.
+    const paths = this.add.graphics().setDepth(DEPTH.decal + 0.5);
+    for (const run of openings(level.goal)) {
+      let mx = 0, my = 0;
+      for (const seg of run) {
+        const a = RING_DIRS[seg]!, b = RING_DIRS[(seg + 1) % RING_SEGMENTS]!;
+        mx += a[0] + b[0]; my += a[1] + b[1];
+      }
+      const ml = Math.hypot(mx, my) || 1;
+      mx /= ml; my /= ml;
+      for (let j = 0; j < 4; j++) {
+        const r = GOAL.wallRadius + 26 + j * 22;
+        paths.fillStyle(0xd6e9f7, 0.55 - j * 0.11);
+        paths.fillEllipse(cx + mx * r, cy + my * r, 26 - j * 3, 16 - j * 2);
+      }
+    }
+
+    // Solid ring segments: fences (wood + snow) and the igloo's snow-brick wing walls.
+    const posts = new Map<number, boolean>(); // direction index → is gate post
+    const openAt = (seg: number) => !isSolidSegment(level.goal, ((seg % RING_SEGMENTS) + RING_SEGMENTS) % RING_SEGMENTS);
+    for (let i = 0; i < RING_SEGMENTS; i++) {
+      if (!isSolidSegment(level.goal, i)) continue;
+      const [ax, ay] = ringPoint(cx, cy, i);
+      const [bx, by] = ringPoint(cx, cy, i + 1);
+      if (isIglooSegment(i)) {
+        if (ay > cy + GOAL.iglooBaseY - 4 || by > cy + GOAL.iglooBaseY - 4) this.drawIceWall(ax, ay, bx, by);
+        if (openAt(i - 1)) posts.set(i, true);
+        if (openAt(i + 1)) posts.set((i + 1) % RING_SEGMENTS, true);
+        continue;
+      }
+      this.drawRails(ax, ay, bx, by);
+      posts.set(i, posts.get(i) || openAt(i - 1));
+      posts.set((i + 1) % RING_SEGMENTS, posts.get((i + 1) % RING_SEGMENTS) || openAt(i + 1));
+    }
+    for (const [k, gate] of posts) {
+      const [px, py] = ringPoint(cx, cy, k);
+      this.add.image(px, py + 3, gate ? 'goal_post_tall' : 'goal_post').setOrigin(0.5, 0.94).setScale(0.5).setDepth(DEPTH.actors + py);
+    }
+
+    // The igloo (supplied Batch 8A art), sitting behind the courtyard with its door on the north rim.
+    const ig = tex(this, 'igloo_8a');
+    this.igloo = this.add.image(cx, cy + GOAL.iglooBaseY + 8, ig.key, ig.frame).setOrigin(0.5, 1);
+    this.igloo.setScale(GOAL.iglooWidth / Math.max(1, this.igloo.width)).setDepth(DEPTH.actors + cy + GOAL.iglooBaseY);
+    const sh = this.add.image(cx, cy + GOAL.iglooBaseY + 2, 'proc_shadow').setDepth(DEPTH.surface + 1);
+    sh.setDisplaySize(GOAL.iglooWidth * 1.05, 34).setAlpha(0.45);
+
+    // Chicks flanking the doorway.
+    const by = cy + GOAL.iglooBaseY + 4;
+    [-34, 34].forEach((ox, i) => {
+      const img = this.add.image(cx + ox, by, `chick_idle_${i}`).setOrigin(0.5, 0.95).setScale(0.5).setDepth(DEPTH.actors + by + 1);
+      img.setFlipX(ox > 0);
+      this.chicks.push({ img, x: cx + ox, y: by, phase: i * 1.7, tint: i, mood: 'idle' });
+    });
+
+    // Progress plaque on the dome (objective role of the old stash).
+    this.goalPlaque = this.add.text(cx, cy + GOAL.iglooBaseY - this.igloo.displayHeight * 0.62, '', {
+      fontFamily: 'Luckiest Guy, Fredoka, sans-serif', fontSize: '22px', color: '#ffffff', stroke: '#1b2a44', strokeThickness: 6,
+    }).setOrigin(0.5).setDepth(DEPTH.actors + cy + GOAL.iglooBaseY + 0.5);
+    this.updatePlaque();
+
+    if (level.tutorial?.showStashArrow) {
+      const a = tex(this, 'ui_stash_arrow');
+      this.stashArrow = this.add.image(cx, cy - 40, a.key, a.frame).setDepth(DEPTH.fx - 1).setScale(0.5);
+    }
+  }
+
+  private drawRails(ax: number, ay: number, bx: number, by: number): void {
+    const g = this.add.graphics().setDepth(DEPTH.actors + Math.max(ay, by) - 0.5);
+    const c = FENCE_COLORS;
+    for (const h of [9, 20]) {
+      g.lineStyle(7, c.outline, 1);
+      g.lineBetween(ax, ay - h, bx, by - h);
+      g.lineStyle(4.2, c.wood, 1);
+      g.lineBetween(ax, ay - h, bx, by - h);
+    }
+    // Snow along the top rail.
+    g.lineStyle(3.4, c.snowShade, 1);
+    g.lineBetween(ax, ay - 21.5, bx, by - 21.5);
+    g.lineStyle(2.4, c.snow, 1);
+    g.lineBetween(ax, ay - 22.5, bx, by - 22.5);
+  }
+
+  private drawIceWall(ax: number, ay: number, bx: number, by: number): void {
+    const g = this.add.graphics().setDepth(DEPTH.actors + Math.max(ay, by) - 0.5);
+    const c = FENCE_COLORS;
+    const h = 16;
+    g.fillStyle(c.ice, 1);
+    g.lineStyle(3, 0x1b2a44, 1);
+    g.beginPath();
+    g.moveTo(ax, ay + 2); g.lineTo(bx, by + 2); g.lineTo(bx, by - h); g.lineTo(ax, ay - h);
+    g.closePath();
+    g.fillPath();
+    g.strokePath();
+    g.lineStyle(1.6, c.iceLine, 1);
+    g.lineBetween(ax, ay - h / 2, bx, by - h / 2);
+    g.lineBetween((ax + bx) / 2, (ay + by) / 2 - h, (ax + bx) / 2, (ay + by) / 2 - h / 2);
+    g.fillStyle(c.snow, 1);
+    g.fillEllipse((ax + bx) / 2, (ay + by) / 2 - h - 1, Math.hypot(bx - ax, by - ay) + 6, 7);
+  }
+
+  private updatePlaque(): void {
+    const sim = this.session.sim;
+    this.goalPlaque.setText(`${Math.min(sim.stashedValue, sim.required)}/${sim.required}`);
+    this.goalPlaque.setColor(sim.stashedValue >= sim.required ? '#ffe066' : '#ffffff');
+  }
+
+  private updateGoal(dt: number, t: number, reduced: boolean): void {
+    this.goalGlow.setAlpha(Math.max(0, this.goalGlow.alpha - dt * 1.5));
+    if (this.stashArrow) this.stashArrow.y = this.session.config.level.stash.y - 40 + Math.sin(t * 4) * 8;
+    if (this.cheerTimer > 0) this.cheerTimer -= dt;
+    const danger = this.session.snapshot().danger;
+    for (const c of this.chicks) {
+      const mood: ChickMood = this.cheerTimer > 0 ? 'cheer' : danger > 0.65 ? 'worried' : 'idle';
+      if (mood !== c.mood) {
+        c.mood = mood;
+        c.img.setTexture(`chick_${mood}_${c.tint}`);
+      }
+      const hop = mood === 'cheer' ? Math.abs(Math.sin(t * 10 + c.phase)) * 9 : reduced ? 0 : Math.abs(Math.sin(t * 2.2 + c.phase)) * 1.6;
+      c.img.setPosition(c.x, c.y - hop);
+      const sq = mood === 'cheer' ? 1 : 1 + (reduced ? 0 : Math.sin(t * 4.4 + c.phase) * 0.03);
+      c.img.setScale(0.5 * (2 - sq), 0.5 * sq);
+    }
+  }
+
+  private popup(x: number, y: number, text: string, color: string): void {
+    let p = this.popups.find((pp) => !pp.visible);
+    if (!p) {
+      if (this.popups.length >= 4) p = this.popups.shift()!;
+      else p = this.add.text(0, 0, '', { fontFamily: 'Luckiest Guy, Fredoka, sans-serif', fontSize: '30px', color: '#ffffff', stroke: '#1b2a44', strokeThickness: 7 }).setOrigin(0.5);
+      this.popups.push(p);
+    }
+    this.tweens.killTweensOf(p);
+    p.setText(text).setColor(color).setPosition(x, y).setAlpha(1).setScale(0.4).setVisible(true).setDepth(DEPTH.fx + 1);
+    const reduced = this.data_.settings().reducedMotion;
+    this.tweens.add({ targets: p, scale: 1, duration: reduced ? 1 : 160, ease: 'Back.Out' });
+    this.tweens.add({ targets: p, y: y - 46, alpha: 0, delay: 420, duration: 380, ease: 'Quad.In', onComplete: () => p!.setVisible(false) });
   }
 
   // ------------------------------------------------------------------ events → feedback
@@ -480,13 +748,16 @@ export class GameScene extends Phaser.Scene {
     switch (e.type) {
       case 'impact': {
         const intensity = Math.min(1, e.speed / 700);
-        if (e.kind === 'fishWall' || e.kind === 'fishObstacle' || e.kind === 'fishFish') {
+        if (e.kind === 'fishFence') {
+          audio.play('fenceKnock', { intensity, volume: 0.35 + intensity * 0.6 });
+          if (e.speed > 260) this.splash(e.x, e.y, e.nx, e.ny, intensity * 0.7);
+        } else if (e.kind === 'fishWall' || e.kind === 'fishObstacle' || e.kind === 'fishFish') {
           audio.play('fishBounce', { intensity, volume: 0.4 + intensity * 0.6 });
           if (e.speed > 260) this.splash(e.x, e.y, e.nx, e.ny, intensity);
         } else if (e.kind === 'fishPenguin') {
           audio.play('fishBounce', { intensity: intensity * 0.8, volume: 0.6 + intensity * 0.4, pitch: 1.15 });
           if (e.speed > 380) this.shake(intensity * 0.6);
-        } else if (e.kind === 'penguinWall' || e.kind === 'penguinObstacle' || e.kind === 'penguinEnemy') {
+        } else if (e.kind === 'penguinWall' || e.kind === 'penguinObstacle' || e.kind === 'penguinFence' || e.kind === 'penguinEnemy') {
           if (e.speed > 120) audio.play('collision', { intensity });
           if (e.speed > 300) this.shake(intensity);
           if (e.speed > 220) this.spawn('px_puff', undefined, e.x, e.y, { vx: e.nx * 30, vy: e.ny * 30, life: 0.45, s0: 0.3, s1: 0.8, a0: 0.8, a1: 0, depth: DEPTH.fx });
@@ -498,9 +769,16 @@ export class GameScene extends Phaser.Scene {
         audio.play('fishScore');
         audio.haptic(25);
         const st = this.session.config.level.stash;
-        this.burst(st.x, st.y);
-        this.tweens.add({ targets: this.stash, scaleX: this.stash.scaleX * 1.16, scaleY: this.stash.scaleY * 0.86, duration: 110, yoyo: true, ease: 'Quad.Out' });
-        this.stashGlow.setAlpha(0.9);
+        const v = this.fishViews.find((fv) => fv.fish === e.fish);
+        if (v) v.entering = { t: 0, x: e.x, y: e.y };
+        this.burst(st.x, st.y + GOAL.iglooBaseY + 10);
+        this.goalGlow.setAlpha(0.9);
+        this.cheerTimer = 0.9;
+        this.tweens.add({ targets: this.igloo, scaleX: this.igloo.scaleX * 1.05, scaleY: this.igloo.scaleY * 0.95, duration: 100, yoyo: true, ease: 'Quad.Out' });
+        const heart = this.chicks[Math.floor(Math.random() * this.chicks.length)];
+        if (heart) this.spawn('goal_heart', undefined, heart.x, heart.y - 30, { vx: (Math.random() - 0.5) * 20, vy: -60, life: 0.8, s0: 0.5, s1: 0.7, a0: 1, a1: 0, depth: DEPTH.fx });
+        this.updatePlaque();
+        this.popup(st.x, st.y - 16, e.bank ? 'BANK SHOT!' : `+${e.fish.cfg.scoreValue}`, e.bank ? '#ffe066' : '#ffffff');
         break;
       }
       case 'fishEaten': {
@@ -530,6 +808,9 @@ export class GameScene extends Phaser.Scene {
         break;
       case 'sprintStart':
         audio.play('sprint');
+        break;
+      case 'sprintEnd':
+        audio.play('sprintEnd');
         break;
       case 'staminaLow':
         audio.play('staminaLow');
@@ -610,14 +891,20 @@ export class GameScene extends Phaser.Scene {
 
   private updateWeather(dt: number, t: number): void {
     if (this.flakes.length === 0) return;
-    const level = this.session.config.level;
-    const W = level.arena.width + 400, H = level.arena.height + 400;
+    // Flakes live in world space (they parallax correctly as the camera follows) but wrap
+    // around the CURRENT camera view, so weather keeps filling the screen while moving.
+    const v = this.cameras.main.worldView;
+    const m = 120;
+    const W = v.width + m * 2, H = v.height + m * 2;
     for (const f of this.flakes) {
       f.img.x += (f.vx + Math.sin(t * 1.3 + f.phase) * 18) * dt;
       f.img.y += f.vy * dt;
       f.img.rotation += dt * 0.8;
-      if (f.img.x > W - 200) f.img.x -= W;
-      if (f.img.y > H - 200) f.img.y -= H;
+      if (f.img.x > v.right + m) f.img.x -= W;
+      else if (f.img.x < v.x - m) f.img.x += W;
+      if (f.img.y > v.bottom + m) f.img.y -= H;
+      else if (f.img.y < v.y - m) f.img.y += H;
     }
   }
+
 }

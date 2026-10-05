@@ -6,13 +6,15 @@
  * per fixed step and produces SimEvents that presentation layers react to.
  */
 import {
-  ENEMIES, ENEMY_GLOBAL, FISH, HARD_MODE, PHYSICS, PLAYER, SPRINT, STAMINA, STASH, SURFACES,
+  ENEMIES, ENEMY_GLOBAL, FISH, GOAL, HARD_MODE, PHYSICS, PLAYER, SPRINT, STAMINA, SURFACES,
   type EnemyConfig, type EnemyType, type FishVariant, type FishVariantConfig, type SurfaceConfig,
 } from '../config/gameplay';
 import { NavGrid } from '../enemies/nav';
 import type { LevelDef, Point } from '../levels/types';
 import { createBody, Layer, PhysicsWorld, type Body, type ContactEvent, type StaticShape } from '../physics/world';
 import { buildStatics } from './arena';
+import { isSolidSegment, scoreDistance, sectorOf, segmentDistanceSq } from './goal';
+import { combinedEffects, type LevelModifierEffects } from './levelModifiers';
 import { NORMALIZED_MODIFIERS, type GameplayModifiers } from './modifiers';
 
 export interface SimInput {
@@ -27,12 +29,13 @@ export const NO_INPUT: SimInput = Object.freeze({ moveX: 0, moveY: 0, sprint: fa
 export type SimStatus = 'playing' | 'won' | 'failed';
 
 export type ImpactKind =
-  | 'fishWall' | 'fishObstacle' | 'fishPenguin' | 'fishFish'
-  | 'penguinWall' | 'penguinObstacle' | 'penguinEnemy'
+  | 'fishWall' | 'fishObstacle' | 'fishFence' | 'fishPenguin' | 'fishFish'
+  | 'penguinWall' | 'penguinObstacle' | 'penguinFence' | 'penguinEnemy'
   | 'enemyWall' | 'enemyObstacle' | 'enemyEnemy' | 'other';
 
 export type SimEvent =
-  | { type: 'fishScored'; fish: FishEntity; stashed: number; required: number }
+  /** Committed exactly once per fish; x/y = collider centre at the moment of scoring; bank = last contact was a wall/obstacle after a penguin touch. */
+  | { type: 'fishScored'; fish: FishEntity; stashed: number; required: number; x: number; y: number; bank: boolean }
   | { type: 'fishEaten'; fish: FishEntity; enemy: EnemyEntity }
   | { type: 'impact'; kind: ImpactKind; speed: number; x: number; y: number; nx: number; ny: number; fish?: FishEntity }
   | { type: 'sprintStart' }
@@ -75,6 +78,14 @@ export interface FishEntity {
   reactKind: 'squash' | 'flop';
   /** Sim time when stashed/eaten (for animation). */
   changedAtMs: number;
+  /** Centre currently within the goal ring. */
+  ringInside: boolean;
+  /** False if the fish crossed into the ring through a solid sector (it cannot score until it leaves). */
+  entryValid: boolean;
+  /** The penguin has touched this fish since it last scored/spawned. */
+  touched: boolean;
+  /** Last relevant contact was a wall/obstacle after a penguin touch (bank shot). */
+  bankArmed: boolean;
 }
 
 export type EnemyState = 'waiting' | 'idle' | 'chasing' | 'munching';
@@ -108,6 +119,7 @@ export interface SimStats {
   fishTouches: number;
   staminaEmpties: number;
   rareStashed: number;
+  bankShots: number;
 }
 
 export interface SimOptions {
@@ -128,10 +140,14 @@ export class GameSim {
   readonly fish: FishEntity[] = [];
   readonly enemies: EnemyEntity[] = [];
   readonly events: SimEvent[] = [];
-  readonly stats: SimStats = { wallBounces: 0, fishStashed: 0, fishEaten: 0, distanceWaddled: 0, sprintSeconds: 0, sprintHits: 0, fishTouches: 0, staminaEmpties: 0, rareStashed: 0 };
+  readonly stats: SimStats = { wallBounces: 0, fishStashed: 0, fishEaten: 0, distanceWaddled: 0, sprintSeconds: 0, sprintHits: 0, fishTouches: 0, staminaEmpties: 0, rareStashed: 0, bankShots: 0 };
   readonly mods: GameplayModifiers;
+  /** Level modifier effects (rule twists baked into the level). */
+  readonly lvl: LevelModifierEffects;
   readonly hard: boolean;
   status: SimStatus = 'playing';
+  /** Set by a Training Rink lesson whose objective is not "stash the fish" (move, sprint, dribble…). */
+  private objectiveDone = false;
   /** Monotonic simulation time (ms) — advances only by fixed steps, so pauses never count. */
   timeMs = 0;
   steps = 0;
@@ -144,6 +160,7 @@ export class GameSim {
 
   constructor(readonly level: LevelDef, opts: SimOptions = {}) {
     this.mods = opts.modifiers ?? NORMALIZED_MODIFIERS;
+    this.lvl = combinedEffects(level.modifiers ?? []);
     this.hard = opts.hard ?? level.hard;
     this.required = level.fishRequired;
     this.statics = buildStatics(level);
@@ -168,12 +185,15 @@ export class GameSim {
       const cfg = FISH.variants[f.variant];
       const body = createBody({
         x: f.x, y: f.y, r: cfg.radius, layer: Layer.Fish, mask: Layer.Player | Layer.Fish,
-        invMass: 1 / cfg.mass, restitution: FISH.wallRestitution, damping: FISH.linearDamping,
+        invMass: 1 / (cfg.mass * this.lvl.fishMass), restitution: Math.min(0.95, FISH.wallRestitution + this.lvl.fishBounce), damping: FISH.linearDamping * this.lvl.fishDamping,
         maxSpeed: FISH.maxSpeed, angularDamping: FISH.angularDamping, kickable: true,
         angle: 0,
       });
       this.world.add(body);
-      this.fish.push({ id: i, variant: f.variant, cfg, body, state: 'free', spawn: { x: f.x, y: f.y }, react: 0, reactKind: 'squash', changedAtMs: 0 });
+      this.fish.push({
+        id: i, variant: f.variant, cfg, body, state: 'free', spawn: { x: f.x, y: f.y }, react: 0, reactKind: 'squash', changedAtMs: 0,
+        ringInside: this.inRing(f.x, f.y), entryValid: true, touched: false, bankArmed: false,
+      });
     });
 
     const grace = this.hard ? HARD_MODE.spawnGrace : ENEMY_GLOBAL.spawnGrace;
@@ -185,7 +205,7 @@ export class GameSim {
         angularDamping: 4,
       });
       this.world.add(body);
-      const speedMul = (level.enemySpeed || 1) * (this.hard ? HARD_MODE.enemySpeed : 1);
+      const speedMul = (level.enemySpeed || 1) * (this.hard ? HARD_MODE.enemySpeed : 1) * this.lvl.enemySpeed;
       const accelMul = this.hard ? HARD_MODE.enemyAccel : 1;
       this.enemies.push({
         id: i, type: e.type, cfg, body, spawn: { x: e.x, y: e.y }, state: 'waiting',
@@ -251,7 +271,7 @@ export class GameSim {
     this.updateEnemies(dt);
     for (const f of this.fish) {
       if (f.state !== 'free') continue;
-      f.body.damping = FISH.linearDamping * this.surfaceAt(f.body.x, f.body.y).dampMul;
+      f.body.damping = FISH.linearDamping * this.lvl.fishDamping * this.surfaceAt(f.body.x, f.body.y).dampMul;
       if (f.react > 0) f.react = Math.max(0, f.react - dt);
     }
 
@@ -263,8 +283,10 @@ export class GameSim {
     this.player.roll += (p.x - before.x) * PLAYER.rollPerUnit + (p.y - before.y) * PLAYER.rollPerUnit * 0.35;
 
     this.processContacts(this.world.contacts);
-    this.checkEating();
+    // Rule: scoring is resolved before enemy captures within the same step, so a
+    // fish that is ≥70% inside the courtyard is safe even if an enemy touches it.
     this.checkScoring();
+    this.checkEating();
     this.checkEnd();
   }
 
@@ -281,13 +303,13 @@ export class GameSim {
     const wasSprinting = pl.sprinting;
     if (wantsSprint && !pl.exhausted && pl.stamina > 0) {
       pl.sprinting = true;
-      pl.stamina -= STAMINA.drainPerSecond * this.mods.sprintDrain * dt;
+      pl.stamina -= STAMINA.drainPerSecond * this.mods.sprintDrain * this.lvl.sprintDrain * dt;
       pl.regenTimer = STAMINA.regenDelay;
       this.stats.sprintSeconds += dt;
     } else {
       pl.sprinting = false;
       if (pl.regenTimer > 0) pl.regenTimer -= dt;
-      else if (pl.stamina < pl.maxStamina) pl.stamina = Math.min(pl.maxStamina, pl.stamina + STAMINA.regenPerSecond * this.mods.staminaRegen * dt);
+      else if (pl.stamina < pl.maxStamina) pl.stamina = Math.min(pl.maxStamina, pl.stamina + STAMINA.regenPerSecond * this.mods.staminaRegen * this.lvl.staminaRegen * dt);
     }
     if (pl.stamina <= 0) {
       pl.stamina = 0;
@@ -320,13 +342,13 @@ export class GameSim {
     const speed = PLAYER.walkSpeed * this.mods.moveSpeed * surf.speedMul * (pl.sprinting ? SPRINT.multiplier : 1);
     if (moving) {
       const tx = mx * speed, ty = my * speed;
-      let rate = PLAYER.accelRate * this.mods.accel * surf.accelMul * (pl.sprinting ? SPRINT.accelMultiplier : 1) * control;
+      let rate = PLAYER.accelRate * this.mods.accel * this.lvl.playerAccel * surf.accelMul * (pl.sprinting ? SPRINT.accelMultiplier : 1) * control;
       if (b.vx * mx + b.vy * my < 0) rate *= PLAYER.reverseBoost;
       const k = Math.min(1, rate * dt);
       b.vx += (tx - b.vx) * k;
       b.vy += (ty - b.vy) * k;
     } else {
-      const k = Math.min(1, PLAYER.brakeRate * surf.accelMul * dt);
+      const k = Math.min(1, PLAYER.brakeRate * this.lvl.playerAccel * surf.accelMul * dt);
       b.vx -= b.vx * k;
       b.vy -= b.vy * k;
     }
@@ -453,16 +475,18 @@ export class GameSim {
       const la = c.a.layer, lb = c.b?.layer ?? 0;
       if (c.b === null) {
         if (la === Layer.Fish) {
-          kind = c.staticTag === 'wall' ? 'fishWall' : 'fishObstacle';
+          kind = c.staticTag === 'wall' ? 'fishWall' : c.staticTag === 'fence' ? 'fishFence' : 'fishObstacle';
           fish = this.fishByBody(c.a);
           if (kind === 'fishWall') this.stats.wallBounces++;
-        } else if (la === Layer.Player) kind = c.staticTag === 'wall' ? 'penguinWall' : 'penguinObstacle';
+          if (fish && fish.touched && kind !== 'fishFence') fish.bankArmed = true;
+        } else if (la === Layer.Player) kind = c.staticTag === 'wall' ? 'penguinWall' : c.staticTag === 'fence' ? 'penguinFence' : 'penguinObstacle';
         else if (la === Layer.Enemy) kind = c.staticTag === 'wall' ? 'enemyWall' : 'enemyObstacle';
       } else {
         const set = la | lb;
         if (set === (Layer.Player | Layer.Fish)) {
           kind = 'fishPenguin';
           fish = this.fishByBody(la === Layer.Fish ? c.a : c.b);
+          if (fish) { fish.touched = true; fish.bankArmed = false; }
           this.stats.fishTouches++;
           if (this.player.sprinting) this.stats.sprintHits++;
         } else if (set === Layer.Fish) {
@@ -511,27 +535,60 @@ export class GameSim {
     }
   }
 
+  private inRing(x: number, y: number): boolean {
+    const dx = x - this.level.stash.x, dy = y - this.level.stash.y;
+    return dx * dx + dy * dy < GOAL.wallRadius * GOAL.wallRadius;
+  }
+
+  /**
+   * The 70% rule (see goal.ts). Broad phase: only fish whose centre is inside
+   * the ring are examined. Entry: the sector in which a fish crossed into the
+   * ring must be open. Precise phase: centre distance ≤ the radius-specific
+   * threshold d* (≡ contained area ≥ 70%), also tested along the swept path of
+   * this step so fast crossings are never skipped. Commits exactly once.
+   */
   private checkScoring(): void {
     const st = this.level.stash;
     for (const f of this.fish) {
       if (f.state !== 'free') continue;
-      const enter = STASH.radius - f.body.r * FISH.stashEnterFactor;
-      const dx = f.body.x - st.x, dy = f.body.y - st.y;
-      if (dx * dx + dy * dy <= enter * enter) {
-        f.state = 'stashed';
-        f.changedAtMs = this.timeMs;
-        f.body.enabled = false;
-        this.world.remove(f.body);
-        this.stashedValue += f.cfg.scoreValue;
-        this.stats.fishStashed++;
-        if (f.variant === 'rare') this.stats.rareStashed++;
-        this.events.push({ type: 'fishScored', fish: f, stashed: this.stashedValue, required: this.required });
-      }
+      const b = f.body;
+      const dx = b.x - st.x, dy = b.y - st.y;
+      const inside = this.inRing(b.x, b.y);
+      if (inside && !f.ringInside) f.entryValid = !isSolidSegment(this.level.goal, sectorOf(dx, dy));
+      if (!inside) f.entryValid = true;
+      f.ringInside = inside;
+      if (!inside || !f.entryValid) continue;
+      const thr = scoreDistance(b.r);
+      const thr2 = thr * thr;
+      if (dx * dx + dy * dy > thr2 && segmentDistanceSq(st.x, st.y, b.px, b.py, b.x, b.y) > thr2) continue;
+      this.commitScore(f);
     }
   }
 
+  private commitScore(f: FishEntity): void {
+    const b = f.body;
+    const x = b.x, y = b.y;
+    // Leaves gameplay immediately: no collisions, enemy targeting or exposed-fish counting.
+    f.state = 'stashed';
+    f.changedAtMs = this.timeMs;
+    b.enabled = false;
+    this.world.remove(b);
+    this.stashedValue += f.cfg.scoreValue;
+    this.stats.fishStashed++;
+    if (f.variant === 'rare') this.stats.rareStashed++;
+    const bank = f.bankArmed;
+    if (bank) this.stats.bankShots++;
+    for (const e of this.enemies) if (e.targetFish === f.id) { e.targetFish = -1; e.retarget = 0; }
+    this.events.push({ type: 'fishScored', fish: f, stashed: this.stashedValue, required: this.required, x, y, bank });
+  }
+
+  /** Marks a lesson objective as met; the level ends as a win on the next step. */
+  completeObjective(): void {
+    if (this.status === 'playing') this.objectiveDone = true;
+  }
+
   private checkEnd(): void {
-    if (this.stashedValue >= this.required) {
+    if (this.stashedValue >= this.required || this.objectiveDone) {
       this.status = 'won';
       this.events.push({ type: 'won', timeMs: this.timeMs });
     } else if (this.remainingPotential < this.required) {
@@ -554,6 +611,10 @@ export class GameSim {
       f.body.y = f.body.py = f.spawn.y;
       f.body.vx = f.body.vy = 0;
       f.body.enabled = true;
+      f.ringInside = this.inRing(f.spawn.x, f.spawn.y);
+      f.entryValid = true;
+      f.touched = false;
+      f.bankArmed = false;
       this.world.add(f.body);
     }
     for (const e of this.enemies) {

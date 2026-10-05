@@ -11,7 +11,7 @@
  * a distinct object shape per Hood within a rarity (no recoloured clones).
  * These are clearly documented as procedural placeholder art.
  */
-import { ECONOMY_HOOD_CURVE, HOOD_PRICE_BY_RARITY } from '../config/economy';
+import { ECONOMY_HOOD_CURVE, HOOD_PRICE_BY_RARITY, MAX_SHARD_MULTIPLIER, SHARD_HOOD_CURVE } from '../config/economy';
 import { NORMALIZED_MODIFIERS, type GameplayModifiers } from '../gameplay/modifiers';
 
 export const RARITIES = [
@@ -40,7 +40,7 @@ export interface FamilyDef {
   kind: 'gameplay' | 'economy';
   /** Strength by rarity index 0..9 (multiplier, fraction, or bonus). */
   strength: readonly number[];
-  describe: (v: number) => string;
+  describe: (v: number, rarityIndex: number) => string;
 }
 
 const lin = (a: number, b: number): number[] => Array.from({ length: 10 }, (_, i) => Math.round((a + ((b - a) * i) / 9) * 1000) / 1000);
@@ -55,9 +55,9 @@ export const FAMILIES: FamilyDef[] = [
   { id: 'fishImpact', label: 'Fish Impact Strength', kind: 'gameplay', strength: lin(1.03, 1.3), describe: (v) => `+${pct(v)} fish kick` },
   { id: 'fishControl', label: 'Fish Control', kind: 'gameplay', strength: lin(1.03, 1.3), describe: (v) => `${pct(v)} softer, steadier dribbles` },
   { id: 'icicleEarnings', label: 'Icicle Earnings', kind: 'economy', strength: ECONOMY_HOOD_CURVE, describe: (v) => `${Math.round(v * 100)}% Icicles from levels` },
-  { id: 'shardEarnings', label: 'Shard Earnings', kind: 'economy', strength: ECONOMY_HOOD_CURVE, describe: (v) => `${Math.round(v * 100)}% Icicle Shards from rewards` },
+  { id: 'shardEarnings', label: 'Shard Earnings', kind: 'economy', strength: SHARD_HOOD_CURVE, describe: (v) => `${Math.round(v * 100)}% Icicle Shards from Adventure roadmap chests` },
   { id: 'hardModeRewards', label: 'Hard Mode Rewards', kind: 'economy', strength: ECONOMY_HOOD_CURVE, describe: (v) => `${Math.round(v * 100)}% Hard Mode bonus` },
-  { id: 'questRewards', label: 'Quest Rewards', kind: 'economy', strength: ECONOMY_HOOD_CURVE, describe: (v) => `${Math.round(v * 100)}% quest rewards` },
+  { id: 'questRewards', label: 'Quest Rewards', kind: 'economy', strength: ECONOMY_HOOD_CURVE, describe: (v, ri) => `${Math.round(v * 100)}% quest Icicles · ${Math.round(SHARD_HOOD_CURVE[ri]! * 100)}% quest Shards` },
   { id: 'warningDistance', label: 'Enemy Warning Distance', kind: 'gameplay', strength: lin(1.08, 1.8), describe: (v) => `Danger warning ${pct(v)} earlier` },
   { id: 'recoveryUtility', label: 'Recovery Utility', kind: 'economy', strength: lin(0.97, 0.6), describe: (v) => `Continues cost ${Math.round((1 - v) * 100)}% fewer Icicles` },
   { id: 'startingStamina', label: 'Starting Stamina', kind: 'gameplay', strength: lin(1.05, 1.5), describe: (v) => `Start levels with ${pct(v)} bonus stamina` },
@@ -66,7 +66,7 @@ export const FAMILIES: FamilyDef[] = [
   { id: 'dailyUtility', label: 'Daily Reward Utility', kind: 'economy', strength: lin(1.1, 4.0), describe: (v) => `${Math.round(v * 100)}% Daily level Icicles` },
   { id: 'infiniteUtility', label: 'Infinite Reward Utility', kind: 'economy', strength: ECONOMY_HOOD_CURVE, describe: (v) => `${Math.round(v * 100)}% Infinite Icicles` },
   { id: 'adventureUtility', label: 'Adventure Reward Utility', kind: 'economy', strength: ECONOMY_HOOD_CURVE, describe: (v) => `${Math.round(v * 100)}% Adventure Icicles` },
-  { id: 'generalUtility', label: 'General Utility', kind: 'economy', strength: lin(1.03, 1.5), describe: (v) => `+${pct(v)} all currency rewards` },
+  { id: 'generalUtility', label: 'General Utility', kind: 'economy', strength: lin(1.03, 1.5), describe: (v) => `+${pct(v)} level Icicles and roadmap-chest Shards` },
 ];
 
 export type HoodArtKind =
@@ -251,7 +251,7 @@ export const HOOD_BY_ID: Record<string, HoodDef> = Object.fromEntries(HOODS.map(
 export const FAMILY_BY_ID: Record<FamilyId, FamilyDef> = Object.fromEntries(FAMILIES.map((f) => [f.id, f])) as Record<FamilyId, FamilyDef>;
 
 export function describeHood(h: HoodDef): string {
-  return FAMILY_BY_ID[h.family].describe(h.strength);
+  return FAMILY_BY_ID[h.family].describe(h.strength, h.rarityIndex);
 }
 
 /** Gameplay modifiers for the equipped Hood. Ranked passes normalized=true (cosmetic only). */
@@ -274,6 +274,21 @@ export function gameplayModifiers(hoodId: string | null, normalized: boolean): G
     default: break;
   }
   return m;
+}
+
+/**
+ * Combined Shard multiplier for roadmap chests (Shard Earnings × General
+ * Utility — only one Hood is equipped, so at most one applies), capped.
+ */
+export function shardMultiplier(hoodId: string | null): number {
+  return Math.min(MAX_SHARD_MULTIPLIER, economyBonus(hoodId, 'shardEarnings') * economyBonus(hoodId, 'generalUtility'));
+}
+
+/** Quest reward multipliers: full curve for Icicles, the flat Shard curve for Shards. */
+export function questMultipliers(hoodId: string | null): { icicles: number; shards: number } {
+  const h = hoodId ? HOOD_BY_ID[hoodId] : undefined;
+  if (!h || h.family !== 'questRewards') return { icicles: 1, shards: 1 };
+  return { icicles: h.strength, shards: Math.min(MAX_SHARD_MULTIPLIER, SHARD_HOOD_CURVE[h.rarityIndex]!) };
 }
 
 /** Economy multiplier for a family (1 if the equipped Hood is a different family). */

@@ -4,54 +4,15 @@
 
 /* ------------------------------------------------------------------ main menu */
 
-.menu-screen {
-  display: grid;
-  grid-template-columns: minmax(200px, 300px) 1fr minmax(200px, 300px);
-  grid-template-rows: auto auto 1fr auto auto;
-  grid-template-areas:
-    "top top top"
-    "logo logo logo"
-    "modes . custom"
-    "extras extras extras"
-    "foot foot foot";
-  gap: 6px 18px;
-}
-.menu-top { grid-area: top; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.menu-logo { grid-area: logo; justify-self: center; margin-top: -10px; filter: drop-shadow(0 8px 10px rgba(20,40,80,0.25)); }
-.menu-logo .sprite { width: clamp(180px, 34vh, 360px) !important; max-width: 60vw; height: auto !important; aspect-ratio: 380 / 199; background-size: 100% 100% !important; background-position: 0 0 !important; }
-.menu-logo.bob { animation: logo-bob 4.5s ease-in-out infinite; }
+.menu-logo { filter: drop-shadow(0 8px 10px rgba(20,40,80,0.25)); pointer-events: none; }
+.menu-logo .sprite { width: 100% !important; height: auto !important; aspect-ratio: 380 / 199; background-size: 100% 100% !important; background-position: 0 0 !important; }
+.menu-logo.bob .sprite { animation: logo-bob 4.5s ease-in-out infinite; }
 @keyframes logo-bob { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-6px) rotate(1deg); } }
-.menu-col { display: flex; flex-direction: column; justify-content: center; gap: 0; }
-.menu-modes { align-items: flex-start; }
-.menu-custom { align-items: flex-end; }
-.menu-modes { grid-area: modes; }
-.menu-custom { grid-area: custom; }
-.menu-row { grid-area: extras; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-.menu-btn.big { width: clamp(170px, 29vh, 280px); }
-.menu-btn.small { width: clamp(120px, 21vh, 210px); }
+.menu-btn { width: 100%; }
 .menu-btn .obj-art { width: 100%; }
-.menu-foot { grid-area: foot; display: flex; justify-content: space-between; gap: 8px; opacity: 0.9; }
-
-@media (max-width: 760px), (max-height: 520px) and (orientation: landscape) {
-  .menu-screen { overflow-y: auto; grid-template-columns: 1fr 1fr; grid-template-areas: "top top" "logo logo" "modes custom" "extras extras" "foot foot"; gap: 4px 10px; }
-  .menu-logo .sprite { max-width: 54vw; }
-  .menu-btn.big { width: 100%; max-width: 280px; }
-  .menu-modes, .menu-custom { align-items: center; }
-  .menu-btn.small { width: calc(50% - 8px); max-width: 210px; }
-}
-@media (max-height: 520px) and (orientation: landscape) {
-  /* Short landscape phones: logo shares the top row, 4 columns × 3 rows of buttons, footer floats. */
-  .menu-screen { grid-template-columns: 1fr 1fr 1fr 1fr; grid-template-rows: auto auto auto; grid-template-areas: "top top top top" "modes modes custom custom" "extras extras extras extras"; align-content: start; gap: 2px 10px; overflow-y: auto; }
-  .menu-logo { grid-area: top; justify-self: center; align-self: start; margin-top: -6px; pointer-events: none; }
-  .menu-logo .sprite { width: auto !important; height: clamp(54px, 21vh, 96px) !important; max-width: 24vw; }
-  .menu-top .currency-bar { gap: 6px; flex-wrap: nowrap; }
-  .menu-top .cur-pill { font-size: 0.82em; min-width: 0; padding-right: 0.7em; }
-  .menu-top .identity-plaque { font-size: 0.95em; }
-  .menu-col { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-  .menu-col .menu-btn.big { width: min(calc(50% - 4px), 46vh); }
-  .menu-btn.small { width: min(calc(25% - 10px), 46vh); }
-  .menu-foot { position: absolute; left: calc(8px + var(--safe-left)); right: calc(8px + var(--safe-right)); bottom: calc(4px + var(--safe-bottom)); font-size: 0.72em; pointer-events: none; }
-}
+.lm-left .mode-card:nth-child(n+3) { width: 84%; }
+.lm-bottom .mode-card { width: clamp(96px, 12vw, 160px); }
+.menu-foot { position: absolute; left: calc(8px + var(--safe-left)); right: calc(8px + var(--safe-right)); bottom: calc(4px + var(--safe-bottom)); display: flex; justify-content: space-between; gap: 8px; font-size: 0.72em; opacity: 0.9; pointer-events: none; z-index: 2; }
 
 /* ------------------------------------------------------------------ identity + currency */
 
@@ -295,3 +256,19 @@
 /* ------------------------------------------------------------------ dev mock ad */
 .dev-mock-ad { position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; }
 .dev-mock-card { background: #fff; border: 4px dashed #e84a4a; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; font-family: monospace; }
+
+/* ---------- level modifiers (chips, briefing card, pause list) ---------- */
+.hud-mods { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 320px; pointer-events: auto; }
+.mod-chip { display: inline-flex; align-items: center; gap: 0.35em; padding: 0.2em 0.65em; border-radius: 1em; border: 2px solid var(--navy); background: linear-gradient(#fff8d6, #ffe9a3); font-weight: 800; font-size: 0.78em; color: var(--navy); box-shadow: 0 2px 0 rgba(27,42,68,0.35); cursor: help; }
+.mod-chip b { font-size: 1.05em; }
+.mod-chip:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.mod-card { position: absolute; left: 50%; top: calc(78px + var(--safe-top)); transform: translateX(-50%) rotate(0.6deg); width: min(440px, 88vw); padding: 0.75em 1.1em; pointer-events: none; transition: opacity 600ms ease, transform 600ms ease; }
+.mod-card.faded { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+.mod-card-title { font-family: var(--font-wood); letter-spacing: 0.06em; color: #c2561c; font-size: 1.05em; margin-bottom: 0.25em; }
+.mod-card-row { display: flex; gap: 0.6em; align-items: flex-start; margin: 0.3em 0; line-height: 1.35; }
+.mod-card-row .mod-ico { font-size: 1.4em; line-height: 1; }
+.mod-card-row strong { display: block; color: var(--navy); }
+.mod-card-row span { font-weight: 600; font-size: 0.92em; color: var(--ink-soft); }
+.mod-card-bonus { margin-top: 0.35em; font-weight: 800; color: #1f7a3a; }
+.pause-mods { margin: 0; padding: 0.4em 0.8em; list-style: none; text-align: left; font-size: 0.9em; line-height: 1.4; background: rgba(255,255,255,0.55); border-radius: 12px; }
+@media (max-height: 520px) { .mod-card { top: calc(64px + var(--safe-top)); font-size: 0.85em; } .hud-mods { max-width: 220px; } }

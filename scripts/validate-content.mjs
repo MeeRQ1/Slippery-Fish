@@ -112,7 +112,17 @@ try {
     for (const s of track.src) check(existsSync(join(root, 'public', s)), `music slot ${slot}: missing file public/${s}`);
   }
   const filled = Object.values(audio.MUSIC).filter(Boolean).length;
-  notes.push(`music slots filled: ${filled}/${Object.keys(audio.MUSIC).length} (empty slots play no music by design)`);
+  notes.push(`music slots filled: ${filled}/${Object.keys(audio.MUSIC).length} recorded tracks (menu slots play the original synthesized theme; other empty slots are silent by design)`);
+
+  // ---------------------------------------------------------------- economy v2 / pet / titles sanity
+  const econ2 = await load('/src/config/economy.ts');
+  for (const [tier, odds] of Object.entries(econ2.CHEST_HOOD_ODDS)) check(odds.reduce((a, [, w]) => a + w, 0) === 100, `chest ${tier}: Hood odds must sum to 100%`);
+  for (const o of econ2.EXCHANGE_OFFERS) check(o.limit && o.limit.count > 0, `exchange ${o.id} must be limited`);
+  const pet = await load('/src/config/pet.ts');
+  check(pet.PET_TIERS[0].feedCost === 1, 'base pet tier must cost exactly 1 Fish to feed');
+  for (const t of pet.PET_TIERS) check(t.dailyShards / t.feedCost < 9, `pet tier ${t.tier} must stay below the Shards→Fish shop price`);
+  const titles = await load('/src/config/titles.ts');
+  check(new Set(titles.TITLES.map((t) => t.id)).size === titles.TITLES.length, 'title ids must be unique');
 
   // ---------------------------------------------------------------- generated levels (spot checks; full sweep is in unit tests)
   const { adventureLevel } = await load('/src/levels/adventure.ts');

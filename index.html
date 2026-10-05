@@ -4,35 +4,308 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
     <meta name="theme-color" content="#7cc4f0" />
-    <meta name="description" content="Slippery Fish — a cute, comedic top-down physics game: dribble fish into your stash before the polar bears, wolves and seals eat them." />
+    <meta name="description" content="Slippery Fish — a cute, comedic top-down physics game: dribble fish past fences into the chicks' igloo before the polar bears, wolves and seals eat them." />
     <meta name="color-scheme" content="light" />
     <title>Slippery Fish</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <!-- Preview metadata (key art lives in public/cover.png; relative URLs resolve under the Pages subpath). -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Slippery Fish" />
+    <meta property="og:description" content="Dribble slippery fish across the ice, line up your shot through the fence gaps and feed the penguin chicks — before the predators do." />
+    <meta property="og:image" content="./cover.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A round penguin dribbling a fish toward a snowy igloo with chicks, under the Slippery Fish logo." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="./cover.png" />
     <style>
-      /* Inline so the loader paints before any JS/CSS bundle arrives. */
-      html, body { margin: 0; height: 100%; background: linear-gradient(180deg, #bfe3fb, #eaf6ff); overflow: hidden; }
-      #boot-loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; z-index: 100; font-family: 'Trebuchet MS', system-ui, sans-serif; color: #1b2a44; transition: opacity 420ms ease; }
+      /*
+       * Startup is inline so it paints before any JS/CSS bundle arrives:
+       *  1. Inverse Smiles publisher mark (sad face flips to a smile, hat drops, wordmark).
+       *  2. Personalized loading scene — real progress + cached profile card.
+       * Menu season / day-night attributes are set below by the same rules as
+       * src/config/menuTheme.ts (kept in sync by tests/unit/menuTheme.test.ts).
+       */
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #fff6e8; }
+      body { font-family: 'Trebuchet MS', 'Arial Rounded MT Bold', system-ui, sans-serif; }
+
+      /* ---------- 1. Inverse Smiles ---------- */
+      #brand { position: fixed; inset: 0; z-index: 120; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+        background: radial-gradient(circle at 50% 42%, #fffdf6 0%, #fff3df 55%, #ffe6c7 100%); transition: opacity 380ms ease; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+      #brand.out { opacity: 0; pointer-events: none; }
+      .bm-svg { width: min(46vmin, 230px); height: auto; overflow: visible; }
+      .bm-face { transform-origin: 100px 176px; transform-box: view-box; }
+      .bm-face.land { animation: bm-squash 420ms cubic-bezier(0.3, 1.6, 0.5, 1); }
+      .bm-hat { transform: translateY(-190px) rotate(-14deg); transform-origin: 100px 60px; transform-box: view-box; opacity: 0; }
+      .bm-hat.drop { animation: bm-hat 620ms cubic-bezier(0.5, 0, 0.75, 0) forwards, bm-hat-settle 520ms 620ms cubic-bezier(0.3, 1.8, 0.5, 1) forwards; }
+      .bm-hat.set { transform: none; opacity: 1; }
+      .bm-cheek { opacity: 0; transition: opacity 260ms ease; }
+      .bm-happy .bm-cheek { opacity: 0.75; }
+      .bm-word { font-weight: 900; font-size: min(7.4vmin, 40px); letter-spacing: 0.06em; color: #1b2a44; opacity: 0; transform: translateY(10px); transition: opacity 420ms ease, transform 520ms cubic-bezier(0.3, 1.5, 0.5, 1), letter-spacing 700ms ease; }
+      .bm-word b { color: #ef7a2a; }
+      .bm-tag { font-weight: 700; font-size: min(3.6vmin, 17px); color: #8a6a4a; opacity: 0; transition: opacity 420ms 140ms ease; }
+      #brand.words .bm-word { opacity: 1; transform: none; letter-spacing: 0.12em; }
+      #brand.words .bm-tag { opacity: 1; }
+      @keyframes bm-hat { from { transform: translateY(-190px) rotate(-14deg); opacity: 1; } to { transform: translateY(6px) rotate(4deg); opacity: 1; } }
+      @keyframes bm-hat-settle { 0% { transform: translateY(6px) rotate(4deg); opacity: 1; } 40% { transform: translateY(-14px) rotate(-5deg); opacity: 1; } 100% { transform: translateY(0) rotate(0); opacity: 1; } }
+      @keyframes bm-squash { 0% { transform: scale(1, 1); } 30% { transform: scale(1.1, 0.86); } 65% { transform: scale(0.96, 1.05); } 100% { transform: scale(1, 1); } }
+
+      /* ---------- 2. Loading scene ---------- */
+      #boot-loader { position: fixed; inset: 0; z-index: 100; overflow: hidden; color: #1b2a44; transition: opacity 420ms ease;
+        --sky-a: #6fb7ee; --sky-b: #cfeafb; --hill-a: #ffffff; --hill-b: #e3f1fb; --ground: #f4fbff; --ink-on-sky: #1b2a44;
+        background: linear-gradient(180deg, var(--sky-a), var(--sky-b) 62%, var(--ground) 62.2%); }
       #boot-loader.gone { opacity: 0; pointer-events: none; }
-      .bl-track { position: relative; width: 260px; height: 70px; }
-      .bl-ground { position: absolute; left: 0; right: 0; bottom: 6px; height: 10px; border-radius: 6px; background: #fff; border: 3px solid #1b2a44; }
-      .bl-penguin, .bl-fish { position: absolute; bottom: 16px; }
-      .bl-penguin { width: 44px; height: 44px; border-radius: 50%; background: #1f2a44; border: 3px solid #0f1626; animation: bl-roll 1.6s linear infinite; }
-      .bl-penguin::before { content: ''; position: absolute; left: 8px; right: 8px; top: 12px; bottom: 4px; border-radius: 50% 50% 45% 45%; background: #fff6ea; }
-      .bl-penguin::after { content: ''; position: absolute; left: 17px; top: 18px; width: 8px; height: 5px; border-radius: 0 0 6px 6px; background: #f39a2c; }
-      .bl-fish { width: 34px; height: 16px; border-radius: 50%; background: #aab3c2; border: 3px solid #1b2a44; animation: bl-fish 1.6s linear infinite; }
-      @keyframes bl-roll { 0% { left: -10px; transform: rotate(0deg); } 100% { left: 196px; transform: rotate(720deg); } }
-      @keyframes bl-fish { 0% { left: 40px; } 100% { left: 240px; } }
-      .bl-title { font-size: 28px; font-weight: 800; letter-spacing: 1px; color: #fff; text-shadow: 0 3px 0 #1b2a44, 2px 2px 0 #1b2a44, -2px 2px 0 #1b2a44, 2px -2px 0 #1b2a44, -2px -2px 0 #1b2a44; }
-      .bl-sub { font-size: 15px; font-weight: 600; opacity: 0.8; }
-      @media (prefers-reduced-motion: reduce) { .bl-penguin, .bl-fish { animation: none; } .bl-penguin { left: 60px; } .bl-fish { left: 130px; } }
+      html[data-season="spring"] #boot-loader { --sky-a: #8ec9f4; --sky-b: #f6dff0; --hill-a: #c9ecb4; --hill-b: #a8dc98; --ground: #e6f6d8; }
+      html[data-season="summer"] #boot-loader { --sky-a: #3fa8f0; --sky-b: #c6efff; --hill-a: #9bdc7a; --hill-b: #7cc964; --ground: #fff0c2; }
+      html[data-season="autumn"] #boot-loader { --sky-a: #7fb2e0; --sky-b: #ffe2bf; --hill-a: #f1b46a; --hill-b: #dc8f4a; --ground: #f8e3c4; }
+      html[data-daynight="dawn"] #boot-loader { --sky-a: #8aa8e6; --sky-b: #ffd6b0; }
+      html[data-daynight="dusk"] #boot-loader { --sky-a: #3d3a7a; --sky-b: #f3a07a; --ink-on-sky: #ffffff; }
+      html[data-daynight="night"] #boot-loader { --sky-a: #0d1638; --sky-b: #2b3d78; --hill-a: #5f6fa0; --hill-b: #46557f; --ground: #8693bd; --ink-on-sky: #f2f6ff; }
+      .ld-hills { position: absolute; left: -10%; right: -10%; bottom: 30%; height: 22%; }
+      .ld-hills::before, .ld-hills::after { content: ''; position: absolute; bottom: 0; border-radius: 50% 50% 0 0; }
+      .ld-hills::before { left: 0; width: 70%; height: 100%; background: var(--hill-b); }
+      .ld-hills::after { right: 0; width: 66%; height: 80%; background: var(--hill-a); }
+      .ld-stars { position: absolute; inset: 0 0 45% 0; opacity: 0; transition: opacity 600ms ease;
+        background-image: radial-gradient(2px 2px at 12% 18%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 32% 9%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 58% 22%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 76% 12%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 88% 30%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 44% 34%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 6% 40%, #fff 50%, transparent 51%); }
+      html[data-daynight="night"] .ld-stars { opacity: 0.9; }
+      .ld-fall { position: absolute; inset: 0; pointer-events: none; }
+      .ld-fall i { position: absolute; top: -5%; width: 8px; height: 8px; border-radius: 50%; background: #fff; opacity: 0.85; animation: ld-fall 7s linear infinite; }
+      html[data-season="spring"] .ld-fall i { background: #ffb7d2; border-radius: 60% 0 60% 0; width: 9px; height: 7px; }
+      html[data-season="summer"] .ld-fall i { background: #fff3a0; width: 5px; height: 5px; box-shadow: 0 0 8px #fff3a0; }
+      html[data-season="autumn"] .ld-fall i { background: #e8742a; border-radius: 0 70% 0 70%; width: 10px; height: 8px; }
+      .ld-fall i:nth-child(odd) { animation-duration: 9s; }
+      .ld-fall i:nth-child(3n) { animation-duration: 11s; width: 6px; height: 6px; }
+      @keyframes ld-fall { 0% { transform: translate(0, 0) rotate(0); } 100% { transform: translate(60px, 112vh) rotate(540deg); } }
+      .ld-main { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; box-sizing: border-box; }
+      .ld-logo { width: min(64vw, 360px); height: auto; filter: drop-shadow(0 6px 0 rgba(27, 42, 68, 0.18)); }
+      .ld-status { display: flex; flex-direction: column; align-items: center; gap: 6px; width: min(78vw, 320px); }
+      .ld-bar { width: 100%; height: 16px; border-radius: 10px; border: 3px solid #1b2a44; background: rgba(255, 255, 255, 0.75); overflow: hidden; box-sizing: border-box; }
+      .ld-bar i { display: block; height: 100%; width: 0; border-radius: 6px; background: linear-gradient(180deg, #8fe0ff, #3d8fd6); transition: width 260ms ease; }
+      #boot-status { font-weight: 800; font-size: 15px; color: var(--ink-on-sky); text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15); min-height: 1.2em; text-align: center; }
+      .ld-card { display: flex; align-items: center; gap: 12px; width: min(86vw, 360px); box-sizing: border-box; padding: 12px 14px; border-radius: 18px; border: 3px solid #1b2a44; background: linear-gradient(180deg, #fffdf6, #fdf0d6); box-shadow: 0 6px 0 rgba(27, 42, 68, 0.85); color: #1b2a44; }
+      .ld-avatar { position: relative; flex: 0 0 auto; width: 62px; height: 62px; border-radius: 50%; border: 3px solid #1b2a44; background: radial-gradient(circle at 40% 30%, var(--av-a, #bfe3fb), var(--av-b, #7cc4f0)); overflow: hidden; }
+      .ld-peng { position: absolute; left: 50%; bottom: -10px; width: 46px; height: 50px; margin-left: -23px; border-radius: 50% 50% 46% 46%; background: var(--pg, #1f2a44); border: 2px solid #0f1626; }
+      .ld-peng::before { content: ''; position: absolute; left: 8px; right: 8px; top: 12px; bottom: 2px; border-radius: 50%; background: var(--pb, #fff6ea); }
+      .ld-peng::after { content: ''; position: absolute; left: 17px; top: 20px; width: 9px; height: 6px; border-radius: 0 0 7px 7px; background: #f39a2c; box-shadow: -8px -7px 0 -2px #0f1626, 8px -7px 0 -2px #0f1626; }
+      .ld-who { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+      .ld-name { font-weight: 900; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .ld-title { align-self: flex-start; padding: 0 8px; border-radius: 8px; background: #fff3c4; border: 2px solid #1b2a44; font-weight: 800; font-size: 12px; color: #8a5a10; }
+      .ld-title:empty { display: none; }
+      .ld-line { font-weight: 700; font-size: 13px; color: #3d5378; }
+      .ld-prog { height: 7px; border-radius: 4px; background: #d8e4ef; overflow: hidden; border: 2px solid #1b2a44; }
+      .ld-prog i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #47c28b, #8fe0a0); }
+      .ld-track { position: absolute; left: 50%; bottom: 7%; width: 240px; height: 62px; margin-left: -120px; }
+      .ld-ground { position: absolute; left: 0; right: 0; bottom: 4px; height: 8px; border-radius: 6px; background: #fff; border: 3px solid #1b2a44; }
+      .ld-run, .ld-fish { position: absolute; bottom: 14px; }
+      .ld-run { width: 40px; height: 40px; border-radius: 50%; background: #1f2a44; border: 3px solid #0f1626; animation: ld-roll 1.8s linear infinite; }
+      .ld-run::before { content: ''; position: absolute; left: 7px; right: 7px; top: 11px; bottom: 4px; border-radius: 50%; background: #fff6ea; }
+      .ld-fish { width: 30px; height: 14px; border-radius: 50%; background: #aab3c2; border: 3px solid #1b2a44; animation: ld-fishmove 1.8s linear infinite; }
+      @keyframes ld-roll { 0% { left: -6px; transform: rotate(0); } 100% { left: 180px; transform: rotate(720deg); } }
+      @keyframes ld-fishmove { 0% { left: 36px; } 100% { left: 220px; } }
+      .ld-error { display: none; flex-direction: column; align-items: center; gap: 10px; max-width: 340px; text-align: center; font-weight: 700; color: #1b2a44; background: #fffdf6; border: 3px solid #1b2a44; border-radius: 16px; padding: 14px; }
+      .ld-error button { font: inherit; font-weight: 900; padding: 8px 18px; border-radius: 12px; border: 3px solid #3a210e; background: linear-gradient(180deg, #8fe07a, #47b04b); color: #fff; cursor: pointer; }
+      #boot-loader.failed .ld-error { display: flex; }
+      #boot-loader.failed .ld-status, #boot-loader.failed .ld-track { display: none; }
+      @media (max-height: 520px) { .ld-logo { width: min(40vw, 240px); } .ld-track { display: none; } .ld-main { gap: 8px; } }
+      @media (prefers-reduced-motion: reduce) { .ld-run, .ld-fish, .ld-fall i { animation: none; } .ld-fall { display: none; } .ld-run { left: 60px; } .ld-fish { left: 120px; } }
+      html.sf-reduced .ld-run, html.sf-reduced .ld-fish, html.sf-reduced .ld-fall i { animation: none; }
+      html.sf-reduced .ld-fall { display: none; }
     </style>
+    <script>
+      // ---- menu theme (BEGIN sf-theme; mirrored by src/config/menuTheme.ts) ----
+      function sfSeason(d) { var m = d.getMonth() + 1; return m === 12 || m < 3 ? 'winter' : m < 6 ? 'spring' : m < 9 ? 'summer' : 'autumn'; }
+      function sfDayPhase(d) { var h = d.getHours() + d.getMinutes() / 60; return h < 5 ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : h < 20 ? 'dusk' : 'night'; }
+      // ---- (END sf-theme) ----
+      (function () {
+        var s = {};
+        try { s = JSON.parse(localStorage.getItem('slipperyfish.settings.v1') || '{}') || {}; } catch (e) { s = {}; }
+        var now = new Date();
+        var seasons = ['spring', 'summer', 'autumn', 'winter'], phases = ['dawn', 'day', 'dusk', 'night'];
+        var root = document.documentElement;
+        root.setAttribute('data-season', seasons.indexOf(s.menuSeason) >= 0 ? s.menuSeason : sfSeason(now));
+        root.setAttribute('data-daynight', phases.indexOf(s.menuDayNight) >= 0 ? s.menuDayNight : sfDayPhase(now));
+        var reduced = s.reducedMotion === true || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+        if (reduced) root.classList.add('sf-reduced');
+      })();
+    </script>
   </head>
   <body>
-    <div id="boot-loader" role="status" aria-live="polite">
-      <div class="bl-title">SLIPPERY FISH</div>
-      <div class="bl-track" aria-hidden="true"><div class="bl-fish"></div><div class="bl-penguin"></div><div class="bl-ground"></div></div>
-      <div class="bl-sub" id="boot-status">Chasing a fish…</div>
+    <div id="boot-loader" role="status" aria-live="polite" aria-label="Loading Slippery Fish">
+      <div class="ld-stars" aria-hidden="true"></div>
+      <div class="ld-hills" aria-hidden="true"></div>
+      <div class="ld-fall" aria-hidden="true"><i style="left:6%;animation-delay:-1s"></i><i style="left:17%;animation-delay:-4s"></i><i style="left:29%;animation-delay:-2.5s"></i><i style="left:41%;animation-delay:-6s"></i><i style="left:53%;animation-delay:-0.5s"></i><i style="left:64%;animation-delay:-3s"></i><i style="left:75%;animation-delay:-5s"></i><i style="left:86%;animation-delay:-1.8s"></i><i style="left:94%;animation-delay:-7s"></i><i style="left:35%;animation-delay:-8s"></i></div>
+      <div class="ld-main">
+        <img class="ld-logo" src="./assets/images/ui_logo.webp" alt="Slippery Fish" width="370" height="187" decoding="async" />
+        <div class="ld-status"><div class="ld-bar" aria-hidden="true"><i id="ld-bar"></i></div><div id="boot-status">Opening your save…</div></div>
+        <div class="ld-card" id="ld-card" aria-label="Your profile">
+          <div class="ld-avatar" id="ld-avatar" aria-hidden="true"><div class="ld-peng" id="ld-peng"></div></div>
+          <div class="ld-who">
+            <div class="ld-name" id="ld-name">Welcome, new waddler!</div>
+            <div class="ld-title" id="ld-title"></div>
+            <div class="ld-line" id="ld-char">Your penguin is warming up its flippers</div>
+            <div class="ld-line" id="ld-adv">Adventure · Level 1 · Classic Winter</div>
+            <div class="ld-prog" aria-hidden="true"><i id="ld-prog"></i></div>
+          </div>
+        </div>
+        <div class="ld-error" id="ld-error" role="alert"><span id="ld-error-msg">Something went wrong while loading.</span><button type="button" id="ld-retry">TRY AGAIN</button></div>
+      </div>
+      <div class="ld-track" aria-hidden="true"><div class="ld-fish"></div><div class="ld-run"></div><div class="ld-ground"></div></div>
     </div>
+
+    <div id="brand" aria-label="Inverse Smiles" role="img">
+      <svg class="bm-svg" viewBox="0 0 200 200" aria-hidden="true">
+        <ellipse cx="100" cy="186" rx="52" ry="8" fill="rgba(120,80,40,0.16)" />
+        <g class="bm-face" id="bm-face">
+          <circle cx="100" cy="118" r="60" fill="#ffd23f" stroke="#1b2a44" stroke-width="7" />
+          <path d="M58 92 Q70 66 100 62" fill="none" stroke="#fff6c8" stroke-width="7" stroke-linecap="round" opacity="0.7" />
+          <circle cx="79" cy="106" r="7.5" fill="#1b2a44" />
+          <circle cx="121" cy="106" r="7.5" fill="#1b2a44" />
+          <circle class="bm-cheek" cx="66" cy="128" r="8" fill="#ff8a8a" />
+          <circle class="bm-cheek" cx="134" cy="128" r="8" fill="#ff8a8a" />
+          <path id="bm-mouth" d="M74 146 Q100 122 126 146" fill="none" stroke="#1b2a44" stroke-width="7.5" stroke-linecap="round" />
+        </g>
+        <g class="bm-hat" id="bm-hat">
+          <ellipse cx="100" cy="66" rx="50" ry="10" fill="#2f8fd6" stroke="#1b2a44" stroke-width="6" />
+          <path d="M70 64 L74 22 Q100 12 126 22 L130 64 Z" fill="#3fa8f0" stroke="#1b2a44" stroke-width="6" stroke-linejoin="round" />
+          <path d="M72 50 Q100 58 128 50 L129 60 Q100 68 71 60 Z" fill="#ef7a2a" stroke="#1b2a44" stroke-width="4" stroke-linejoin="round" />
+          <path d="M84 24 L82 44" stroke="#bfe6ff" stroke-width="5" stroke-linecap="round" />
+          <circle cx="118" cy="55" r="5" fill="#ffd23f" stroke="#1b2a44" stroke-width="3" />
+        </g>
+      </svg>
+      <div class="bm-word">INVERSE <b>SMILES</b></div>
+      <div class="bm-tag">turning frowns upside down</div>
+    </div>
+
+    <script>
+      /*
+       * Startup controller (no dependencies). Exposes window.__sfBoot for
+       * src/main.ts: brandDone (Promise), setProgress(label, fraction),
+       * setCard(summary), fail(message), finish(). Progress never moves
+       * backwards; nothing here waits on timers to fake loading.
+       */
+      (function () {
+        var root = document.documentElement;
+        var reduced = root.classList.contains('sf-reduced');
+        var quick = false;
+        try { quick = sessionStorage.getItem('sf.brandSeen') === '1'; sessionStorage.setItem('sf.brandSeen', '1'); } catch (e) {}
+        var brand = document.getElementById('brand');
+        var face = document.getElementById('bm-face');
+        var hat = document.getElementById('bm-hat');
+        var mouth = document.getElementById('bm-mouth');
+        var loader = document.getElementById('boot-loader');
+        var resolveBrand;
+        var brandDone = new Promise(function (r) { resolveBrand = r; });
+        var finished = false;
+        var audio = null;
+
+        function setMouth(t) {
+          // t: 0 = sad (curve bulges up), 1 = happy (bulges down); slight overshoot allowed.
+          var cy = 122 + (170 - 122) * t, ey = 146 - 8 * Math.min(1, t);
+          mouth.setAttribute('d', 'M74 ' + ey + ' Q100 ' + cy + ' 126 ' + ey);
+        }
+        function chime() {
+          if (!audio || audio.state !== 'running') return;
+          var t0 = audio.currentTime + 0.02;
+          [[523.25, 0], [659.25, 0.11], [783.99, 0.22], [1046.5, 0.36]].forEach(function (n, i) {
+            var o = audio.createOscillator(), g = audio.createGain();
+            o.type = i === 3 ? 'sine' : 'triangle';
+            o.frequency.value = n[0];
+            g.gain.setValueAtTime(0.0001, t0 + n[1]);
+            g.gain.exponentialRampToValueAtTime(0.16, t0 + n[1] + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + n[1] + (i === 3 ? 0.7 : 0.28));
+            o.connect(g); g.connect(audio.destination);
+            o.start(t0 + n[1]); o.stop(t0 + n[1] + 0.8);
+          });
+        }
+        function finalPose() {
+          setMouth(1);
+          face.parentNode.classList.add('bm-happy');
+          hat.classList.remove('drop'); hat.classList.add('set');
+          brand.classList.add('words');
+        }
+        function end() { if (finished) return; finished = true; finalPose(); resolveBrand(); }
+
+        // A tap/key during the intro unlocks audio (a real gesture) and skips ahead.
+        function gesture() {
+          try {
+            var C = window.AudioContext || window.webkitAudioContext;
+            if (C && !audio) { audio = new C(); window.__sfEarlyAudio = audio; }
+            if (audio && audio.state === 'suspended') audio.resume();
+          } catch (e) {}
+          if (!finished) { chime(); setTimeout(end, 260); }
+        }
+        brand.addEventListener('pointerdown', gesture);
+        window.addEventListener('keydown', function k(e) { if (!finished) gesture(); window.removeEventListener('keydown', k); });
+
+        if (reduced || quick) {
+          // Shortened treatment: the composed mark with a gentle fade, no motion.
+          finalPose();
+          setTimeout(end, reduced ? 650 : 900);
+        } else {
+          var start = null;
+          var easeBack = function (x) { var c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+          var step = function (ts) {
+            if (finished) return;
+            if (start === null) start = ts;
+            var t = (ts - start) / 1000;
+            // 0.00–0.35 hold sad · 0.35–0.85 flip to a smile · 0.80 hat drops · 1.35 squash · 1.15 words · ~2.1 done
+            var m = Math.min(1, Math.max(0, (t - 0.35) / 0.5));
+            setMouth(m <= 0 ? 0 : easeBack(m));
+            if (t > 0.6) face.parentNode.classList.add('bm-happy');
+            if (t > 0.8 && !hat.classList.contains('drop')) hat.classList.add('drop');
+            if (t > 1.4 && !face.classList.contains('land')) { face.classList.add('land'); chime(); }
+            if (t > 1.15) brand.classList.add('words');
+            if (t >= 2.1) { end(); return; }
+            requestAnimationFrame(step);
+          };
+          setMouth(0);
+          requestAnimationFrame(step);
+        }
+
+        var shown = 0;
+        var api = {
+          brandDone: brandDone,
+          hideBrand: function () { brand.classList.add('out'); setTimeout(function () { if (brand.parentNode) brand.parentNode.removeChild(brand); }, 450); },
+          setProgress: function (label, fraction) {
+            if (typeof fraction === 'number') {
+              shown = Math.max(shown, Math.min(1, fraction));
+              document.getElementById('ld-bar').style.width = Math.round(shown * 100) + '%';
+            }
+            if (label) document.getElementById('boot-status').textContent = label;
+          },
+          setCard: function (c) {
+            if (!c || c.v !== 1 || typeof c.name !== 'string') return false;
+            var esc = function (v, d) { return typeof v === 'string' && v.length < 60 ? v : d; };
+            document.getElementById('ld-name').textContent = esc(c.name, 'Waddler');
+            document.getElementById('ld-title').textContent = esc(c.title, '');
+            document.getElementById('ld-char').textContent = 'Playing as ' + esc(c.waddleName, 'Classic');
+            var lvl = Math.max(1, Math.min(800, Number(c.level) || 1));
+            document.getElementById('ld-adv').textContent = 'Adventure · Level ' + lvl + ' · ' + esc(c.region, 'Classic Winter');
+            document.getElementById('ld-prog').style.width = Math.round(Math.max(0, Math.min(800, Number(c.cleared) || 0)) / 8) + '%';
+            var av = document.getElementById('ld-avatar');
+            if (c.iconBg && c.iconBg.length === 2) { av.style.setProperty('--av-a', esc(c.iconBg[0], '#bfe3fb')); av.style.setProperty('--av-b', esc(c.iconBg[1], '#7cc4f0')); }
+            var pal = { slate: ['#5d6b7e', '#eef2f6'], bluebell: ['#2f6fd6', '#fff6ea'], bubblegum: ['#e86aa8', '#fff0f6'], goldbelly: ['#2a2f4a', '#ffd86a'], crested: ['#2b3346', '#fff6ea'], skyfin: ['#6fb6e6', '#ffffff'], macaroni: ['#1f2a44', '#fff6ea'], lilac: ['#8a6ad6', '#f6f0ff'], ember: ['#b8452a', '#fff1e0'] }[c.waddle];
+            var pg = document.getElementById('ld-peng');
+            if (pal) { pg.style.setProperty('--pg', pal[0]); pg.style.setProperty('--pb', pal[1]); }
+            return true;
+          },
+          fail: function (msg) {
+            loader.classList.add('failed');
+            document.getElementById('ld-error-msg').textContent = msg;
+            api.hideBrand();
+          },
+          finish: function () {
+            loader.classList.add('gone');
+            api.hideBrand();
+            setTimeout(function () { if (loader.parentNode) loader.parentNode.removeChild(loader); }, 500);
+          },
+        };
+        document.getElementById('ld-retry').addEventListener('click', function () { location.reload(); });
+        // Cached, display-only identity (never authority for anything). Missing/stale → guest card.
+        try { api.setCard(JSON.parse(localStorage.getItem('slipperyfish.profileSummary') || 'null')); } catch (e) {}
+        window.__sfBoot = api;
+      })();
+    </script>
     <div id="game" aria-hidden="true"></div>
     <div id="ui"></div>
     <noscript><p style="font-family:sans-serif;text-align:center;margin-top:40vh">Slippery Fish needs JavaScript enabled to play.</p></noscript>

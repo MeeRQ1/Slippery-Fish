@@ -211,5 +211,33 @@ export function playRecipe(ctx: BaseAudioContext, out: AudioNode, recipe: SynthR
     case 'puff': N({ dur: 0.18, filter: 'lowpass', freq: 1400, freqEnd: 300, vol: 0.35 }); return 0.2;
     case 'slideSeal': N({ dur: 0.35, filter: 'bandpass', freq: 1800, freqEnd: 700, q: 2, vol: 0.25 }); T({ type: 'sine', freq: 500, freqEnd: 350, dur: 0.2, vol: 0.15 }); return 0.36;
     case 'growl': T({ type: 'sawtooth', freq: 95, freqEnd: 80, dur: 0.35, vol: 0.12, vibratoHz: 28, vibratoDepth: 0.12 }); return 0.36;
+    case 'knockLow': T({ type: 'sine', freq: 170 + intensity * 50, freqEnd: 110, dur: 0.09, vol: 0.45 }); N({ dur: 0.04, filter: 'bandpass', freq: 800, q: 4, vol: 0.28 }); return 0.11;
+    case 'cheep':
+      T({ type: 'sine', freq: 2600, freqEnd: 3400, dur: 0.06, vol: 0.22 });
+      T({ type: 'sine', freq: 2900, freqEnd: 3900, dur: 0.07, vol: 0.2, delay: 0.09 });
+      return 0.18;
+    case 'gateChime': T({ type: 'triangle', freq: 1318.5, dur: 0.18, vol: 0.18 }); T({ type: 'triangle', freq: 1975.5, dur: 0.24, vol: 0.12, delay: 0.06 }); return 0.32;
+    case 'bearGrowl': T({ type: 'sawtooth', freq: 78, freqEnd: 62, dur: 0.55, vol: 0.14, vibratoHz: 22, vibratoDepth: 0.15, attack: 0.05 }); N({ dur: 0.45, filter: 'lowpass', freq: 500, vol: 0.12, attack: 0.05 }); return 0.6;
+    case 'wolfYip': T({ type: 'triangle', freq: 620, freqEnd: 980, dur: 0.12, vol: 0.22 }); T({ type: 'triangle', freq: 900, freqEnd: 560, dur: 0.16, vol: 0.18, delay: 0.12 }); return 0.3;
+    case 'sealBark': for (let i = 0; i < 2; i++) { T({ type: 'square', freq: 260, freqEnd: 180, dur: 0.09, vol: 0.1, delay: i * 0.16 }); N({ dur: 0.08, filter: 'bandpass', freq: 900, q: 2, vol: 0.15, delay: i * 0.16 }); } return 0.3;
+    case 'sprintEnd': N({ dur: 0.16, filter: 'bandpass', freq: 1400, freqEnd: 500, q: 1.2, vol: 0.2 }); return 0.18;
+    case 'skid': N({ dur: 0.22, filter: 'highpass', freq: 3500, freqEnd: 2500, vol: 0.12, attack: 0.02 }); return 0.24;
+    case 'bubble': T({ type: 'sine', freq: 500 + intensity * 400, freqEnd: 1300 + intensity * 500, dur: 0.07, vol: 0.18 }); return 0.08;
+    case 'munch': for (let i = 0; i < 3; i++) N({ dur: 0.05, filter: 'bandpass', freq: 1300, q: 3, vol: 0.22, delay: i * 0.09 }); return 0.3;
+    case 'sprinkle': for (let i = 0; i < 7; i++) T({ type: 'sine', freq: 1800 + (i % 3) * 420, dur: 0.05, vol: 0.08, delay: i * 0.035 }); return 0.3;
+    case 'titleUnlock':
+      [659.25, 830.61, 987.77, 1318.5].forEach((f, i) => T({ type: 'triangle', freq: f, dur: 0.32, vol: 0.26, delay: i * 0.08 }));
+      T({ type: 'sine', freq: 2637, dur: 0.5, vol: 0.08, delay: 0.32 });
+      return 0.85;
+    case 'mapWhoosh': N({ dur: 0.35, filter: 'bandpass', freq: 600, freqEnd: 1800, q: 0.9, vol: 0.18, attack: 0.08 }); return 0.36;
+    case 'lampClick': T({ type: 'square', freq: 1400, dur: 0.02, vol: 0.08 }); T({ type: 'sine', freq: 520, dur: 0.12, vol: 0.12, delay: 0.02 }); return 0.15;
+    case 'brandMotif': {
+      // Inverse Smiles motif: a little minor "frown" figure that turns major — the sad mouth flipping into a smile.
+      [[392, 0], [311.13, 0.12]].forEach(([f, d]) => T({ type: 'triangle', freq: f!, dur: 0.16, vol: 0.22, delay: d }));
+      [[392, 0.34], [493.88, 0.44], [587.33, 0.54], [783.99, 0.66]].forEach(([f, d]) => T({ type: 'triangle', freq: f!, dur: 0.3, vol: 0.26, delay: d }));
+      T({ type: 'sine', freq: 1567.98, dur: 0.6, vol: 0.08, delay: 0.66 });
+      N({ dur: 0.08, filter: 'bandpass', freq: 2400, q: 3, vol: 0.12, delay: 0.92 });
+      return 1.4;
+    }
   }
 }

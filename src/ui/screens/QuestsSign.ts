@@ -53,7 +53,8 @@ export class QuestsSign extends SignScreen {
     this.d.add(() => bar.destroy());
     this.list = h('div', { class: 'quest-paper paper-panel' });
     c.append(
-      h('div', { class: 'sign-toolbar' }, h('span', { class: 'muted small', text: 'Quests reset at midnight UTC (weekly on Mondays).' }), bar.el),
+      h('div', { class: 'sign-toolbar' }, h('span', { class: 'muted small', text: 'Daily quests reset at 00:00 UTC, weekly on Monday 00:00 UTC, monthly on the 1st (UTC).' }),
+        woodButton('TRAINING RINK', { size: 'small', sound: 'click', onActivate: () => void this.router.go('training') }), bar.el),
       this.list,
     );
     this.render();

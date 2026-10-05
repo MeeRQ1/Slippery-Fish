@@ -50,7 +50,9 @@ test.describe('with reduced motion', () => {
     const problems = watch(page);
     await boot(page);
     await page.getByRole('button', { name: 'Adventure Map', exact: true }).click();
-    await page.getByRole('listitem', { name: /^Level 1,/ }).click();
+    // Tapping a roadmap node selects it (no accidental launch); PLAY starts it.
+    await page.getByRole('button', { name: /^Level 1,/ }).click();
+    await page.getByRole('button', { name: 'PLAY LEVEL 1' }).click();
     await expect(page.locator('.hud')).toBeVisible({ timeout: 30_000 });
     await expect(page.locator('.hud-timer')).toContainText('BEST');
     await expect(page.locator('.hud-timer')).toContainText('TIME');
@@ -84,10 +86,22 @@ test.describe('with reduced motion', () => {
     const signs: Array<[string, string]> = [
       ['Quests', 'QUESTS'], ['Hoods', 'HOODS'], ['Treasure Chests', 'TREASURE CHESTS'], ['Purchases', 'PURCHASES'], ['Settings', 'SETTINGS'], ['Profile', 'PROFILE'],
     ];
+    // The goldfish tank in the menu scene opens its own sign.
+    await page.getByRole('button', { name: /^Pet goldfish/ }).click();
+    await expect(page.getByRole('dialog', { name: 'GOLDFISH' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'GOLDFISH' })).toHaveCount(0);
     for (const [button, title] of signs) {
       await page.getByRole('button', { name: button, exact: true }).click();
       const dialog = page.getByRole('dialog', { name: title });
       await expect(dialog).toBeVisible();
+      // Nothing from the living menu may paint (or take clicks) above an open sign.
+      const covered = await page.evaluate(() => {
+        const cta = document.querySelector('.play-cta')!.getBoundingClientRect();
+        const hit = document.elementFromPoint(cta.left + cta.width / 2, cta.top + cta.height / 2);
+        return !!hit?.closest('.sign-layer');
+      });
+      expect(covered, `${title} sign must cover the menu`).toBe(true);
       await page.keyboard.press('Escape');
       await expect(dialog).toHaveCount(0);
     }
@@ -146,6 +160,54 @@ test.describe('with reduced motion', () => {
   });
 });
 
+test.describe('progression update', () => {
+  test.use({ contextOptions: { reducedMotion: 'reduce' } });
+
+  test('Inverse Smiles is the first thing painted, then the personalized loading card', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('slipperyfish.profileSummary', JSON.stringify({ v: 1, name: 'Pebble', iconBg: ['#fff1c4', '#f7c531'], iconName: 'x', waddle: 'bluebell', waddleName: 'Bluebell', level: 37, cleared: 36, region: 'Classic Winter', regionIndex: 0, title: 'Fish Courier', updatedAt: 1 })));
+    await page.goto('./', { waitUntil: 'commit' });
+    await expect(page.getByRole('img', { name: 'Inverse Smiles' })).toBeAttached({ timeout: 10_000 });
+    // The cached display card is shown before the save loads (then reconciled from the real save).
+    await expect(page.locator('#ld-name')).toHaveText(/Pebble|waddler/i);
+    await expect(page.locator('#boot-loader')).toHaveCount(0, { timeout: 45_000 });
+    await expect(page.locator('#brand')).toHaveCount(0);
+  });
+
+  test('roadmap: nodes select before launching; route chests show locked state and preview', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'desktop layout check');
+    await boot(page, '#/adventure');
+    await expect(page.getByRole('heading', { name: 'ADVENTURE' })).toBeAttached();
+    await page.getByRole('button', { name: /^Level 1,/ }).click();
+    await expect(page.locator('.hud')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'PLAY LEVEL 1' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Level 2, locked/ })).toBeVisible();
+    const chest = page.getByRole('button', { name: /^Milestone Chest after level 10: unlocks/ });
+    await chest.click();
+    await expect(page.getByRole('dialog', { name: 'Milestone Chest' })).toContainText('Clear level 10 to open it.');
+  });
+
+  test('a second tab is blocked until it takes over (one active tab)', async ({ page, context }) => {
+    await boot(page);
+    const second = await context.newPage();
+    await second.goto('./');
+    await expect(second.getByRole('dialog', { name: 'Slippery Fish is open in another tab' })).toBeVisible({ timeout: 45_000 });
+    await second.getByRole('button', { name: 'PLAY HERE INSTEAD' }).click();
+    await expect(second.getByRole('dialog', { name: 'Slippery Fish is open in another tab' })).toHaveCount(0, { timeout: 20_000 });
+    await expect(page.getByRole('dialog', { name: 'Continued in another tab' })).toBeVisible({ timeout: 20_000 });
+    await second.close();
+  });
+
+  test('Training Rink opens from Settings and starts a lesson', async ({ page }) => {
+    await boot(page);
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await page.getByRole('button', { name: 'OPEN TRAINING RINK' }).click();
+    await expect(page.getByRole('dialog', { name: 'TRAINING RINK' })).toBeVisible();
+    await page.getByRole('button', { name: 'PLAY' }).first().click();
+    await expect(page.locator('.hud')).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('.hud-level')).toContainText('TRAINING RINK');
+  });
+});
+
 test('full-motion sign drop settles and closes', async ({ page }) => {
   const problems = watch(page);
   await boot(page);
@@ -166,8 +228,7 @@ test.describe('touch', () => {
   test('virtual joystick and held sprint work simultaneously (two thumbs)', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'touch-only');
     await boot(page);
-    await page.getByRole('button', { name: 'Adventure Map', exact: true }).click();
-    await page.getByRole('listitem', { name: /^Level 1,/ }).click();
+    await page.getByRole('button', { name: /^Start the Adventure/ }).click();
     await expect(page.locator('.touch-controls')).toBeVisible({ timeout: 30_000 });
     const joy = (await page.locator('.joy-zone').boundingBox())!;
     const sprint = (await page.locator('.sprint-btn').boundingBox())!;

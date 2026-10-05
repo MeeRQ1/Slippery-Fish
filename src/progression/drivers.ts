@@ -4,7 +4,7 @@
  * is mode-agnostic and only talks to this interface.
  */
 import type { MusicSlot } from '../config/audio';
-import { CHEST_TIERS, LEVEL_REWARDS, type ChestTierId } from '../config/economy';
+import { CHEST_TIERS, DUPLICATE_HOOD_SHARD_FRACTION, LEVEL_REWARDS, roadmapChest, type ChestTierId } from '../config/economy';
 import { REGION_BY_ID, ADVENTURE_LEVEL_COUNT, LEVELS_PER_REGION } from '../config/regions';
 import type { Reward, Wallet } from '../economy/wallet';
 import { adventureLevel } from '../levels/adventure';
@@ -17,6 +17,9 @@ import type { SaveManager } from '../save/saveManager';
 import { economyBonus, HOOD_BY_ID, HOODS } from './hoods';
 import { addStats, computeStars, recordBest, trackQuests, type ResultSummary, type RunOutcome } from './results';
 import { Rng } from '../core/rng';
+import type { GameSim } from '../gameplay/sim';
+import { TRAINING_LESSONS, type TrainingLesson } from '../levels/training';
+import { LEVEL_MODIFIERS, rewardBonus } from '../gameplay/levelModifiers';
 
 export interface DriverServices {
   save: SaveManager;
@@ -31,6 +34,8 @@ export interface PlayDriver {
   hard: boolean;
   /** "LEVEL 127", "DAILY 7/40", "INFINITE 12". */
   label: string;
+  /** Adventure level number (null in other modes). */
+  levelNumber: number | null;
   sublabel: string;
   bestKey: string;
   seedCode: string | null;
@@ -38,6 +43,8 @@ export interface PlayDriver {
   /** Ranked rules: Hood stat bonuses disabled (cosmetic only). */
   normalized: boolean;
   musicSlot: MusicSlot;
+  /** Training Rink: a non-scoring objective checked every frame (the level ends as a win when met). */
+  objective?: { text: string; met: (sim: GameSim) => boolean };
   complete(o: RunOutcome): ResultSummary;
   failed(o: RunOutcome): void;
   next(): PlayDriver | null;
@@ -49,13 +56,19 @@ function econ(s: SaveData) {
   const h = s.hoods.equipped;
   return {
     icicles: economyBonus(h, 'icicleEarnings') * economyBonus(h, 'generalUtility'),
-    shards: economyBonus(h, 'shardEarnings') * economyBonus(h, 'generalUtility'),
     star: economyBonus(h, 'excellenceBonus'),
     hard: economyBonus(h, 'hardModeRewards'),
     adventure: economyBonus(h, 'adventureUtility'),
     infinite: economyBonus(h, 'infiniteUtility'),
     daily: economyBonus(h, 'dailyUtility'),
   };
+}
+
+/** Level-modifier Icicle bonus (capped) plus a result note naming it. */
+function levelBonus(level: LevelDef, notes: string[]): number {
+  const b = rewardBonus(level.modifiers);
+  if (b > 0) notes.push(`${level.modifiers.map((m) => LEVEL_MODIFIERS[m].name).join(' + ')}: +${Math.round(b * 100)}% Icicles`);
+  return 1 + b;
 }
 
 function hardify(icicles: number, hard: boolean, hardBonus: number): number {
@@ -70,7 +83,7 @@ export function adventureDriver(svc: DriverServices, n: number, hard: boolean): 
   const bestKey = bestTimeKey({ mode: 'adventure', levelKey: String(n), contentVersion: level.contentVersion, generatorVersion: level.generatorVersion, hard });
   return {
     mode: 'adventure', level, hard, bestKey, seedCode: null, allowContinue: true, normalized: false,
-    label: `LEVEL ${n}`,
+    label: `LEVEL ${n}`, levelNumber: n,
     sublabel: `${region.name}${hard ? ' · HARD' : ''}`,
     musicSlot: region.musicSlot as MusicSlot,
     exit: { screen: 'adventure', params: { region: region.id, focus: n } },
@@ -93,15 +106,12 @@ export function adventureDriver(svc: DriverServices, n: number, hard: boolean): 
       ic += Math.max(0, stars - (firstClear ? 0 : prevStars)) * r.perStar * e.star;
       if (firstClear) ic += r.firstClearBonus;
       ic += o.stats.rareStashed * LEVEL_REWARDS.rareFishBonusIcicles;
-      ic = hardify(ic, hard, e.hard) * e.icicles * e.adventure;
-      const reward: Reward = { icicles: Math.round(ic) };
       const notes: string[] = [];
-      if (firstClear && n % 10 === 0) { reward.shards = Math.round(10 * e.shards); notes.push('Milestone level! +Icicle Shards'); }
-      if (firstClear && n % LEVELS_PER_REGION === 0) {
-        reward.shards = (reward.shards ?? 0) + Math.round(50 * e.shards);
-        reward.fish = 10;
-        notes.push(`${region.name} conquered!`);
-      }
+      ic = hardify(ic, hard, e.hard) * e.icicles * e.adventure * levelBonus(level, notes);
+      const reward: Reward = { icicles: Math.round(ic) };
+      // Milestone rewards now live in roadmap chests (claimed on the Adventure map, exactly once).
+      const chest = !hard && firstClear ? roadmapChest(n) : null;
+      if (chest) notes.push(chest.kind === 'region' ? `${region.name} conquered! A Region Treasure waits on the map.` : 'A Milestone Chest unlocked on the map!');
       let previousBestMs: number | null = null;
       let newBest = false;
       svc.wallet.grant(`adv:${n}:${hard ? 'H' : 'N'}:${o.runId}`, reward, (st) => {
@@ -136,19 +146,24 @@ export interface MilestoneReward {
 /** Specific, visible-before-earning rewards for each of the 8 Popsicles. Level 40 is the strongest. */
 export function dailyMilestoneRewards(dateKey: string): MilestoneReward[] {
   const rng = new Rng(`daily-rewards:${dateKey}`);
-  const hoodPool = HOODS.filter((h) => h.rarityIndex >= 3 && h.rarityIndex <= 5);
+  // Economy v2: Popsicle 7's Hood comes from Human Trash–Oooh Shiny (v1 allowed up to Epic,
+  // which made one day of Daily play a shortcut past the Hood curve).
+  const hoodPool = HOODS.filter((h) => h.rarityIndex >= DAILY_HOOD_RARITY[0] && h.rarityIndex <= DAILY_HOOD_RARITY[1]);
   const hood = rng.pick(hoodPool);
   return [
     { index: 1, label: '150 Icicles', reward: { icicles: 150 } },
-    { index: 2, label: '20 Icicle Shards', reward: { shards: 20 } },
-    { index: 3, label: '300 Icicles + 8 Fish', reward: { icicles: 300, fish: 8 } },
-    { index: 4, label: '45 Icicle Shards', reward: { shards: 45 } },
-    { index: 5, label: '500 Icicles + 15 Fish', reward: { icicles: 500, fish: 15 } },
+    { index: 2, label: '15 Icicle Shards + 2 Fish', reward: { shards: 15, fish: 2 } },
+    { index: 3, label: '300 Icicles + 5 Fish', reward: { icicles: 300, fish: 5 } },
+    { index: 4, label: '30 Icicle Shards', reward: { shards: 30 } },
+    { index: 5, label: '500 Icicles + 8 Fish', reward: { icicles: 500, fish: 8 } },
     { index: 6, label: 'Minnow Crate', reward: {}, chest: 'minnow' },
     { index: 7, label: `Hood: ${hood.name}`, reward: { hoods: [hood.id] }, hoodId: hood.id },
-    { index: 8, label: '1,000 Icicles + 100 Shards + 40 Fish + Mackerel Chest', reward: { icicles: 1000, shards: 100, fish: 40 }, chest: 'mackerel' },
+    { index: 8, label: '1,000 Icicles + 60 Shards + 25 Fish + Mackerel Chest', reward: { icicles: 1000, shards: 60, fish: 25 }, chest: 'mackerel' },
   ];
 }
+
+/** Rarity window (inclusive) of the Popsicle 7 Hood. */
+export const DAILY_HOOD_RARITY = [1, 3] as const;
 
 /** Resets local daily progress when the shared cycle changes (and records the max observed clock). */
 export function syncDailyCycle(svc: DriverServices): { cycleId: string; dateKey: string; clockRolledBack: boolean } {
@@ -177,7 +192,7 @@ export function dailyDriver(svc: DriverServices, index: number, hard: boolean): 
   const bestKey = bestTimeKey({ mode: 'daily', levelKey: `${dateKey}:${index}`, contentVersion: level.contentVersion, generatorVersion: level.generatorVersion, hard });
   return {
     mode: 'daily', level, hard, bestKey, seedCode: null, allowContinue: true, normalized: false,
-    label: `DAILY ${index} / ${DAILY_LEVELS}`,
+    label: `DAILY ${index} / ${DAILY_LEVELS}`, levelNumber: null,
     sublabel: `Popsicle ${milestoneOf(index)} · ${region.name}${hard ? ' · HARD' : ''}`,
     musicSlot: 'daily',
     exit: { screen: 'daily' },
@@ -194,11 +209,11 @@ export function dailyDriver(svc: DriverServices, index: number, hard: boolean): 
       const e = econ(s);
       const r = LEVEL_REWARDS.daily;
       let ic = (r.base + level.difficulty * r.perDifficulty + stars * r.perStar * e.star) * e.daily;
-      ic = hardify(ic, hard, e.hard) * e.icicles;
+      const notes: string[] = [];
+      ic = hardify(ic, hard, e.hard) * e.icicles * levelBonus(level, notes);
       const reward: Reward = { icicles: Math.round(ic) };
       let previousBestMs: number | null = null;
       let newBest = false;
-      const notes: string[] = [];
       const already = (hard ? s.daily.completedHard : s.daily.completed).includes(index);
       svc.wallet.grant(`daily:${cycleId}:${index}:${hard ? 'H' : 'N'}:${o.runId}`, already ? { icicles: Math.round((reward.icicles ?? 0) * 0.3) } : reward, (st) => {
         const b = recordBest(st, bestKey, o.timeMs);
@@ -222,10 +237,11 @@ export function dailyDriver(svc: DriverServices, index: number, hard: boolean): 
         const grant: Reward = { ...mr.reward };
         if (mr.hoodId && svc.save.data.hoods.owned.includes(mr.hoodId)) {
           grant.hoods = [];
-          grant.shards = (grant.shards ?? 0) + (HOOD_BY_ID[mr.hoodId]?.price ?? 100);
+          grant.shards = (grant.shards ?? 0) + Math.round((HOOD_BY_ID[mr.hoodId]?.price ?? 100) * DUPLICATE_HOOD_SHARD_FRACTION);
         }
         const applied = svc.wallet.grant(`daily:${cycleId}:milestone:${m}`, grant, (st) => {
           if (!st.daily.claimed.includes(m)) st.daily.claimed.push(m);
+          if (st.daily.claimed.length >= 8) st.stats.dailyFullClears += 1;
           if (mr.chest) st.chests.inventory[mr.chest] = (st.chests.inventory[mr.chest] ?? 0) + 1;
         });
         if (applied) {
@@ -254,7 +270,7 @@ export function infiniteDriver(svc: DriverServices, seed: InfiniteSeed, hard: bo
   });
   return {
     mode: 'infinite', level, hard, bestKey, seedCode: code, allowContinue: true, normalized: false,
-    label: `INFINITE ${seed.level}`,
+    label: `INFINITE ${seed.level}`, levelNumber: null,
     sublabel: `${REGION_BY_ID[level.region].name}${hard ? ' · HARD' : ''}`,
     musicSlot: 'infinite',
     exit: { screen: 'infinite' },
@@ -271,11 +287,11 @@ export function infiniteDriver(svc: DriverServices, seed: InfiniteSeed, hard: bo
       const e = econ(s);
       const r = LEVEL_REWARDS.infinite;
       let ic = Math.min(r.maxBase, r.base + seed.level * r.perLevel) + stars * r.perStar * e.star;
-      ic = hardify(ic, hard, e.hard) * e.icicles * e.infinite;
+      const notes: string[] = [];
+      ic = hardify(ic, hard, e.hard) * e.icicles * e.infinite * levelBonus(level, notes);
       const reward: Reward = { icicles: Math.round(ic) };
       let previousBestMs: number | null = null;
       let newBest = false;
-      const notes: string[] = [];
       svc.wallet.grant(`inf:${code}:${hard ? 'H' : 'N'}:${o.runId}`, reward, (st) => {
         const b = recordBest(st, bestKey, o.timeMs);
         previousBestMs = b.previous;
@@ -299,12 +315,12 @@ export function infiniteDriver(svc: DriverServices, seed: InfiniteSeed, hard: bo
  * Clearly labelled practice: no opponent, no rankings, no ranked rewards.
  */
 export function practiceDriver(svc: DriverServices, seed: InfiniteSeed): PlayDriver {
-  const level = { ...infiniteLevel(seed, false), mode: 'practice' as const };
+  const level = { ...infiniteLevel(seed, false, true), mode: 'practice' as const };
   const code = encodeSeed(seed);
   const bestKey = bestTimeKey({ mode: 'practice', levelKey: code, contentVersion: level.contentVersion, generatorVersion: level.generatorVersion, hard: false, normalized: true });
   return {
     mode: 'practice', level, hard: false, bestKey, seedCode: code, allowContinue: true, normalized: true,
-    label: 'PRACTICE',
+    label: 'PRACTICE', levelNumber: null,
     sublabel: 'Ranked rules · offline · not ranked',
     musicSlot: 'ranked',
     exit: { screen: 'ranked' },
@@ -322,6 +338,34 @@ export function practiceDriver(svc: DriverServices, seed: InfiniteSeed): PlayDri
         addStats(st, o, true, stars);
       });
       return { stars, timeMs: o.timeMs, previousBestMs, newBest, parSeconds: level.parSeconds, rewards: {}, firstClear: false, notes: ['Practice runs never award ranked rewards.'] };
+    },
+  };
+}
+
+// ------------------------------------------------------------------ training rink (optional tutorial)
+
+/** Training lessons: real gameplay, no currency, completion recorded once. */
+export function trainingDriver(svc: DriverServices, lesson: TrainingLesson): PlayDriver {
+  const level = lesson.level!();
+  const teaches = ({ move: 'movement', sprint: 'sprint', dribble: 'dribbling', gate: 'scoring', momentum: 'momentum', bank: 'bank', enemies: 'enemies' } as const)[lesson.id as 'move'] ?? 'movement';
+  level.tutorial = { hint: `${lesson.demo} ${lesson.controls ? `(${lesson.controls}) ` : ''}Goal: ${lesson.objective}`, showStashArrow: lesson.id === 'gate', teaches };
+  const idx = TRAINING_LESSONS.indexOf(lesson);
+  const nextPlayable = TRAINING_LESSONS.slice(idx + 1).find((l) => l.level);
+  return {
+    mode: 'training', level, hard: false, bestKey: `training|${lesson.id}`, seedCode: null, allowContinue: false, normalized: false,
+    label: 'TRAINING RINK', levelNumber: null,
+    sublabel: lesson.title,
+    musicSlot: 'quests',
+    exit: { screen: 'training' },
+    retry: () => trainingDriver(svc, lesson),
+    next: () => (nextPlayable ? trainingDriver(svc, nextPlayable) : null),
+    ...(lesson.met ? { objective: { text: lesson.objective, met: lesson.met } } : {}),
+    failed: () => undefined,
+    complete: (o) => {
+      svc.save.mutate((s) => { if (!s.tutorial.lessonsDone.includes(lesson.id)) s.tutorial.lessonsDone.push(lesson.id); });
+      const notes = [`Lesson complete: ${lesson.title}!`];
+      if (o.stats.bankShots > 0) notes.push('Bank shot! The chicks loved that.');
+      return { stars: 0, timeMs: o.timeMs, previousBestMs: null, newBest: false, parSeconds: level.parSeconds, rewards: {}, firstClear: false, notes };
     },
   };
 }

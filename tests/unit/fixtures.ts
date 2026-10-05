@@ -12,6 +12,8 @@ export function makeTestLevel(overrides: Partial<LevelDef> = {}): LevelDef {
     arena: { width: 1200, height: 760, walls: [] },
     player: { x: 200, y: 380 },
     stash: { x: 1000, y: 380 },
+    goal: { fenceMask: 0 },
+    modifiers: [],
     fish: [{ x: 300, y: 380, variant: 'standard' }],
     fishRequired: 1,
     enemies: [],
